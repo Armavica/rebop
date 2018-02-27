@@ -1,6 +1,30 @@
 # bebop
 
-# Not (yet) features
+Two goals of this project are efficiency and practicality.  The
+following macro defines the corresponding reaction network:
+
+``` Rust
+define_system! {
+    Dimers { gene, mRNA, protein, dimer }
+    r_transcription : gene             => gene, mRNA    @ 25.
+    r_translation   : mRNA             => mRNA, protein @ 1000.
+    r_dimerization  : protein, protein => dimer         @ 0.001
+    r_decay_mRNA    : mRNA             => nil           @ 0.1
+    r_decay_protein : protein          => nil           @ 1.
+}
+```
+
+To simulate the system, instanciate a new problem, set the initial
+values, and simulate:
+
+``` Rust
+let mut problem = Dimers::new();
+problem.gene = 1;
+let trace = problem.advance_until(1.);
+println!("{}: dimer = {}", problem.t, problem.dimer);
+```
+
+## Not (yet) features
 
 * propensities != reaction rates
 * Next reaction method (Gibson - Brooke)
@@ -18,7 +42,7 @@
 * Local sensitivity analysis
 * Parallelization
 
-## Benchmarks
+### Benchmarks
 
 * Dimers
 * SIR
@@ -38,7 +62,7 @@
     * GAL
     * Repressilator
 
-## Other software
+### Other software
 
 * [StochKit](https://sourceforge.net/projects/stochkit/)
 * [STEPS](https://github.com/CNS-OIST/STEPS)
@@ -51,7 +75,7 @@
 * [Smoldyn](http://www.smoldyn.org/)
 * [KaSim](http://dev.executableknowledge.org/)
 
-### Seem unmaintained
+#### Seem unmaintained
 
 * [Dizzy](http://magnet.systemsbiology.net/software/Dizzy/)
 * [Cellware](http://www.bii.a-star.edu.sg/achievements/applications/cellware/)

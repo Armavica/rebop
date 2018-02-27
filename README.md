@@ -1,4 +1,4 @@
-# RSSA
+# bebop
 
 # Not (yet) features
 
@@ -13,7 +13,7 @@
 * Michaelis-Menten
 * Time-varying inputs
 * Rule modeling
-
+* SBML
 * Parameter estimation
 * Local sensitivity analysis
 * Parallelization

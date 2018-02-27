@@ -24,6 +24,30 @@ let trace = problem.advance_until(1.);
 println!("{}: dimer = {}", problem.t, problem.dimer);
 ```
 
+Or for the classic SIR example:
+
+``` Rust
+define_system! {
+    SIR { S, I, R }
+    r_infection: S, I => I, I @ 0.1/1000.
+    r_healing  : I    => R    @ 0.01
+}
+
+fn main() {
+    let mut problem = SIR::new();
+    problem.S = 999;
+    problem.I = 1;
+    let trace = problem.advance_until(250.);
+    println!("time,S,I,R");
+    for state in &trace {
+        println!("{},{},{},{}", state.t, state.S, state.I, state.R);
+    }
+}
+```
+
+which can produce an output such as
+![SIR](https://github.com/Armavica/bebop/blob/master/sir.png)
+
 ## Not (yet) features
 
 * propensities != reaction rates

@@ -3,8 +3,9 @@ macro_rules! define_system {
     ( $name:ident { $($species:ident),* }
       $($rname:ident : $($r:ident),+ => $($p:ident),+ @ $rate:expr)+
       ) => {
-        use rand::distributions::{Exp, IndependentSample, Range};
+        use rand::distributions::{Uniform, Distribution};
         use rand::thread_rng;
+        use rand_distr::Exp;
         /// Structure representing the problem, with the species and the time.
         #[allow(non_snake_case)]
         #[derive(Clone, Debug)]
@@ -33,9 +34,9 @@ macro_rules! define_system {
                     return false
                 }
                 let mut rng = thread_rng();
-                let exp = Exp::new(total_rate);
-                self.t += exp.ind_sample(&mut rng);
-                let mut reaction_choice = Range::new(0., total_rate).ind_sample(&mut rng);
+                let exp = Exp::new(total_rate).unwrap();
+                self.t += exp.sample(&mut rng);
+                let mut reaction_choice = Uniform::new(0., total_rate).sample(&mut rng);
                 choice!(self reaction_choice; $($rname: $($r),* => $($p),*);*);
                 true
             }

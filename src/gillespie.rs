@@ -1,5 +1,6 @@
-use rand::distributions::{Exp, IndependentSample, Range};
+use rand::distributions::{Uniform, Distribution};
 use rand::thread_rng;
+use rand_distr::Exp;
 
 pub trait AsIndex {
     fn as_index(&self) -> usize;
@@ -42,9 +43,9 @@ impl<T: AsIndex+Clone> Gillespie<T> {
             return None
         }
         let mut rng = thread_rng();
-        let exp = Exp::new(total_rate);
-        let reaction_time = exp.ind_sample(&mut rng);
-        let mut reaction_choice = Range::new(0., total_rate).ind_sample(&mut rng);
+        let exp = Exp::new(total_rate).unwrap();
+        let reaction_time = exp.sample(&mut rng);
+        let mut reaction_choice = Uniform::new(0., total_rate).sample(&mut rng);
         for (i, &rate) in rates.iter().enumerate() {
             if rate >= reaction_choice {
                 return Some((i, reaction_time))
@@ -137,7 +138,7 @@ impl<T: AsIndex+Clone> Rate<T> {
 
 #[cfg(test)]
 mod tests {
-    use gillespie::{Rate, SRate, Gillespie, AsIndex};
+    use crate::gillespie::{Rate, SRate, Gillespie, AsIndex};
     #[test]
     fn sir() {
         index_enum! { enum SIR { S, I, R } }
@@ -167,7 +168,7 @@ mod tests {
 #[cfg(test)]
 mod benchmarks {
     use test::Bencher;
-    use gillespie::{Rate, SRate, Gillespie, AsIndex};
+    use crate::gillespie::{Rate, SRate, Gillespie, AsIndex};
     #[bench]
     fn sir(b: &mut Bencher) {
         index_enum! { enum SIR { S, I, R } }

@@ -1,7 +1,9 @@
 [package]
 name = "bebop"
 version = "0.0.0"
-authors = ["Virgile Andreani <virgile.andreani@anbuco.fr>"]
+authors = ["Virgile Andreani <armavica@ulminfo.fr>"]
+edition = "2018"
 
 [dependencies]
-rand = "0.4"
+rand = "0.7.3"
+rand_distr = "0.2.2"

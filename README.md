@@ -14,7 +14,7 @@ define_system! {
 }
 ```
 
-To simulate the system, instanciate a new problem, set the initial
+To simulate the system, instantiate a new problem, set the initial
 values, and simulate:
 
 ``` Rust
@@ -88,16 +88,14 @@ which can produce an output such as
 
 ### Other software
 
-* [StochKit](https://sourceforge.net/projects/stochkit/)
+* [GillesPy2](https://github.com/StochSS/GillesPy2)
 * [STEPS](https://github.com/CNS-OIST/STEPS)
-* [SmartCell](http://software.crg.es/smartcell/)
 * [SimBiology](https://fr.mathworks.com/help/simbio/)
 * [Copasi](http://copasi.org/)
 * [BioNetGen](http://bionetgen.org/)
-* [NFsim](http://michaelsneddon.net/nfsim/)
 * [VCell](http://vcell.org/)
 * [Smoldyn](http://www.smoldyn.org/)
-* [KaSim](http://dev.executableknowledge.org/)
+* [KaSim](https://kappalanguage.org/)
 
 #### Seem unmaintained
 
@@ -106,4 +104,7 @@ which can produce an output such as
 * [STOCKS](https://doi.org/10.1093/bioinformatics/18.3.470)
 * [StochSim](http://lenoverelab.org/perso/lenov/stochsim.html)
 * [Systems biology toolbox](http://www.sbtoolbox.org/)
+* [StochKit](https://github.com/StochSS/StochKit)
+* [SmartCell](http://software.crg.es/smartcell/)
+* [NFsim](http://michaelsneddon.net/nfsim/)
 

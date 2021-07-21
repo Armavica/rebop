@@ -18,4 +18,3 @@ fn main() {
     }
     println!("{}", num.iter().sum::<isize>() as f64 / num.len() as f64);
 }
-

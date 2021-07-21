@@ -23,7 +23,7 @@ macro_rules! define_system {
                 }
             }
             /// Proceed and execute the next reaction to happen.
-            /// 
+            ///
             /// Returns whether a reaction actually happened (it could
             /// not happen if all the rates are 0).
             #[allow(unused_assignments)]
@@ -41,7 +41,7 @@ macro_rules! define_system {
                 true
             }
             /// Simulate the problem until `t = tmax`.
-            /// 
+            ///
             /// Returns the list of all changes of the state.
             fn advance_until(&mut self, tmax: f64) -> Vec<Self> {
                 let mut r = vec![self.clone()];

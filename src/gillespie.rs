@@ -1,4 +1,4 @@
-use rand::distributions::{Uniform, Distribution};
+use rand::distributions::{Distribution, Uniform};
 use rand::thread_rng;
 use rand_distr::Exp;
 
@@ -14,13 +14,13 @@ macro_rules! index_enum {
     }
 }
 
-impl<T: AsIndex+Clone> Gillespie<T> {
+impl<T: AsIndex + Clone> Gillespie<T> {
     pub fn new(species: &[isize]) -> Self {
         Gillespie {
             species: species.to_vec(),
             t: 0.,
             rates: Vec::new(),
-            reactions: Vec::new()
+            reactions: Vec::new(),
         }
     }
     pub fn nb_species(&self) -> usize {
@@ -40,7 +40,7 @@ impl<T: AsIndex+Clone> Gillespie<T> {
         let rates: Vec<f64> = self.rates.iter().map(|r| r.rate(&self.species)).collect();
         let total_rate: f64 = rates.iter().sum();
         if total_rate <= 0. {
-            return None
+            return None;
         }
         let mut rng = thread_rng();
         let exp = Exp::new(total_rate).unwrap();
@@ -48,7 +48,7 @@ impl<T: AsIndex+Clone> Gillespie<T> {
         let mut reaction_choice = Uniform::new(0., total_rate).sample(&mut rng);
         for (i, &rate) in rates.iter().enumerate() {
             if rate >= reaction_choice {
-                return Some((i, reaction_time))
+                return Some((i, reaction_time));
             }
             reaction_choice -= rate;
         }
@@ -63,7 +63,7 @@ impl<T: AsIndex+Clone> Gillespie<T> {
                 self.t += reaction_time;
                 true
             }
-            None => false
+            None => false,
         }
     }
     pub fn advance_until(&mut self, tmax: f64) -> Vec<(f64, Vec<isize>)> {
@@ -89,7 +89,7 @@ pub struct Gillespie<T: AsIndex> {
     species: Vec<isize>,
     t: f64,
     rates: Vec<Rate<T>>,
-    reactions: Vec<Vec<isize>>
+    reactions: Vec<Vec<isize>>,
 }
 
 pub struct Rate<T: AsIndex> {
@@ -99,36 +99,36 @@ pub struct Rate<T: AsIndex> {
 
 #[derive(Clone)]
 pub enum SRate<T: AsIndex> {
-    LMA(T), // S
-    LMA2(T), // S
-    MM(T, f64), // S, KC
+    LMA(T),               // S
+    LMA2(T),              // S
+    MM(T, f64),           // S, KC
     PosHill(T, f64, f64), // S, KC, n
     NegHill(T, f64, f64), // S, KC, n
 }
 
-impl<T: AsIndex+Clone> Rate<T> {
+impl<T: AsIndex + Clone> Rate<T> {
     pub fn new(rate: f64, species: &[SRate<T>]) -> Self {
         Rate {
             rate,
-            species: species.to_vec()
+            species: species.to_vec(),
         }
     }
     pub fn rate(&self, species: &[isize]) -> f64 {
         let mut r = self.rate;
         for factor in &self.species {
             match *factor {
-                SRate::LMA(ref s) =>
-                    r *= species[s.as_index()] as f64,
-                SRate::LMA2(ref s) =>
-                    r *= (species[s.as_index()]*species[s.as_index()]) as f64,
-                SRate::MM(ref s, k) =>
-                    r *= species[s.as_index()] as f64 /
-                    (k + species[s.as_index()] as f64),
-                SRate::PosHill(ref s, k, n) =>
-                    r *= (species[s.as_index()] as f64).powf(n) /
-                    (k.powf(n) + (species[s.as_index()] as f64).powf(n)),
-                SRate::NegHill(ref s, k, n) =>
-                    r *= (1. + (species[s.as_index()] as f64 / k).powf(n)).recip(),
+                SRate::LMA(ref s) => r *= species[s.as_index()] as f64,
+                SRate::LMA2(ref s) => r *= (species[s.as_index()] * species[s.as_index()]) as f64,
+                SRate::MM(ref s, k) => {
+                    r *= species[s.as_index()] as f64 / (k + species[s.as_index()] as f64)
+                }
+                SRate::PosHill(ref s, k, n) => {
+                    r *= (species[s.as_index()] as f64).powf(n)
+                        / (k.powf(n) + (species[s.as_index()] as f64).powf(n))
+                }
+                SRate::NegHill(ref s, k, n) => {
+                    r *= (1. + (species[s.as_index()] as f64 / k).powf(n)).recip()
+                }
             }
         }
         r
@@ -137,15 +137,21 @@ impl<T: AsIndex+Clone> Rate<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::gillespie::{Rate, SRate, Gillespie, AsIndex};
+    use crate::gillespie::{AsIndex, Gillespie, Rate, SRate};
     #[test]
     fn sir() {
         index_enum! { enum SIR { S, I, R } }
         let mut sir = Gillespie::new(&[9999, 1, 0]);
-        sir.add_reaction(Rate::new(0.1/10000., &[SRate::LMA(SIR::S), SRate::LMA(SIR::I)]), &[-1, 1, 0]);
+        sir.add_reaction(
+            Rate::new(0.1 / 10000., &[SRate::LMA(SIR::S), SRate::LMA(SIR::I)]),
+            &[-1, 1, 0],
+        );
         sir.add_reaction(Rate::new(0.01, &[SRate::LMA(SIR::I)]), &[0, -1, 1]);
         sir.advance_until(250.);
-        assert_eq!(sir.get_species(&SIR::S) + sir.get_species(&SIR::I) + sir.get_species(&SIR::R), 10000);
+        assert_eq!(
+            sir.get_species(&SIR::S) + sir.get_species(&SIR::I) + sir.get_species(&SIR::R),
+            10000
+        );
     }
     #[test]
     fn dimers() {

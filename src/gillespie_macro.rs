@@ -44,8 +44,7 @@ macro_rules! define_system {
             /// 
             /// Returns the list of all changes of the state.
             fn advance_until(&mut self, tmax: f64) -> Vec<Self> {
-                let mut r = Vec::new();
-                r.push(self.clone());
+                let mut r = vec![self.clone()];
                 while self.t < tmax {
                     if !self.step() {
                         self.t = tmax;

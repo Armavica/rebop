@@ -67,8 +67,7 @@ impl<T: AsIndex+Clone> Gillespie<T> {
         }
     }
     pub fn advance_until(&mut self, tmax: f64) -> Vec<(f64, Vec<isize>)> {
-        let mut r = Vec::new();
-        r.push((self.t, self.species.clone()));
+        let mut r = vec![(self.t, self.species.clone())];
         while self.t < tmax {
             if !self.step() {
                 self.t = tmax;

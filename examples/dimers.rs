@@ -1,7 +1,5 @@
 #![allow(non_snake_case)]
-#[macro_use]
-extern crate bebop;
-extern crate rand;
+use bebop::define_system;
 
 define_system! {
     Dimers { gene, mRNA, protein, dimer }

@@ -5,5 +5,12 @@ authors = ["Virgile Andreani <armavica@ulminfo.fr>"]
 edition = "2018"
 
 [dependencies]
-rand = "0.7.3"
-rand_distr = "0.2.2"
+rand = "0.8.4"
+rand_distr = "0.4.1"
+
+[dev-dependencies]
+criterion = "0.3.4"
+
+[[bench]]
+name = "my_benchmark"
+harness = false

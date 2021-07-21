@@ -28,7 +28,7 @@ macro_rules! define_system {
             /// not happen if all the rates are 0).
             #[allow(unused_assignments)]
             fn step(&mut self) -> bool {
-                $(let $rname = reaction! { self: $($r),+ => $($p),+ @ $rate });*;
+                $(let $rname = $crate::reaction! { self: $($r),+ => $($p),+ @ $rate });*;
                 let total_rate = 0. $(+ $rname)*;
                 if total_rate <= 0. {
                     return false
@@ -37,7 +37,7 @@ macro_rules! define_system {
                 let exp = Exp::new(total_rate).unwrap();
                 self.t += exp.sample(&mut rng);
                 let mut reaction_choice = Uniform::new(0., total_rate).sample(&mut rng);
-                choice!(self reaction_choice; $($rname: $($r),* => $($p),*);*);
+                $crate::choice!(self reaction_choice; $($rname: $($r),* => $($p),*);*);
                 true
             }
             /// Simulate the problem until `t = tmax`.
@@ -79,7 +79,7 @@ macro_rules! choice {
             $($self.$p += 1);*
         } else {
             $rc -= $rname;
-            choice!($self $rc; $($tail: $($tailr),* => $($tailp),*);*);
+            $crate::choice!($self $rc; $($tail: $($tailr),* => $($tailp),*);*);
         }
     };
     ($self:ident $rc:ident; $rname:ident: $($r:ident),* => nil;
@@ -88,7 +88,7 @@ macro_rules! choice {
             $($self.$r -= 1);*;
         } else {
             $rc -= $rname;
-            choice!($self $rc; $($tail: $($tailr),* => $($tailp),*);*);
+            $crate::choice!($self $rc; $($tail: $($tailr),* => $($tailp),*);*);
         }
     };
     ($self:ident $rc:ident; $rname:ident: $($r:ident),* => $($p:ident),*;
@@ -98,7 +98,7 @@ macro_rules! choice {
             $($self.$p += 1);*
         } else {
             $rc -= $rname;
-            choice!($self $rc; $($tail: $($tailr),* => $($tailp),*);*);
+            $crate::choice!($self $rc; $($tail: $($tailr),* => $($tailp),*);*);
         }
     };
     ($self:ident $rc:ident; $rname:ident: nil => $($p:ident),*) => {

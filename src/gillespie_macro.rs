@@ -146,67 +146,66 @@ mod tests {
     }
 }
 
-
-#[cfg(test)]
-mod benchmarks {
-    use test::Bencher;
-    #[bench]
-    fn sir(b: &mut Bencher) {
-        define_system! {
-            SIR { S, I, R }
-            r_infection: S, I => I, I @ 0.1/10000.
-            r_remission: I => R @ 0.05
-        }
-        b.iter(|| {
-            let mut sir = SIR::new();
-            sir.S = 9999;
-            sir.I = 1;
-            sir.advance_until(1000.);
-        });
-    }
-    #[bench]
-    fn dimers(b: &mut Bencher) {
-        define_system! {
-            Dimers { gene, mRNA, protein, dimer }
-            r_tx : gene             => gene, mRNA       @ 25.
-            r_tl : mRNA             => mRNA, protein    @ 1000.
-            r_di : protein, protein => dimer            @ 0.001
-            r_dm : mRNA             => nil              @ 0.1
-            r_dp : protein          => nil              @ 1.
-        }
-        b.iter(|| {
-            let mut dimers = Dimers::new();
-            dimers.gene = 1;
-            dimers.advance_until(1.);
-        });
-    }
-    #[bench]
-    fn dimers2(b: &mut Bencher) {
-        define_system! {
-            Dimers { A, A_A, AA }
-            r_da : A => nil @ 1.
-            r_di : A, A => A_A @ 1./500.
-            r_ud : A_A => A, A @ 0.5
-            r_aa : A_A => AA @ 1./25.
-        }
-        b.iter(|| {
-            let mut dimers = Dimers::new();
-            dimers.A = 100000;
-            dimers.advance_until(30.);
-        });
-    }
-    #[bench]
-    fn schloegl(b: &mut Bencher) {
-        define_system! {
-            Schloegl { A }
-            r_1 : nil => A @ 2200.
-            r_2 : A => nil @ 37.5
-            r_3 : A, A => A, A, A @ 0.18
-            r_4 : A, A, A => A, A @ 0.00025
-        }
-        b.iter(|| {
-            let mut problem = Schloegl::new();
-            problem.advance_until(10.);
-        });
-    }
-}
+// #[cfg(test)]
+// mod benchmarks {
+//     use test::Bencher;
+//     #[bench]
+//     fn sir(b: &mut Bencher) {
+//         define_system! {
+//             SIR { S, I, R }
+//             r_infection: S, I => I, I @ 0.1/10000.
+//             r_remission: I => R @ 0.05
+//         }
+//         b.iter(|| {
+//             let mut sir = SIR::new();
+//             sir.S = 9999;
+//             sir.I = 1;
+//             sir.advance_until(1000.);
+//         });
+//     }
+//     #[bench]
+//     fn dimers(b: &mut Bencher) {
+//         define_system! {
+//             Dimers { gene, mRNA, protein, dimer }
+//             r_tx : gene             => gene, mRNA       @ 25.
+//             r_tl : mRNA             => mRNA, protein    @ 1000.
+//             r_di : protein, protein => dimer            @ 0.001
+//             r_dm : mRNA             => nil              @ 0.1
+//             r_dp : protein          => nil              @ 1.
+//         }
+//         b.iter(|| {
+//             let mut dimers = Dimers::new();
+//             dimers.gene = 1;
+//             dimers.advance_until(1.);
+//         });
+//     }
+//     #[bench]
+//     fn dimers2(b: &mut Bencher) {
+//         define_system! {
+//             Dimers { A, A_A, AA }
+//             r_da : A => nil @ 1.
+//             r_di : A, A => A_A @ 1./500.
+//             r_ud : A_A => A, A @ 0.5
+//             r_aa : A_A => AA @ 1./25.
+//         }
+//         b.iter(|| {
+//             let mut dimers = Dimers::new();
+//             dimers.A = 100000;
+//             dimers.advance_until(30.);
+//         });
+//     }
+//     #[bench]
+//     fn schloegl(b: &mut Bencher) {
+//         define_system! {
+//             Schloegl { A }
+//             r_1 : nil => A @ 2200.
+//             r_2 : A => nil @ 37.5
+//             r_3 : A, A => A, A, A @ 0.18
+//             r_4 : A, A, A => A, A @ 0.00025
+//         }
+//         b.iter(|| {
+//             let mut problem = Schloegl::new();
+//             problem.advance_until(10.);
+//         });
+//     }
+// }

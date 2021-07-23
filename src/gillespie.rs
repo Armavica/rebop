@@ -1,5 +1,5 @@
 use rand::distributions::{Distribution, Uniform};
-use rand::thread_rng;
+use rand::prelude::*;
 use rand_distr::Exp;
 
 pub trait AsIndex {
@@ -14,13 +14,22 @@ macro_rules! index_enum {
     }
 }
 
-impl<T: AsIndex + Clone> Gillespie<T> {
-    pub fn new(species: &[isize]) -> Self {
+pub struct Gillespie<T: AsIndex, const N: usize> {
+    species: [isize; N],
+    t: f64,
+    rates: Vec<Rate<T>>,
+    reactions: Vec<[isize; N]>,
+    rng: ThreadRng,
+}
+
+impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
+    pub fn new(species: [isize; N]) -> Self {
         Gillespie {
-            species: species.to_vec(),
+            species: species,
             t: 0.,
             rates: Vec::new(),
             reactions: Vec::new(),
+            rng: thread_rng(),
         }
     }
     pub fn nb_species(&self) -> usize {
@@ -29,23 +38,22 @@ impl<T: AsIndex + Clone> Gillespie<T> {
     pub fn nb_reactions(&self) -> usize {
         self.reactions.len()
     }
-    pub fn add_reaction(&mut self, rate: Rate<T>, reaction: &[isize]) {
+    pub fn add_reaction(&mut self, rate: Rate<T>, reaction: [isize; N]) {
         self.rates.push(rate);
-        self.reactions.push(reaction.to_vec());
+        self.reactions.push(reaction);
     }
     pub fn get_species(&self, s: &T) -> isize {
         self.species[s.as_index()]
     }
-    fn choose_reaction(&self) -> Option<(usize, f64)> {
+    fn choose_reaction(&mut self) -> Option<(usize, f64)> {
         let rates: Vec<f64> = self.rates.iter().map(|r| r.rate(&self.species)).collect();
         let total_rate: f64 = rates.iter().sum();
         if total_rate <= 0. {
             return None;
         }
-        let mut rng = thread_rng();
         let exp = Exp::new(total_rate).unwrap();
-        let reaction_time = exp.sample(&mut rng);
-        let mut reaction_choice = Uniform::new(0., total_rate).sample(&mut rng);
+        let reaction_time = exp.sample(&mut self.rng);
+        let mut reaction_choice = Uniform::new(0., total_rate).sample(&mut self.rng);
         for (i, &rate) in rates.iter().enumerate() {
             if rate >= reaction_choice {
                 return Some((i, reaction_time));
@@ -66,7 +74,7 @@ impl<T: AsIndex + Clone> Gillespie<T> {
             None => false,
         }
     }
-    pub fn advance_until(&mut self, tmax: f64) -> Vec<(f64, Vec<isize>)> {
+    pub fn advance_until(&mut self, tmax: f64) -> Vec<(f64, [isize; N])> {
         let mut r = vec![(self.t, self.species.clone())];
         while self.t < tmax {
             if !self.step() {
@@ -83,13 +91,6 @@ impl<T: AsIndex + Clone> Gillespie<T> {
     //         }
     //     }
     // }
-}
-
-pub struct Gillespie<T: AsIndex> {
-    species: Vec<isize>,
-    t: f64,
-    rates: Vec<Rate<T>>,
-    reactions: Vec<Vec<isize>>,
 }
 
 pub struct Rate<T: AsIndex> {
@@ -141,12 +142,12 @@ mod tests {
     #[test]
     fn sir() {
         index_enum! { enum SIR { S, I, R } }
-        let mut sir = Gillespie::new(&[9999, 1, 0]);
+        let mut sir = Gillespie::new([9999, 1, 0]);
         sir.add_reaction(
             Rate::new(0.1 / 10000., &[SRate::LMA(SIR::S), SRate::LMA(SIR::I)]),
-            &[-1, 1, 0],
+            [-1, 1, 0],
         );
-        sir.add_reaction(Rate::new(0.01, &[SRate::LMA(SIR::I)]), &[0, -1, 1]);
+        sir.add_reaction(Rate::new(0.01, &[SRate::LMA(SIR::I)]), [0, -1, 1]);
         sir.advance_until(250.);
         assert_eq!(
             sir.get_species(&SIR::S) + sir.get_species(&SIR::I) + sir.get_species(&SIR::R),
@@ -156,12 +157,12 @@ mod tests {
     #[test]
     fn dimers() {
         index_enum! { enum Dimers { G, M, P, D } }
-        let mut dimers = Gillespie::new(&[1, 0, 0, 0]);
-        dimers.add_reaction(Rate::new(25., &[SRate::LMA(Dimers::G)]), &[0, 1, 0, 0]);
-        dimers.add_reaction(Rate::new(1000., &[SRate::LMA(Dimers::M)]), &[0, 0, 1, 0]);
-        dimers.add_reaction(Rate::new(0.001, &[SRate::LMA2(Dimers::P)]), &[0, 0, -2, 1]);
-        dimers.add_reaction(Rate::new(0.1, &[SRate::LMA(Dimers::M)]), &[0, -1, 0, 0]);
-        dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::P)]), &[0, 0, -1, 0]);
+        let mut dimers = Gillespie::new([1, 0, 0, 0]);
+        dimers.add_reaction(Rate::new(25., &[SRate::LMA(Dimers::G)]), [0, 1, 0, 0]);
+        dimers.add_reaction(Rate::new(1000., &[SRate::LMA(Dimers::M)]), [0, 0, 1, 0]);
+        dimers.add_reaction(Rate::new(0.001, &[SRate::LMA2(Dimers::P)]), [0, 0, -2, 1]);
+        dimers.add_reaction(Rate::new(0.1, &[SRate::LMA(Dimers::M)]), [0, -1, 0, 0]);
+        dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::P)]), [0, 0, -1, 0]);
         dimers.advance_until(1.);
         assert_eq!(dimers.get_species(&Dimers::G), 1);
         assert!(1000 < dimers.get_species(&Dimers::D));

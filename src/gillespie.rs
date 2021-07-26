@@ -9,6 +9,8 @@ pub trait AsIndex {
 #[macro_export]
 macro_rules! index_enum {
     (enum $name:ident $body:tt) => {
+        #[allow(dead_code)]
+        #[allow(non_camel_case_types)]
         #[derive(Copy, Clone)] enum $name $body
         impl AsIndex for $name { fn as_index(&self) -> usize { *self as usize } }
     }

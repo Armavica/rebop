@@ -1,6 +1,6 @@
-use rand::distributions::{Distribution, Uniform};
+use rand::distributions::Distribution;
 use rand::rngs::SmallRng;
-use rand::SeedableRng;
+use rand::{Rng, SeedableRng};
 use rand_distr::Exp;
 
 pub trait AsIndex {
@@ -56,7 +56,7 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
         }
         let exp = Exp::new(total_rate).unwrap();
         let reaction_time = exp.sample(&mut self.rng);
-        let mut reaction_choice = Uniform::new(0., total_rate).sample(&mut self.rng);
+        let mut reaction_choice = total_rate * self.rng.gen::<f64>();
         for (i, &rate) in rates.iter().enumerate() {
             if rate >= reaction_choice {
                 return Some((i, reaction_time));

@@ -3,7 +3,7 @@ macro_rules! define_system {
     ( $name:ident { $($species:ident),* }
       $($rname:ident : $($r:ident),+ => $($p:ident),+ @ $rate:expr)+
       ) => {
-        use rand::distributions::{Uniform, Distribution};
+        use rand::distributions::Distribution;
         use rand::{Rng, SeedableRng};
         use rand::rngs::SmallRng;
         use rand_distr::Exp;
@@ -38,7 +38,7 @@ macro_rules! define_system {
                 }
                 let exp = Exp::new(total_rate).unwrap();
                 self.t += exp.sample(&mut self.rng);
-                let mut reaction_choice = Uniform::new(0., total_rate).sample(&mut self.rng);
+                let mut reaction_choice = total_rate * self.rng.gen::<f64>();
                 $crate::choice!(self reaction_choice; $($rname: $($r),* => $($p),*);*);
                 true
             }

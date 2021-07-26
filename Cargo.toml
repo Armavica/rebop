@@ -11,6 +11,14 @@ rand_distr = "0.4.1"
 [dev-dependencies]
 criterion = "0.3.4"
 
+[lib]
+bench = false
+
+[[bin]]
+name = "bebop"
+path = "src/main.rs"
+bench = false
+
 [[bench]]
 name = "my_benchmark"
 harness = false

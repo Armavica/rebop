@@ -1,5 +1,6 @@
 use rand::distributions::{Distribution, Uniform};
-use rand::prelude::*;
+use rand::rngs::SmallRng;
+use rand::SeedableRng;
 use rand_distr::Exp;
 
 pub trait AsIndex {
@@ -21,7 +22,7 @@ pub struct Gillespie<T: AsIndex, const N: usize> {
     t: f64,
     rates: Vec<Rate<T>>,
     reactions: Vec<[isize; N]>,
-    rng: ThreadRng,
+    rng: SmallRng,
 }
 
 impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
@@ -31,7 +32,7 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
             t: 0.,
             rates: Vec::new(),
             reactions: Vec::new(),
-            rng: thread_rng(),
+            rng: SmallRng::from_entropy(),
         }
     }
     pub fn nb_species(&self) -> usize {

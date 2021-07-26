@@ -5,8 +5,7 @@ macro_rules! define_system {
       ) => {
         use rand::distributions::{Uniform, Distribution};
         use rand::{Rng, SeedableRng};
-        use rand::thread_rng;
-        use rand::rngs::ThreadRng;
+        use rand::rngs::SmallRng;
         use rand_distr::Exp;
         /// Structure representing the problem, with the species and the time.
         #[allow(non_snake_case)]
@@ -14,7 +13,7 @@ macro_rules! define_system {
         struct $name {
             $($species:isize),*,
             t: f64,
-            rng: ThreadRng,
+            rng: SmallRng,
         }
         impl $name {
             /// Constructs an object representing the problem, with the
@@ -23,7 +22,7 @@ macro_rules! define_system {
                 $name {
                     $($species: 0),*,
                     t: 0.,
-                    rng: thread_rng()
+                    rng: SmallRng::from_entropy()
                 }
             }
             /// Proceed and execute the next reaction to happen.

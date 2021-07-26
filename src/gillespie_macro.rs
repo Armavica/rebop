@@ -4,7 +4,9 @@ macro_rules! define_system {
       $($rname:ident : $($r:ident),+ => $($p:ident),+ @ $rate:expr)+
       ) => {
         use rand::distributions::{Uniform, Distribution};
+        use rand::{Rng, SeedableRng};
         use rand::thread_rng;
+        use rand::rngs::ThreadRng;
         use rand_distr::Exp;
         /// Structure representing the problem, with the species and the time.
         #[allow(non_snake_case)]
@@ -12,6 +14,7 @@ macro_rules! define_system {
         struct $name {
             $($species:isize),*,
             t: f64,
+            rng: ThreadRng,
         }
         impl $name {
             /// Constructs an object representing the problem, with the
@@ -20,6 +23,7 @@ macro_rules! define_system {
                 $name {
                     $($species: 0),*,
                     t: 0.,
+                    rng: thread_rng()
                 }
             }
             /// Proceed and execute the next reaction to happen.
@@ -33,10 +37,9 @@ macro_rules! define_system {
                 if total_rate <= 0. {
                     return false
                 }
-                let mut rng = thread_rng();
                 let exp = Exp::new(total_rate).unwrap();
-                self.t += exp.sample(&mut rng);
-                let mut reaction_choice = Uniform::new(0., total_rate).sample(&mut rng);
+                self.t += exp.sample(&mut self.rng);
+                let mut reaction_choice = Uniform::new(0., total_rate).sample(&mut self.rng);
                 $crate::choice!(self reaction_choice; $($rname: $($r),* => $($p),*);*);
                 true
             }
@@ -118,7 +121,7 @@ mod tests {
     fn sir() {
         define_system! {
             SIR { S, I, R }
-            r_infection: S, I => I, I @ 0.1/10000.
+            r_infection: S, I => I, I @ 0.1 / 10000.
             r_remission: I => R @ 0.01
         }
         let mut sir = SIR::new();

@@ -20,7 +20,7 @@ values, and simulate:
 ``` Rust
 let mut problem = Dimers::new();
 problem.gene = 1;
-let trace = problem.advance_until(1.);
+problem.advance_until(1.);
 println!("{}: dimer = {}", problem.t, problem.dimer);
 ```
 
@@ -37,10 +37,10 @@ fn main() {
     let mut problem = SIR::new();
     problem.S = 999;
     problem.I = 1;
-    let trace = problem.advance_until(250.);
     println!("time,S,I,R");
-    for state in &trace {
-        println!("{},{},{},{}", state.t, state.S, state.I, state.R);
+    for t in 0..250 {
+        problem.advance_until(t as f64);
+        println!("{},{},{},{}", problem.t, problem.S, problem.I, problem.R);
     }
 }
 ```

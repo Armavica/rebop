@@ -15,8 +15,8 @@ fn main() {
     for _ in 0..10000 {
         let mut problem = Dimers::new();
         problem.gene = 1;
-        let trace = problem.advance_until(1.);
-        num.push(trace.last().unwrap().dimer);
+        problem.advance_until(1.);
+        num.push(problem.dimer);
     }
     println!("{}", num.iter().sum::<isize>() as f64 / num.len() as f64);
 }

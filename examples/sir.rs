@@ -13,8 +13,8 @@ fn main() {
         let mut problem = SIR::new();
         problem.S = 999;
         problem.I = 1;
-        let trace = problem.advance_until(250.);
-        num.push(trace.last().unwrap().R);
+        problem.advance_until(250.);
+        num.push(problem.R);
     }
     println!("{}", num.iter().sum::<isize>() as f64 / num.len() as f64);
 }

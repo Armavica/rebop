@@ -48,52 +48,31 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     pub fn get_species(&self, s: &T) -> isize {
         self.species[s.as_index()]
     }
-    fn choose_reaction(&mut self) -> Option<(usize, f64)> {
-        let rates: Vec<f64> = self.rates.iter().map(|r| r.rate(&self.species)).collect();
-        let total_rate: f64 = rates.iter().sum();
-        if total_rate <= 0. {
-            return None;
-        }
-        let exp = Exp::new(total_rate).unwrap();
-        let reaction_time = exp.sample(&mut self.rng);
-        let mut reaction_choice = total_rate * self.rng.gen::<f64>();
-        for (i, &rate) in rates.iter().enumerate() {
-            if rate >= reaction_choice {
-                return Some((i, reaction_time));
-            }
-            reaction_choice -= rate;
-        }
-        unreachable!()
-    }
-    pub fn step(&mut self) -> bool {
-        match self.choose_reaction() {
-            Some((reaction, reaction_time)) => {
-                for (i, &r) in self.reactions[reaction].iter().enumerate() {
-                    self.species[i] += r;
-                }
-                self.t += reaction_time;
-                true
-            }
-            None => false,
-        }
-    }
-    pub fn advance_until(&mut self, tmax: f64) -> Vec<(f64, [isize; N])> {
-        let mut r = vec![(self.t, self.species.clone())];
+    pub fn advance_until(&mut self, tmax: f64) {
         while self.t < tmax {
-            if !self.step() {
+            let rates: Vec<f64> = self.rates.iter().map(|r| r.rate(&self.species)).collect();
+            let total_rate: f64 = rates.iter().sum();
+            if total_rate <= 0. {
                 self.t = tmax;
+                return
             }
-            r.push((self.t, self.species.clone()));
+            self.t += Exp::new(total_rate).unwrap().sample(&mut self.rng);
+            if self.t > tmax {
+                self.t = tmax;
+                return
+            }
+            let mut reaction_choice = total_rate * self.rng.gen::<f64>();
+            for (ireaction, &rate) in rates.iter().enumerate() {
+                if rate >= reaction_choice {
+                    for (i, &r) in self.reactions[ireaction].iter().enumerate() {
+                        self.species[i] += r;
+                    }
+                    break
+                }
+                reaction_choice -= rate;
+            }
         }
-        r
     }
-    // pub fn advance_until(&mut self, tmax: f64) {
-    //     while self.t < tmax {
-    //         if !self.step() {
-    //             self.t = tmax;
-    //         }
-    //     }
-    // }
 }
 
 pub struct Rate<T: AsIndex> {
@@ -167,6 +146,7 @@ mod tests {
         dimers.add_reaction(Rate::new(0.1, &[SRate::LMA(Dimers::M)]), [0, -1, 0, 0]);
         dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::P)]), [0, 0, -1, 0]);
         dimers.advance_until(1.);
+        println!("{:?}", dimers.species);
         assert_eq!(dimers.get_species(&Dimers::G), 1);
         assert!(1000 < dimers.get_species(&Dimers::D));
         assert!(dimers.get_species(&Dimers::D) < 10000);

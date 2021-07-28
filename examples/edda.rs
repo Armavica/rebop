@@ -62,12 +62,6 @@ fn main() {
             Rate::new(1.0, &[SRate::LMA(Edda::U8)]),
             [0, 0, 0, -1, 0, 0],
         );
-        let _trace = problem.advance_until(100.);
-        // println!("{}", trace.iter().map(|(_, s)| s[0]).sum::<isize>());
-        // println!("{}", trace.iter().map(|(_, s)| s[1]).sum::<isize>());
-        // println!("{}", trace.iter().map(|(_, s)| s[2]).sum::<isize>());
-        // println!("{}", trace.iter().map(|(_, s)| s[3]).sum::<isize>());
-        // println!("{}", trace.iter().map(|(_, s)| s[4]).sum::<isize>());
-        // println!("{}", trace.iter().map(|(_, s)| s[5]).sum::<isize>());
+        problem.advance_until(100.);
     }
 }

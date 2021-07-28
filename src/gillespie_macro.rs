@@ -25,35 +25,23 @@ macro_rules! define_system {
                     rng: SmallRng::from_entropy()
                 }
             }
-            /// Proceed and execute the next reaction to happen.
-            ///
-            /// Returns whether a reaction actually happened (it could
-            /// not happen if all the rates are 0).
-            #[allow(unused_assignments)]
-            fn step(&mut self) -> bool {
-                $(let $rname = $crate::reaction! { self: $($r),+ => $($p),+ @ $rate });*;
-                let total_rate = 0. $(+ $rname)*;
-                if total_rate <= 0. {
-                    return false
-                }
-                let exp = Exp::new(total_rate).unwrap();
-                self.t += exp.sample(&mut self.rng);
-                let mut reaction_choice = total_rate * self.rng.gen::<f64>();
-                $crate::choice!(self reaction_choice; $($rname: $($r),* => $($p),*);*);
-                true
-            }
             /// Simulate the problem until `t = tmax`.
-            ///
-            /// Returns the list of all changes of the state.
-            fn advance_until(&mut self, tmax: f64) -> Vec<Self> {
-                let mut r = vec![self.clone()];
+            fn advance_until(&mut self, tmax: f64) {
                 while self.t < tmax {
-                    if !self.step() {
+                    $(let $rname = $crate::reaction! { self: $($r),+ => $($p),+ @ $rate });*;
+                    let total_rate = 0. $(+ $rname)*;
+                    if total_rate <= 0. {
                         self.t = tmax;
+                        return
                     }
-                    r.push(self.clone());
+                    self.t += Exp::new(total_rate).unwrap().sample(&mut self.rng);
+                    if self.t > tmax {
+                        self.t = tmax;
+                        return
+                    }
+                    let mut reaction_choice = total_rate * self.rng.gen::<f64>();
+                    $crate::choice!(self reaction_choice; $($rname: $($r),* => $($p),*);*);
                 }
-                r
             }
         }
     }

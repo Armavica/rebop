@@ -2,6 +2,7 @@ use rand::distributions::Distribution;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 use rand_distr::Exp;
+use std::cmp::Ordering;
 
 pub trait AsIndex {
     fn as_index(&self) -> usize;
@@ -28,7 +29,7 @@ pub struct Gillespie<T: AsIndex, const N: usize> {
 impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     pub fn new(species: [isize; N]) -> Self {
         Gillespie {
-            species: species,
+            species,
             t: 0.,
             rates: Vec::new(),
             reactions: Vec::new(),
@@ -50,26 +51,31 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     }
     pub fn advance_until(&mut self, tmax: f64) {
         while self.t < tmax {
-            let rates: Vec<f64> = self.rates.iter().map(|r| r.rate(&self.species)).collect();
-            let total_rate: f64 = rates.iter().sum();
-            if total_rate <= 0. {
+            let mut total_rate = 0.;
+            let mut cumulative_rates = Vec::with_capacity(self.rates.len());
+            for r in &self.rates {
+                total_rate += r.rate(&self.species);
+                cumulative_rates.push(total_rate);
+            }
+            if total_rate.partial_cmp(&0.) != Some(Ordering::Greater) {
                 self.t = tmax;
                 return
             }
+            // unwrap is safe because we just checked that total_rate > 0
             self.t += Exp::new(total_rate).unwrap().sample(&mut self.rng);
             if self.t > tmax {
                 self.t = tmax;
                 return
             }
-            let mut reaction_choice = total_rate * self.rng.gen::<f64>();
-            for (ireaction, &rate) in rates.iter().enumerate() {
-                if rate >= reaction_choice {
-                    for (i, &r) in self.reactions[ireaction].iter().enumerate() {
-                        self.species[i] += r;
-                    }
-                    break
-                }
-                reaction_choice -= rate;
+            let chosen_rate = total_rate * self.rng.gen::<f64>();
+            let ireaction = match cumulative_rates.binary_search_by(
+                |w| if *w <= chosen_rate { Ordering::Less } else { Ordering::Greater }) {
+                Ok(ireaction) | Err(ireaction) => ireaction,
+            };
+            // here we have ireaction < self.reactions.len() because chosen_rate < total_rate
+            // FIXME: remove the bound check
+            for (i, &r) in self.reactions[ireaction].iter().enumerate() {
+                self.species[i] += r;
             }
         }
     }

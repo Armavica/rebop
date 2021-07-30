@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! define_system {
     ( $name:ident { $($species:ident),* }
-      $($rname:ident : $($r:ident),* => $($p:ident),* @ $rate:expr)+
+      $($rname:ident : $($r:ident),* => $($p:ident),* @ $rate:expr)*
       ) => {
         use rand::distributions::Distribution;
         use rand::{Rng, SeedableRng};
@@ -107,6 +107,20 @@ mod tests {
         birth_death.advance_until(100.);
         assert!(50 < birth_death.A);
         assert!(birth_death.A < 200);
+    }
+    #[test]
+    fn no_reactions() {
+        define_system! {
+            FooBarBuz { Foo, Bar, Buz }
+        }
+        let mut foobarbuz = FooBarBuz::new();
+        foobarbuz.Foo = 42;
+        foobarbuz.Bar = 1337;
+        foobarbuz.advance_until(1e20);
+        assert_eq!(foobarbuz.t, 1e20);
+        assert_eq!(foobarbuz.Foo, 42);
+        assert_eq!(foobarbuz.Bar, 1337);
+        assert_eq!(foobarbuz.Buz, 0);
     }
 }
 

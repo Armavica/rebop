@@ -9,8 +9,8 @@ define_system! {
     r_transcription : gene             => gene, mRNA    @ 25.
     r_translation   : mRNA             => mRNA, protein @ 1000.
     r_dimerization  : protein, protein => dimer         @ 0.001
-    r_decay_mRNA    : mRNA             => nil           @ 0.1
-    r_decay_protein : protein          => nil           @ 1.
+    r_decay_mRNA    : mRNA             =>               @ 0.1
+    r_decay_protein : protein          =>               @ 1.
 }
 ```
 

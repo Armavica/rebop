@@ -40,8 +40,8 @@ fn macro_dimers(c: &mut Criterion) {
         r_transcription : G    => G, M @ 25.
         r_translation   : M    => M, P @ 1000.
         r_dimerization  : P, P => D    @ 0.001
-        r_decay_mrna    : M    => nil  @ 0.1
-        r_decay_prot    : P    => nil  @ 1.
+        r_decay_mrna    : M    =>      @ 0.1
+        r_decay_prot    : P    =>      @ 1.
     }
     c.bench_function("macro_dimers", |b| {
         b.iter(|| {
@@ -70,7 +70,7 @@ fn dimers(c: &mut Criterion) {
 fn macro_dimers2(c: &mut Criterion) {
     define_system! {
         Dimers { A, A_A, AA }
-        r_decay_monomer   : A    => nil   @ 1.
+        r_decay_monomer   : A    =>       @ 1.
         r_dimerization    : A, A => A_A   @ 1. / 500.
         r_monomerization  : A_A  => A, A  @ 0.5
         r_irreversible    : A_A  => AA    @ 1. / 25.

@@ -39,8 +39,8 @@ macro_rules! define_system {
                         self.t = tmax;
                         return
                     }
-                    let mut reaction_choice = total_rate * self.rng.gen::<f64>();
-                    $crate::choice!(self reaction_choice; $($rname: $($r),* => $($p),*);*);
+                    let reaction_choice = total_rate * self.rng.gen::<f64>();
+                    $crate::choice!(self reaction_choice 0.; $($rname: $($r),* => $($p),*);*);
                 }
             }
         }
@@ -49,20 +49,19 @@ macro_rules! define_system {
 
 #[macro_export]
 macro_rules! choice {
-    ($self:ident $rc:ident; $rname:ident: $($r:ident),* => $($p:ident),*;
+    ($self:ident $rc:ident $carry:expr; $rname:ident: $($r:ident),* => $($p:ident),*;
         $($tail:ident: $($tailr:ident),* => $($tailp:ident),*);*) => {
-        if $rc < $rname {
+        if $rc < $carry + $rname {
             $($self.$r -= 1;)*
             $($self.$p += 1;)*
         } else {
-            $rc -= $rname;
-            $crate::choice!($self $rc; $($tail: $($tailr),* => $($tailp),*);*);
+            $crate::choice!($self $rc $carry + $rname; $($tail: $($tailr),* => $($tailp),*);*);
         }
     };
-    ($self:ident $rc:ident; $rname:ident: $($r:ident),* => $($p:ident),*) => {
+    ($self:ident $rc:ident $carry:expr; $rname:ident: $($r:ident),* => $($p:ident),*) => {
         $($self.$r -= 1;)*
         $($self.$p += 1;)*
-    }
+    };
 }
 
 #[cfg(test)]

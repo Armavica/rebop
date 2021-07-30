@@ -28,9 +28,9 @@ macro_rules! define_system {
             /// Simulate the problem until `t = tmax`.
             fn advance_until(&mut self, tmax: f64) {
                 while self.t < tmax {
-                    $(let $rname = $crate::rate! { self: $($r),* @ $rate });*;
+                    $(let $rname = $rate $(* (self.$r as f64))*;)*
                     let total_rate = 0. $(+ $rname)*;
-                    if total_rate <= 0. {
+                    if !(total_rate > 0.) {
                         self.t = tmax;
                         return
                     }
@@ -45,13 +45,6 @@ macro_rules! define_system {
             }
         }
     }
-}
-
-#[macro_export]
-macro_rules! rate {
-    ($self:ident: $($reagents:ident),* @ $rate:expr) => {
-       $rate $(* ($self.$reagents as f64))*
-    };
 }
 
 #[macro_export]

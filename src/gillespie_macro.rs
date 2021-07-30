@@ -40,7 +40,7 @@ macro_rules! define_system {
                         return
                     }
                     let reaction_choice = total_rate * self.rng.gen::<f64>();
-                    $crate::choice!(self reaction_choice 0.; $($rname: $($r),* => $($p),*);*);
+                    $crate::choice!(self reaction_choice 0.; $($rname: $($r),* => $($p),*;)*);
                 }
             }
         }
@@ -49,18 +49,16 @@ macro_rules! define_system {
 
 #[macro_export]
 macro_rules! choice {
-    ($self:ident $rc:ident $carry:expr; $rname:ident: $($r:ident),* => $($p:ident),*;
-        $($tail:ident: $($tailr:ident),* => $($tailp:ident),*);*) => {
+    ($self:ident $rc:ident $carry:expr; ) => {};
+    ($self:ident $rc:ident $carry:expr;
+     $rname:ident: $($r:ident),* => $($p:ident),*;
+     $($tail:ident: $($tailr:ident),* => $($tailp:ident),*;)*) => {
         if $rc < $carry + $rname {
             $($self.$r -= 1;)*
             $($self.$p += 1;)*
         } else {
-            $crate::choice!($self $rc $carry + $rname; $($tail: $($tailr),* => $($tailp),*);*);
+            $crate::choice!($self $rc $carry + $rname; $($tail: $($tailr),* => $($tailp),*;)*);
         }
-    };
-    ($self:ident $rc:ident $carry:expr; $rname:ident: $($r:ident),* => $($p:ident),*) => {
-        $($self.$r -= 1;)*
-        $($self.$p += 1;)*
     };
 }
 

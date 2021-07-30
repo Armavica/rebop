@@ -19,9 +19,9 @@ fn macro_sir(c: &mut Criterion) {
     });
 }
 
-fn sir(c: &mut Criterion) {
+fn api_sir(c: &mut Criterion) {
     index_enum! { enum SIR { S, I, R } }
-    c.bench_function("sir", |b| {
+    c.bench_function("api_sir", |b| {
         b.iter(|| {
             let mut sir = Gillespie::new([9999, 1, 0]);
             sir.add_reaction(
@@ -52,9 +52,9 @@ fn macro_dimers(c: &mut Criterion) {
     });
 }
 
-fn dimers(c: &mut Criterion) {
+fn api_dimers(c: &mut Criterion) {
     index_enum! { enum Dimers { G, M, P, D } }
-    c.bench_function("dimers", |b| {
+    c.bench_function("api_dimers", |b| {
         b.iter(|| {
             let mut dimers = Gillespie::new([1, 0, 0, 0]);
             dimers.add_reaction(Rate::new(25., &[SRate::LMA(Dimers::G)]), [0, 1, 0, 0]);
@@ -84,9 +84,9 @@ fn macro_dimers2(c: &mut Criterion) {
     });
 }
 
-fn dimers2(c: &mut Criterion) {
+fn api_dimers2(c: &mut Criterion) {
     index_enum! { enum Dimers { A, A_A, AA } }
-    c.bench_function("dimers2", |b| {
+    c.bench_function("api_dimers2", |b| {
         b.iter(|| {
             let mut dimers = Gillespie::new([100000, 0, 0]);
             dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::A)]), [-1, 0, 0]);
@@ -164,9 +164,9 @@ fn macro_vilar(c: &mut Criterion) {
 }
 
 criterion_group!(benches,
-    sir, macro_sir,
-    dimers, macro_dimers,
-    dimers2, macro_dimers2,
+    api_sir, macro_sir,
+    api_dimers, macro_dimers,
+    api_dimers2, macro_dimers2,
     macro_mm,
     macro_vilar,
     );

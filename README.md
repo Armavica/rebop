@@ -1,7 +1,10 @@
 # bebop
 
-Two goals of this project are efficiency and practicality.  The
-following macro defines the corresponding reaction network:
+Bebop is a fast stochastic simulator for well-mixed chemical reaction
+networks.
+
+Two goals of this project are efficiency and convenience.
+The following macro defines a reaction network in a natural manner:
 
 ``` rust
 define_system! {
@@ -51,6 +54,31 @@ fn main() {
 
 which can produce an output such as
 ![SIR](https://github.com/Armavica/bebop/blob/master/sir.png)
+
+## Performance
+
+On typical example networks, bebop outperformed all other software.
+
+*Disclaimer*: Most of these softwares contain much more features than
+bebop (e.g. spatial models, custom reaction rates, etc.).  Some of these
+features might require them to make compromises on speed.  Moreover,
+some can be conveniently used through wrappers (for example when the
+simulation code is written in C++ but the model is expressible in
+Python).  These wrappers can also add a significant overhead.
+
+To benchmark these softwares in the fairest possible conditions, we
+considered for everyone a typical situation where the model was just
+modified and we want to simulate it `N` times.  So the (re-)compilation
+time is included in this benchmark.
+
+Example for the Vilar oscillator (*Mechanisms of noise-resistance in
+genetic oscillators*, Vilar et al., PNAS 2002).  Here, we simulate this
+model from `t=0` to `t=200`, saving the state at time intervals of `1`.
+
+![Vilar oscillator performance](https://github.com/Armavica/bebop/blob/master/vilar.png)
+
+Bebop is the fastest, both per simulation, and with compilation time
+included.
 
 ## Not (yet) features
 

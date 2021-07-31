@@ -1,6 +1,6 @@
-use bebop::define_system;
-use bebop::gillespie::{AsIndex, Gillespie, Rate, SRate};
-use bebop::index_enum;
+use rebop::define_system;
+use rebop::gillespie::{AsIndex, Gillespie, Rate, SRate};
+use rebop::index_enum;
 use criterion::{criterion_group, criterion_main, Criterion};
 
 fn macro_sir(c: &mut Criterion) {

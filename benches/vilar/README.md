@@ -4,7 +4,7 @@ We simulated the Vilar oscillator model with several programs.
 
 ![Vilar oscillator benchmark](vilar.png)
 
-## Bebop (Rust)
+## rebop (Rust)
 
 `hyperfine 'touch vilar.rs && cargo run --release --bin vilar'`
 

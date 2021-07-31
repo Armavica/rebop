@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] -- 2021-08-01
+
+Actual first release on [crates.io](https://crates.io).
+
+### Changed
+
+* Renamed the project from `bebop` to `rebop` because the name was taken.
+
 ## [0.2.0] -- 2021-08-01
 
 First release on [crates.io](https://crates.io).

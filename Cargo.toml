@@ -1,12 +1,12 @@
 [package]
-name = "bebop"
-version = "0.2.0"
+name = "rebop"
+version = "0.3.0"
 authors = ["Virgile Andreani <armavica@ulminfo.fr>"]
 edition = "2018"
 license = "MIT"
 categories = ["algorithms", "mathematics", "science", "simulation"]
-homepage = "https://armavica.github.io/bebop/"
-repository = "https://github.com/Armavica/bebop/"
+homepage = "https://armavica.github.io/rebop/"
+repository = "https://github.com/Armavica/rebop/"
 description = "A fast stochastic simulator for chemical reaction networks"
 keywords = ["gillespie-algorithm", "systems-biology", "stochastic"]
 

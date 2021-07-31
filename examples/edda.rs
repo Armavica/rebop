@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
-use bebop::gillespie::*;
-use bebop::index_enum;
+use rebop::gillespie::*;
+use rebop::index_enum;
 
 index_enum! { enum Edda { U1, U2, U7, U8, U5, U6 } }
 

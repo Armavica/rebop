@@ -1,6 +1,6 @@
-# bebop
+# rebop
 
-Bebop is a fast stochastic simulator for well-mixed chemical reaction
+rebop is a fast stochastic simulator for well-mixed chemical reaction
 networks.
 
 Two goals of this project are efficiency and convenience.
@@ -53,14 +53,14 @@ fn main() {
 ```
 
 which can produce an output such as
-![SIR](https://github.com/Armavica/bebop/blob/master/sir.png)
+![SIR](https://github.com/Armavica/rebop/blob/master/sir.png)
 
 ## Performance
 
-On typical example networks, bebop outperformed all other software.
+On typical example networks, rebop outperformed all other software.
 
 *Disclaimer*: Most of these softwares contain much more features than
-bebop (e.g. spatial models, custom reaction rates, etc.).  Some of these
+rebop (e.g. spatial models, custom reaction rates, etc.).  Some of these
 features might require them to make compromises on speed.  Moreover,
 some can be conveniently used through wrappers (for example when the
 simulation code is written in C++ but the model is expressible in
@@ -75,9 +75,9 @@ Example for the Vilar oscillator (*Mechanisms of noise-resistance in
 genetic oscillators*, Vilar et al., PNAS 2002).  Here, we simulate this
 model from `t=0` to `t=200`, saving the state at time intervals of `1`.
 
-![Vilar oscillator performance](https://github.com/Armavica/bebop/blob/master/benches/vilar/vilar.png)
+![Vilar oscillator performance](https://github.com/Armavica/rebop/blob/master/benches/vilar/vilar.png)
 
-Bebop is the fastest, both per simulation, and with compilation time
+rebop is the fastest, both per simulation, and with compilation time
 included.
 
 ## Not (yet) features

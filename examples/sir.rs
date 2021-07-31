@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use bebop::define_system;
+use rebop::define_system;
 
 define_system! {
     r_inf r_heal;

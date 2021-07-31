@@ -1,6 +1,6 @@
 #![allow(mixed_script_confusables)]
 
-use bebop::define_system;
+use rebop::define_system;
 
 define_system! {
     αA αpA αR αpR βA βR δMA δMR δA δR γA γR γC θA θR;

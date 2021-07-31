@@ -57,7 +57,7 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     /// Returns the number of species in the problem.
     ///
     /// ```
-    /// use bebop::gillespie::Gillespie;
+    /// use rebop::gillespie::Gillespie;
     /// let mut p: Gillespie<usize, 4> = Gillespie::new([0, 1, 10, 100]);
     /// assert_eq!(p.nb_species(), 4);
     /// ```
@@ -67,7 +67,7 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     /// Returns the number of reactions in the problem.
     ///
     /// ```
-    /// use bebop::gillespie::Gillespie;
+    /// use rebop::gillespie::Gillespie;
     /// let mut p: Gillespie<usize, 4> = Gillespie::new([0, 1, 10, 100]);
     /// assert_eq!(p.nb_reactions(), 0);
     /// ```
@@ -79,8 +79,8 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     /// `rate` is the reaction rate and `reaction` is an array
     /// describing the state change as a result of the reaction.
     /// ```
-    /// use bebop::index_enum;
-    /// use bebop::gillespie::{AsIndex, Gillespie, Rate, SRate};
+    /// use rebop::index_enum;
+    /// use rebop::gillespie::{AsIndex, Gillespie, Rate, SRate};
     /// index_enum! { enum SIR { S, I, R } }
     /// let mut sir = Gillespie::new([9999, 1, 0]);
     /// // S + I -> I + I with rate 1e-5
@@ -102,7 +102,7 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     /// Returns the current amount of a species.
     ///
     /// ```
-    /// use bebop::gillespie::Gillespie;
+    /// use rebop::gillespie::Gillespie;
     /// let p: Gillespie<usize, 4> = Gillespie::new([0, 1, 10, 100]);
     /// assert_eq!(p.get_species(&2), 10);
     /// ```
@@ -112,8 +112,8 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     /// Simulates the problem until `tmax`.
     ///
     /// ```
-    /// use bebop::index_enum;
-    /// use bebop::gillespie::{AsIndex, Gillespie, Rate, SRate};
+    /// use rebop::index_enum;
+    /// use rebop::gillespie::{AsIndex, Gillespie, Rate, SRate};
     /// index_enum! { enum Dimers { G, M, P, D } }
     /// let mut dimers = Gillespie::new([1, 0, 0, 0]);
     /// dimers.add_reaction(Rate::new(25., &[SRate::LMA(Dimers::G)]), [0, 1, 0, 0]);
@@ -193,7 +193,7 @@ impl<T: AsIndex + Clone> Rate<T> {
     /// Creates a reaction rate with a numerical constant and several factors.
     ///
     /// ```
-    /// use bebop::gillespie::{Rate, SRate};
+    /// use rebop::gillespie::{Rate, SRate};
     /// // r1 = 25 C₀ C₁
     /// let r1 = Rate::new(25., &[SRate::LMA(0), SRate::LMA(1)]);
     /// // r2 = 4 C₀ C₁ / (10 + C₀)

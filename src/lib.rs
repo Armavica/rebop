@@ -1,4 +1,4 @@
-//! Bebop is a fast stochastic simulator for chemical reaction networks.
+//! rebop is a fast stochastic simulator for chemical reaction networks.
 //!
 //! It offers two independent APIs to describe and simulate reaction
 //! networks: a macro-based implemented by [`define_system`], and a

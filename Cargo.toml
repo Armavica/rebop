@@ -8,7 +8,7 @@ categories = ["algorithms", "mathematics", "science", "simulation"]
 homepage = "https://armavica.github.io/bebop/"
 repository = "https://github.com/Armavica/bebop/"
 description = "A fast stochastic simulator for chemical reaction networks"
-keywords = ["gillespie-algorithm", "systems-biology", "stochastic-simulation"]
+keywords = ["gillespie-algorithm", "systems-biology", "stochastic"]
 
 [dependencies]
 rand = { version = "0.8.4", features = ["small_rng"] }

@@ -3,6 +3,7 @@ name = "bebop"
 version = "0.1.0"
 authors = ["Virgile Andreani <armavica@ulminfo.fr>"]
 edition = "2018"
+license = "MIT"
 
 [dependencies]
 rand = { version = "0.8.4", features = ["small_rng"] }

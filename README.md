@@ -3,22 +3,23 @@
 Two goals of this project are efficiency and practicality.  The
 following macro defines the corresponding reaction network:
 
-``` Rust
+``` rust
 define_system! {
+    r_tx r_tl r_dim r_decay_mrna r_decay_prot;
     Dimers { gene, mRNA, protein, dimer }
-    r_transcription : gene             => gene, mRNA    @ 25.
-    r_translation   : mRNA             => mRNA, protein @ 1000.
-    r_dimerization  : protein, protein => dimer         @ 0.001
-    r_decay_mRNA    : mRNA             =>               @ 0.1
-    r_decay_protein : protein          =>               @ 1.
+    transcription : gene             => gene, mRNA    @ r_tx
+    translation   : mRNA             => mRNA, protein @ r_tl
+    dimerization  : protein, protein => dimer         @ r_dim
+    decay_mRNA    : mRNA             =>               @ r_decay_mrna
+    decay_protein : protein          =>               @ r_decay_prot
 }
 ```
 
-To simulate the system, instantiate a new problem, set the initial
-values, and simulate:
+To simulate the system: instantiate a new problem, set the initial
+values, the parameters, and launch the simulation.
 
-``` Rust
-let mut problem = Dimers::new();
+``` rust
+let mut problem = Dimers::with_parameters(25., 1000., 0.001, 0.1, 1.);
 problem.gene = 1;
 problem.advance_until(1.);
 println!("{}: dimer = {}", problem.t, problem.dimer);
@@ -26,15 +27,18 @@ println!("{}: dimer = {}", problem.t, problem.dimer);
 
 Or for the classic SIR example:
 
-``` Rust
+``` rust
 define_system! {
+    r_inf r_heal;
     SIR { S, I, R }
-    r_infection: S, I => I, I @ 0.1/1000.
-    r_healing  : I    => R    @ 0.01
+    infection: S, I => I, I @ r_inf
+    healing  : I    => R    @ r_heal
 }
 
 fn main() {
     let mut problem = SIR::new();
+    problem.r_inf = 0.1 / 1000.;
+    problem.r_heal = 0.01;
     problem.S = 999;
     problem.I = 1;
     println!("time,S,I,R");

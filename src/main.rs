@@ -1,36 +1,52 @@
-#![allow(non_snake_case)]
+#![allow(mixed_script_confusables)]
 
 use bebop::define_system;
 
 define_system! {
-    SIR { S, I, R }
-    r_inf : S, I => I, I @ 0.1/1000.
-    r_heal: I => R @ 0.01
+    αA αpA αR αpR βA βR δMA δMR δA δR γA γR γC θA θR;
+    Vilar { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C }
+    r_activation_a      : Da, A => Dpa      @ γA
+    r_activation_r      : Dr, A => Dpr      @ γR
+    r_deactivation_a    : Dpa   => Da, A    @ θA
+    r_deactivation_r    : Dpr   => Dr, A    @ θR
+    r_transcription_a   : Da    => Da, Ma   @ αA
+    r_transcription_r   : Dr    => Dr, Mr   @ αR
+    r_transcription_p_a : Dpa   => Dpa, Ma  @ αpA
+    r_transcription_p_r : Dpr   => Dpr, Mr  @ αpR
+    r_translation_a     : Ma    => Ma, A    @ βA
+    r_translation_r     : Mr    => Mr, R    @ βR
+    r_complexation      : A, R  => C        @ γC
+    r_decomplexation    : C     => R        @ δA
+    r_decay_mRNA_a      : Ma    =>          @ δMA
+    r_decay_mRNA_r      : Mr    =>          @ δMR
+    r_decay_prot_a      : A     =>          @ δA
+    r_decay_prot_r      : R     =>          @ δR
 }
 
 fn main() {
-    let mut problem = SIR::new();
-    problem.S = 999;
-    problem.I = 1;
-    let trace: Vec<SIR> = problem.advance_until(250.);
-    println!("time,S,I,R");
-    for state in &trace {
-        println!("{},{},{},{}", state.t, state.S, state.I, state.R);
+    let mut vilar = Vilar::new();
+    vilar.αA = 50.;
+    vilar.αpA = 500.;
+    vilar.αR = 0.01;
+    vilar.αpR = 50.;
+    vilar.βA = 50.;
+    vilar.βR = 5.;
+    vilar.δMA = 10.;
+    vilar.δMR = 0.5;
+    vilar.δA = 1.;
+    vilar.δR = 0.2;
+    vilar.γA = 1.;
+    vilar.γR = 1.;
+    vilar.γC = 2.;
+    vilar.θA = 50.;
+    vilar.θR = 100.;
+    vilar.Da = 1;
+    vilar.Dr = 1;
+    vilar.A = 10;
+    vilar.R = 10;
+    vilar.C = 10;
+    for i in 1..=200 {
+        vilar.advance_until(i as f64);
+        println!("{}, {}, {}", vilar.A, vilar.R, vilar.C);
     }
 }
-
-// define_system! {
-//     Dimers { gene, mRNA, protein, dimer }
-//     r_transcription : gene             => gene, mRNA    @ 25.
-//     r_translation   : mRNA             => mRNA, protein @ 1000.
-//     r_dimerization  : protein, protein => dimer         @ 0.001
-//     r_decay_mRNA    : mRNA             => nil           @ 0.1
-//     r_decay_protein : protein          => nil           @ 1.
-// }
-
-// fn simulate_once() -> isize {
-//     let mut problem = Dimers::new();
-//     problem.gene = 1;
-//     problem.advance_until(1.);
-//     problem.dimer
-// }

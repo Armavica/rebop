@@ -5,13 +5,16 @@ use criterion::{criterion_group, criterion_main, Criterion};
 
 fn macro_sir(c: &mut Criterion) {
     define_system! {
+        r_inf r_heal;
         SIR { S, I, R }
-        r_inf : S, I => I, I @ 0.1/10000.
-        r_heal: I => R @ 0.05
+        infection   : S, I  => I, I @ r_inf
+        healing     : I     => R    @ r_heal
     }
     c.bench_function("macro_sir", |b| {
         b.iter(|| {
             let mut sir = SIR::new();
+            sir.r_inf = 0.1 / 10000.;
+            sir.r_heal = 0.05;
             sir.S = 9999;
             sir.I = 1;
             sir.advance_until(1000.);
@@ -36,16 +39,22 @@ fn api_sir(c: &mut Criterion) {
 
 fn macro_dimers(c: &mut Criterion) {
     define_system! {
+        r_tx r_tl r_dim r_decay_mrna r_decay_prot;
         Dimers { G, M, P, D }
-        r_transcription : G    => G, M @ 25.
-        r_translation   : M    => M, P @ 1000.
-        r_dimerization  : P, P => D    @ 0.001
-        r_decay_mrna    : M    =>      @ 0.1
-        r_decay_prot    : P    =>      @ 1.
+        transcription : G    => G, M @ r_tx
+        translation   : M    => M, P @ r_tl
+        dimerization  : P, P => D    @ r_dim
+        decay_mrna    : M    =>      @ r_decay_mrna
+        decay_prot    : P    =>      @ r_decay_prot
     }
     c.bench_function("macro_dimers", |b| {
         b.iter(|| {
             let mut dimers = Dimers::new();
+            dimers.r_tx = 25.;
+            dimers.r_tl = 1000.;
+            dimers.r_dim = 0.001;
+            dimers.r_decay_mrna = 0.1;
+            dimers.r_decay_prot = 1.;
             dimers.G = 1;
             dimers.advance_until(6.);
         })
@@ -69,15 +78,20 @@ fn api_dimers(c: &mut Criterion) {
 
 fn macro_dimers2(c: &mut Criterion) {
     define_system! {
+        r_decay_monomer r_dimerization r_monomerization r_irreversible;
         Dimers { A, A_A, AA }
-        r_decay_monomer   : A    =>       @ 1.
-        r_dimerization    : A, A => A_A   @ 1. / 500.
-        r_monomerization  : A_A  => A, A  @ 0.5
-        r_irreversible    : A_A  => AA    @ 1. / 25.
+        decay_monomer   : A    =>       @ r_decay_monomer
+        dimerization    : A, A => A_A   @ r_dimerization
+        monomerization  : A_A  => A, A  @ r_monomerization
+        irreversible    : A_A  => AA    @ r_irreversible
     }
     c.bench_function("macro_dimers2", |b| {
         b.iter(|| {
             let mut dimers = Dimers::new();
+            dimers.r_decay_monomer = 1.;
+            dimers.r_dimerization = 1. / 500.;
+            dimers.r_monomerization = 0.5;
+            dimers.r_irreversible = 1. / 25.;
             dimers.A = 100000;
             dimers.advance_until(25.);
         })
@@ -100,14 +114,18 @@ fn api_dimers2(c: &mut Criterion) {
 
 fn macro_mm(c: &mut Criterion) {
     define_system! {
+        r_fwd r_bwd r_cat;
         MM { E, S, ES, P }
-        r_forward : E, S => ES      @ 0.0017
-        r_backward: ES   => E, S    @ 0.5
-        r_cat     : ES   => P       @ 0.1
+        forward : E, S => ES      @ r_fwd
+        backward: ES   => E, S    @ r_bwd
+        cat     : ES   => P       @ r_cat
     }
     c.bench_function("macro_mm", |b| {
         b.iter(|| {
             let mut mm = MM::new();
+            mm.r_fwd = 0.0017;
+            mm.r_bwd = 0.5;
+            mm.r_cat = 0.1;
             mm.E = 301;
             mm.S = 120;
             mm.advance_until(100.);
@@ -116,43 +134,30 @@ fn macro_mm(c: &mut Criterion) {
 }
 
 fn macro_vilar(c: &mut Criterion) {
-    const alphaA: f64 = 50.;
-    const alphapA: f64 = 500.;
-    const alphaR: f64 = 0.01;
-    const alphapR: f64 = 50.;
-    const betaA: f64 = 50.;
-    const betaR: f64 = 5.;
-    const deltaMA: f64 = 10.;
-    const deltaMR: f64 = 0.5;
-    const deltaA: f64 = 1.;
-    const deltaR: f64 = 0.2;
-    const gammaA: f64 = 1.;
-    const gammaR: f64 = 1.;
-    const gammaC: f64 = 2.;
-    const thetaA: f64 = 50.;
-    const thetaR: f64 = 100.;
     define_system! {
+        alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
         Vilar { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C }
-        r_activation_a      : Da, A => Dpa      @ gammaA
-        r_activation_r      : Dr, A => Dpr      @ gammaR
-        r_deactivation_a    : Dpa   => Da, A    @ thetaA
-        r_deactivation_r    : Dpr   => Dr, A    @ thetaR
-        r_transcription_a   : Da    => Da, Ma   @ alphaA
-        r_transcription_r   : Dr    => Dr, Mr   @ alphaR
-        r_transcription_p_a : Dpa   => Dpa, Ma  @ alphapA
-        r_transcription_p_r : Dpr   => Dpr, Mr  @ alphapR
-        r_translation_a     : Ma    => Ma, A    @ betaA
-        r_translation_r     : Mr    => Mr, R    @ betaR
-        r_complexation      : A, R  => C        @ gammaC
-        r_decomplexation    : C     => R        @ deltaA
-        r_decay_mRNA_a      : Ma    =>          @ deltaMA
-        r_decay_mRNA_r      : Mr    =>          @ deltaMR
-        r_decay_prot_a      : A     =>          @ deltaA
-        r_decay_prot_r      : R     =>          @ deltaR
+        activation_a        : Da, A => Dpa      @ gammaA
+        activation_r        : Dr, A => Dpr      @ gammaR
+        deactivation_a      : Dpa   => Da, A    @ thetaA
+        deactivation_r      : Dpr   => Dr, A    @ thetaR
+        transcription_a     : Da    => Da, Ma   @ alphaA
+        transcription_r     : Dr    => Dr, Mr   @ alphaR
+        transcription_p_a   : Dpa   => Dpa, Ma  @ alphapA
+        transcription_p_r   : Dpr   => Dpr, Mr  @ alphapR
+        translation_a       : Ma    => Ma, A    @ betaA
+        translation_r       : Mr    => Mr, R    @ betaR
+        complexation        : A, R  => C        @ gammaC
+        decomplexation      : C     => R        @ deltaA
+        decay_mRNA_a        : Ma    =>          @ deltaMA
+        decay_mRNA_r        : Mr    =>          @ deltaMR
+        decay_prot_a        : A     =>          @ deltaA
+        decay_prot_r        : R     =>          @ deltaR
     }
     c.bench_function("macro_vilar", |b| {
         b.iter(|| {
-            let mut vilar = Vilar::new();
+            let mut vilar = Vilar::with_parameters(
+                50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.);
             vilar.Da = 1;
             vilar.Dr = 1;
             vilar.A = 10;

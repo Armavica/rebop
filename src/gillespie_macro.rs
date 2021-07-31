@@ -1,6 +1,8 @@
 #[macro_export]
 macro_rules! define_system {
-    ( $name:ident { $($species:ident),* }
+    (
+      $($param:ident)*;
+      $name:ident { $($species:ident),* }
       $($rname:ident : $($r:ident),* => $($p:ident),* @ $rate:expr)*
       ) => {
         use rand::distributions::Distribution;
@@ -11,7 +13,8 @@ macro_rules! define_system {
         #[allow(non_snake_case)]
         #[derive(Clone, Debug)]
         struct $name {
-            $($species:isize),*,
+            $($species:isize,)*
+            $($param:f64,)*
             t: f64,
             rng: SmallRng,
         }
@@ -20,13 +23,27 @@ macro_rules! define_system {
             /// species and the time.
             fn new() -> Self {
                 $name {
-                    $($species: 0),*,
+                    $($species: 0,)*
+                    $($param: f64::NAN,)*
+                    t: 0.,
+                    rng: SmallRng::from_entropy()
+                }
+            }
+            /// Constructs an object representing the problem, with the
+            /// species and the time.
+            #[allow(non_snake_case)]
+            fn with_parameters($($param: f64),*) -> Self {
+                $name {
+                    $($species: 0,)*
+                    $($param,)*
                     t: 0.,
                     rng: SmallRng::from_entropy()
                 }
             }
             /// Simulate the problem until `t = tmax`.
+            #[allow(non_snake_case)]
             fn advance_until(&mut self, tmax: f64) {
+                $(let $param = self.$param;)*
                 while self.t < tmax {
                     $(let $rname = $rate $(* (self.$r as f64))*;)*
                     let total_rate = 0. $(+ $rname)*;
@@ -46,7 +63,7 @@ macro_rules! define_system {
                 }
             }
         }
-    }
+    };
 }
 
 #[macro_export]
@@ -69,11 +86,14 @@ mod tests {
     #[test]
     fn sir() {
         define_system! {
+            r1 r2;
             SIR { S, I, R }
-            r_infection: S, I => I, I @ 0.1 / 10000.
-            r_remission: I => R @ 0.01
+            r_infection: S, I   => I, I @ r1
+            r_remission: I      => R    @ r2
         }
         let mut sir = SIR::new();
+        sir.r1 = 0.1 / 10000.;
+        sir.r2 = 0.01;
         sir.S = 9999;
         sir.I = 1;
         sir.advance_until(1000.);
@@ -82,14 +102,15 @@ mod tests {
     #[test]
     fn dimers() {
         define_system! {
+            rtx rtl rdi rdm rdp;
             Dimers { gene, mRNA, protein, dimer }
-            r_tx : gene             => gene, mRNA       @ 25.
-            r_tl : mRNA             => mRNA, protein    @ 1000.
-            r_di : protein, protein => dimer            @ 0.001
-            r_dm : mRNA             =>                  @ 0.1
-            r_dp : protein          =>                  @ 1.
+            r_tx : gene             => gene, mRNA       @ rtx
+            r_tl : mRNA             => mRNA, protein    @ rtl
+            r_di : protein, protein => dimer            @ rdi
+            r_dm : mRNA             =>                  @ rdm
+            r_dp : protein          =>                  @ rdp
         }
-        let mut dimers = Dimers::new();
+        let mut dimers = Dimers::with_parameters(25., 1000., 0.001, 0.1, 1.);
         dimers.gene = 1;
         dimers.advance_until(1.);
         assert_eq!(dimers.gene, 1);
@@ -99,25 +120,43 @@ mod tests {
     #[test]
     fn birth_death() {
         define_system! {
+            r_birth r_death;
             BirthDeath { A }
-            birth:      => A    @ 10.
-            death:  A   =>      @ 0.1
+            birth:      => A    @ r_birth
+            death:  A   =>      @ r_death
         }
         let mut birth_death = BirthDeath::new();
+        birth_death.r_birth = 10.;
+        birth_death.r_death = 0.1;
         birth_death.advance_until(100.);
         assert!(50 < birth_death.A);
         assert!(birth_death.A < 200);
     }
     #[test]
+    fn birth_death_forgot_a_parameter() {
+        define_system! {
+            r_birth r_death;
+            BirthDeath { A }
+            birth:      => A    @ r_birth
+            death:  A   =>      @ r_death
+        }
+        let mut birth_death = BirthDeath::new();
+        birth_death.r_birth = 10.;
+        birth_death.advance_until(100.);
+        assert!((birth_death.t - 100.).abs() < f64::EPSILON);
+        assert_eq!(birth_death.A, 0);
+    }
+    #[test]
     fn no_reactions() {
         define_system! {
+            ;
             FooBarBuz { Foo, Bar, Buz }
         }
         let mut foobarbuz = FooBarBuz::new();
         foobarbuz.Foo = 42;
         foobarbuz.Bar = 1337;
         foobarbuz.advance_until(1e20);
-        assert_eq!(foobarbuz.t, 1e20);
+        assert!((foobarbuz.t - 1e20).abs() < f64::EPSILON);
         assert_eq!(foobarbuz.Foo, 42);
         assert_eq!(foobarbuz.Bar, 1337);
         assert_eq!(foobarbuz.Buz, 0);

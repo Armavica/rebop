@@ -57,7 +57,9 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
                 total_rate += r.rate(&self.species);
                 cumulative_rates.push(total_rate);
             }
-            if total_rate.partial_cmp(&0.) != Some(Ordering::Greater) {
+            // we don't want to use partial_cmp, for performance
+            #[allow(clippy::neg_cmp_op_on_partial_ord)]
+            if !(total_rate > 0.) {
                 self.t = tmax;
                 return
             }

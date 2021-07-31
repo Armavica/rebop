@@ -30,6 +30,8 @@ macro_rules! define_system {
                 while self.t < tmax {
                     $(let $rname = $rate $(* (self.$r as f64))*;)*
                     let total_rate = 0. $(+ $rname)*;
+                    // we don't want to use partial_cmp, for performance
+                    #[allow(clippy::neg_cmp_op_on_partial_ord)]
                     if !(total_rate > 0.) {
                         self.t = tmax;
                         return

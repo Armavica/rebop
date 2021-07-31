@@ -19,6 +19,11 @@ name = "bebop"
 path = "src/main.rs"
 bench = false
 
+[[bin]]
+name = "vilar"
+path = "benches/vilar/vilar.rs"
+bench = false
+
 [[bench]]
 name = "my_benchmark"
 harness = false

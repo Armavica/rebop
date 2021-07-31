@@ -24,29 +24,28 @@ define_system! {
 }
 
 fn main() {
-    let mut vilar = Vilar::new();
-    vilar.αA = 50.;
-    vilar.αpA = 500.;
-    vilar.αR = 0.01;
-    vilar.αpR = 50.;
-    vilar.βA = 50.;
-    vilar.βR = 5.;
-    vilar.δMA = 10.;
-    vilar.δMR = 0.5;
-    vilar.δA = 1.;
-    vilar.δR = 0.2;
-    vilar.γA = 1.;
-    vilar.γR = 1.;
-    vilar.γC = 2.;
-    vilar.θA = 50.;
-    vilar.θR = 100.;
-    vilar.Da = 1;
-    vilar.Dr = 1;
-    vilar.A = 10;
-    vilar.R = 10;
-    vilar.C = 10;
-    for i in 1..=200 {
-        vilar.advance_until(i as f64);
-        println!("{}, {}, {}", vilar.A, vilar.R, vilar.C);
+    for _ in 0..100 {
+        let mut vilar = Vilar::new();
+        vilar.αA = 50.;
+        vilar.αpA = 500.;
+        vilar.αR = 0.01;
+        vilar.αpR = 50.;
+        vilar.βA = 50.;
+        vilar.βR = 5.;
+        vilar.δMA = 10.;
+        vilar.δMR = 0.5;
+        vilar.δA = 1.;
+        vilar.δR = 0.2;
+        vilar.γA = 1.;
+        vilar.γR = 1.;
+        vilar.γC = 2.;
+        vilar.θA = 50.;
+        vilar.θR = 100.;
+        vilar.Da = 1;
+        vilar.Dr = 1;
+        for i in 1..=200 {
+            vilar.advance_until(i as f64);
+            println!("{}, {}, {}", vilar.A, vilar.R, vilar.C);
+        }
     }
 }

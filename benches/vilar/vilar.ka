@@ -1,0 +1,42 @@
+%agent: Da()
+%agent: Dr()
+%agent: Dpa()
+%agent: Dpr()
+%agent: Ma()
+%agent: Mr()
+%agent: A()
+%agent: R()
+%agent: C()
+
+%var: 'alphaA'  50
+%var: 'alphapA' 500
+%var: 'alphaR'  0.01
+%var: 'alphapR' 50
+%var: 'betaA'   50
+%var: 'betaR'   5
+%var: 'deltaMA' 10
+%var: 'deltaMR' 0.5
+%var: 'deltaA'  1
+%var: 'deltaR'  0.2
+%var: 'gammaA'  1
+%var: 'gammaR'  1
+%var: 'gammaC'  2
+%var: 'thetaA'  50
+%var: 'thetaR'  100
+
+'activation A'      Da(), A()   <-> Dpa()     @ 'gammaA', 'thetaA'
+'activation R'      Dr(), A()   <-> Dpr()     @ 'gammaR', 'thetaR'
+'transcription A'   Da()       -> Da(), Ma()  @ 'alphaA'
+'transcription R'   Dr()       -> Dr(), Mr()  @ 'alphaR'
+'transcription pA'  Dpa()      -> Dpa(), Ma() @ 'alphapA'
+'transcription pR'  Dpr()      -> Dpr(), Mr() @ 'alphapR'
+'translation A'     Ma()       -> Ma(), A()   @ 'betaA'
+'translation R'     Mr()       -> Mr(), R()   @ 'betaR'
+'complexation'      A(), R()     -> C()       @ 'gammaC'
+'decomplexation'    C()        -> R()       @ 'deltaA'
+'decay mRNA A'      Ma()       ->         @ 'deltaMA'
+'decay mRNA R'      Mr()       ->         @ 'deltaMR'
+'decay prot A'      A()        ->         @ 'deltaA'
+'decay prot R'      R()        ->         @ 'deltaR'
+
+%init: 1    Da(), Dr()

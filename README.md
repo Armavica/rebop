@@ -75,7 +75,7 @@ Example for the Vilar oscillator (*Mechanisms of noise-resistance in
 genetic oscillators*, Vilar et al., PNAS 2002).  Here, we simulate this
 model from `t=0` to `t=200`, saving the state at time intervals of `1`.
 
-![Vilar oscillator performance](https://github.com/Armavica/bebop/blob/master/vilar.png)
+![Vilar oscillator performance](https://github.com/Armavica/bebop/blob/master/benches/vilar/vilar.png)
 
 Bebop is the fastest, both per simulation, and with compilation time
 included.

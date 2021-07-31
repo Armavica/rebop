@@ -1,0 +1,53 @@
+begin model
+    begin parameters
+        alphaA  50
+        alphapA 500
+        alphaR  0.01
+        alphapR 50
+        betaA   50
+        betaR   5
+        deltaMA 10
+        deltaMR 0.5
+        deltaA  1
+        deltaR  0.2
+        gammaA  1
+        gammaR  1
+        gammaC  2
+        thetaA  50
+        thetaR  100
+    end parameters
+    begin seed species
+        Da  1
+        Dr  1
+    end seed species
+    begin observables
+        Molecules Da Da()
+        Molecules Dr Dr()
+        Molecules Dpa Dpa()
+        Molecules Dpr Dpr()
+        Molecules Ma Ma()
+        Molecules Mr Mr()
+        Molecules A A()
+        Molecules R R()
+        Molecules C C()
+    end observables
+    begin reaction rules
+        Da() + A() <-> Dpa()    gammaA, thetaA
+        Dr() + A() <-> Dpr()    gammaR, thetaR
+        Da() -> Da() + Ma()     alphaA
+        Dr() -> Dr() + Mr()     alphaR
+        Dpa() -> Dpa() + Ma()   alphapA
+        Dpr() -> Dpr() + Mr()   alphapR
+        Ma() -> Ma() + A()      betaA
+        Mr() -> Mr() + R()      betaR
+        A() + R() -> C()        gammaC
+        C() -> R()              deltaA
+        Ma() -> 0               deltaMA
+        Mr() -> 0               deltaMR
+        A() -> 0                deltaA
+        R() -> 0                deltaR
+    end reaction rules
+end model
+
+generate_network({overwrite=>1})
+parameter_scan({ method=>"ssa", t_end=>200, n_steps=>200, parameter=>"alphaA", par_min=>50, par_max=>50, n_scan_pts=>100 })

@@ -96,7 +96,6 @@ pub struct Rate<T: AsIndex> {
 #[derive(Clone)]
 pub enum SRate<T: AsIndex> {
     LMA(T),               // S
-    LMA2(T),              // S
     MM(T, f64),           // S, KC
     PosHill(T, f64, f64), // S, KC, n
     NegHill(T, f64, f64), // S, KC, n
@@ -114,7 +113,6 @@ impl<T: AsIndex + Clone> Rate<T> {
         for factor in &self.species {
             match *factor {
                 SRate::LMA(ref s) => r *= species[s.as_index()] as f64,
-                SRate::LMA2(ref s) => r *= (species[s.as_index()] * species[s.as_index()]) as f64,
                 SRate::MM(ref s, k) => {
                     r *= species[s.as_index()] as f64 / (k + species[s.as_index()] as f64)
                 }
@@ -155,7 +153,7 @@ mod tests {
         let mut dimers = Gillespie::new([1, 0, 0, 0]);
         dimers.add_reaction(Rate::new(25., &[SRate::LMA(Dimers::G)]), [0, 1, 0, 0]);
         dimers.add_reaction(Rate::new(1000., &[SRate::LMA(Dimers::M)]), [0, 0, 1, 0]);
-        dimers.add_reaction(Rate::new(0.001, &[SRate::LMA2(Dimers::P)]), [0, 0, -2, 1]);
+        dimers.add_reaction(Rate::new(0.001, &[SRate::LMA(Dimers::P), SRate::LMA(Dimers::P)]), [0, 0, -2, 1]);
         dimers.add_reaction(Rate::new(0.1, &[SRate::LMA(Dimers::M)]), [0, -1, 0, 0]);
         dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::P)]), [0, 0, -1, 0]);
         dimers.advance_until(1.);

@@ -68,7 +68,10 @@ fn api_dimers(c: &mut Criterion) {
             let mut dimers = Gillespie::new([1, 0, 0, 0]);
             dimers.add_reaction(Rate::new(25., &[SRate::LMA(Dimers::G)]), [0, 1, 0, 0]);
             dimers.add_reaction(Rate::new(1000., &[SRate::LMA(Dimers::M)]), [0, 0, 1, 0]);
-            dimers.add_reaction(Rate::new(0.001, &[SRate::LMA2(Dimers::P)]), [0, 0, -2, 1]);
+            dimers.add_reaction(
+                Rate::new(0.001, &[SRate::LMA(Dimers::P), SRate::LMA(Dimers::P)]),
+                [0, 0, -2, 1],
+            );
             dimers.add_reaction(Rate::new(0.1, &[SRate::LMA(Dimers::M)]), [0, -1, 0, 0]);
             dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::P)]), [0, 0, -1, 0]);
             dimers.advance_until(6.);
@@ -104,7 +107,10 @@ fn api_dimers2(c: &mut Criterion) {
         b.iter(|| {
             let mut dimers = Gillespie::new([100000, 0, 0]);
             dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::A)]), [-1, 0, 0]);
-            dimers.add_reaction(Rate::new(1. / 500., &[SRate::LMA2(Dimers::A)]), [-2, 1, 0]);
+            dimers.add_reaction(
+                Rate::new(1. / 500., &[SRate::LMA(Dimers::A), SRate::LMA(Dimers::A)]),
+                [-2, 1, 0],
+            );
             dimers.add_reaction(Rate::new(0.5, &[SRate::LMA(Dimers::A_A)]), [2, -1, 0]);
             dimers.add_reaction(Rate::new(1. / 25., &[SRate::LMA(Dimers::A_A)]), [0, -1, 1]);
             dimers.advance_until(25.);

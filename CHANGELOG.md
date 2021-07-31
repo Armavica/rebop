@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] -- 2021-08-01
+
+First release on [crates.io](https://crates.io).
+
+### Added
+
+* Benchmark with other simulators.
+
+### Removed
+
+* `SRate::LMA2` which can already be constructed in terms of
+    `SRate::LMA`.
+* Removed the public visibility of `Rate::rate`, the function that
+    evaluates the numerical value of the rate.
+
+### Changed
+
+* Renamed `choice` to `_choice` to make it clearer that it is an
+    implementation macro.
+* Relicensed `bebop` to MIT license.
+
 ## [0.1.0] -- 2021-07-31
 
 First release.

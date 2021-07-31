@@ -1,9 +1,14 @@
 [package]
 name = "bebop"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Virgile Andreani <armavica@ulminfo.fr>"]
 edition = "2018"
 license = "MIT"
+categories = ["algorithms", "mathematics", "science", "simulation"]
+homepage = "https://armavica.github.io/bebop/"
+repository = "https://github.com/Armavica/bebop/"
+description = "A fast stochastic simulator for chemical reaction networks"
+keywords = ["gillespie-algorithm", "systems-biology", "stochastic-simulation"]
 
 [dependencies]
 rand = { version = "0.8.4", features = ["small_rng"] }
@@ -13,11 +18,6 @@ rand_distr = "0.4.1"
 criterion = "0.3.4"
 
 [lib]
-bench = false
-
-[[bin]]
-name = "bebop"
-path = "src/main.rs"
 bench = false
 
 [[bin]]

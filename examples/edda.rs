@@ -46,22 +46,10 @@ fn main() {
             Rate::new(k2, &[SRate::NegHill(Edda::U2, k1 * K4, n4)]),
             [0, 0, 0, 0, 0, 1],
         );
-        problem.add_reaction(
-            Rate::new(1.0, &[SRate::LMA(Edda::U1)]),
-            [-1, 0, 0, 0, 0, 0],
-        );
-        problem.add_reaction(
-            Rate::new(1.0, &[SRate::LMA(Edda::U2)]),
-            [0, -1, 0, 0, 0, 0],
-        );
-        problem.add_reaction(
-            Rate::new(1.0, &[SRate::LMA(Edda::U7)]),
-            [0, 0, -1, 0, 0, 0],
-        );
-        problem.add_reaction(
-            Rate::new(1.0, &[SRate::LMA(Edda::U8)]),
-            [0, 0, 0, -1, 0, 0],
-        );
+        problem.add_reaction(Rate::new(1.0, &[SRate::LMA(Edda::U1)]), [-1, 0, 0, 0, 0, 0]);
+        problem.add_reaction(Rate::new(1.0, &[SRate::LMA(Edda::U2)]), [0, -1, 0, 0, 0, 0]);
+        problem.add_reaction(Rate::new(1.0, &[SRate::LMA(Edda::U7)]), [0, 0, -1, 0, 0, 0]);
+        problem.add_reaction(Rate::new(1.0, &[SRate::LMA(Edda::U8)]), [0, 0, 0, -1, 0, 0]);
         problem.advance_until(100.);
     }
 }

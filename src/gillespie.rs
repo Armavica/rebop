@@ -61,17 +61,22 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
             #[allow(clippy::neg_cmp_op_on_partial_ord)]
             if !(total_rate > 0.) {
                 self.t = tmax;
-                return
+                return;
             }
             // unwrap is safe because we just checked that total_rate > 0
             self.t += Exp::new(total_rate).unwrap().sample(&mut self.rng);
             if self.t > tmax {
                 self.t = tmax;
-                return
+                return;
             }
             let chosen_rate = total_rate * self.rng.gen::<f64>();
-            let ireaction = match cumulative_rates.binary_search_by(
-                |w| if *w <= chosen_rate { Ordering::Less } else { Ordering::Greater }) {
+            let ireaction = match cumulative_rates.binary_search_by(|w| {
+                if *w <= chosen_rate {
+                    Ordering::Less
+                } else {
+                    Ordering::Greater
+                }
+            }) {
                 Ok(ireaction) | Err(ireaction) => ireaction,
             };
             // here we have ireaction < self.reactions.len() because chosen_rate < total_rate

@@ -157,7 +157,8 @@ fn macro_vilar(c: &mut Criterion) {
     c.bench_function("macro_vilar", |b| {
         b.iter(|| {
             let mut vilar = Vilar::with_parameters(
-                50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.);
+                50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.,
+            );
             vilar.Da = 1;
             vilar.Dr = 1;
             vilar.A = 10;
@@ -168,11 +169,15 @@ fn macro_vilar(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches,
-    api_sir, macro_sir,
-    api_dimers, macro_dimers,
-    api_dimers2, macro_dimers2,
+criterion_group!(
+    benches,
+    api_sir,
+    macro_sir,
+    api_dimers,
+    macro_dimers,
+    api_dimers2,
+    macro_dimers2,
     macro_mm,
     macro_vilar,
-    );
+);
 criterion_main!(benches);

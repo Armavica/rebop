@@ -1,3 +1,51 @@
+//! Macro-based API to describe chemical reaction networks and simulate
+//! them.
+//!
+//! See [`define_system`].
+
+/// Definition of a chemical reaction network.
+///
+/// This macro creates a `struct` containing state variables, parameter
+/// values and a pseudo-random number generator.  The state variables
+/// and parameter values can be modified directly.  It implements three
+/// functions: `new`, `with_parameters` and `advance_until`.
+///
+/// The function `new` creates a new instance of the structure with
+/// all state variables set to `0` and all parameter values set to
+/// `f64:NAN`.  The parameter values have then to be initialized
+/// manually.  If a `NAN` remains at the time of the simulation, no
+/// reaction will happen.
+///
+/// The function `with_parameters` is an alternate initializer that
+/// allows to give directly all the parameter values.
+///
+/// The function `advance_until` simulates the system until the
+/// specified time.
+///
+/// # Example
+///
+/// ```
+/// use bebop::define_system;
+///
+/// define_system! {
+///     rtx rtl rdi rdm rdp;
+///     Dimers { gene, mRNA, protein, dimer }
+///     transcription   : gene              => gene, mRNA       @ rtx
+///     translation     : mRNA              => mRNA, protein    @ rtl
+///     dimerization    : protein, protein  => dimer            @ rdi
+///     decay_mRNA      : mRNA              =>                  @ rdm
+///     decay_prot      : protein           =>                  @ rdp
+/// }
+/// let mut dimers = Dimers::with_parameters(25., 1000., 0.001, 0.1, 1.);
+/// //                                       rtx,   rtl,   rdi, rdm,rdp
+/// // but we could also have done
+/// // let mut dimers = Dimers::new();
+/// // dimers.rtx = 25.;
+/// // etc.
+/// dimers.gene = 1;
+/// dimers.advance_until(1.);
+/// println!("t = {}, dimer = {}", dimers.t, dimers.dimer);
+/// ```
 #[macro_export]
 macro_rules! define_system {
     (
@@ -19,8 +67,7 @@ macro_rules! define_system {
             rng: SmallRng,
         }
         impl $name {
-            /// Constructs an object representing the problem, with the
-            /// species and the time.
+            /// Constructs an object representing the problem.
             fn new() -> Self {
                 $name {
                     $($species: 0,)*
@@ -29,8 +76,8 @@ macro_rules! define_system {
                     rng: SmallRng::from_entropy()
                 }
             }
-            /// Constructs an object representing the problem, with the
-            /// species and the time.
+            /// Constructs an object representing the problem,
+            /// specifying parameter values.
             #[allow(non_snake_case)]
             fn with_parameters($($param: f64),*) -> Self {
                 $name {
@@ -40,7 +87,7 @@ macro_rules! define_system {
                     rng: SmallRng::from_entropy()
                 }
             }
-            /// Simulate the problem until `t = tmax`.
+            /// Simulates the problem until `t = tmax`.
             #[allow(non_snake_case)]
             fn advance_until(&mut self, tmax: f64) {
                 $(let $param = self.$param;)*
@@ -59,15 +106,16 @@ macro_rules! define_system {
                         return
                     }
                     let reaction_choice = total_rate * self.rng.gen::<f64>();
-                    $crate::choice!(self reaction_choice 0.; $($rname: $($r),* => $($p),*;)*);
+                    $crate::_choice!(self reaction_choice 0.; $($rname: $($r),* => $($p),*;)*);
                 }
             }
         }
     };
 }
 
+/// Auxiliary macro used in `define_system`.
 #[macro_export]
-macro_rules! choice {
+macro_rules! _choice {
     ($self:ident $rc:ident $carry:expr; ) => {};
     ($self:ident $rc:ident $carry:expr;
      $rname:ident: $($r:ident),* => $($p:ident),*;
@@ -76,7 +124,7 @@ macro_rules! choice {
             $($self.$r -= 1;)*
             $($self.$p += 1;)*
         } else {
-            $crate::choice!($self $rc $carry + $rname; $($tail: $($tailr),* => $($tailp),*;)*);
+            $crate::_choice!($self $rc $carry + $rname; $($tail: $($tailr),* => $($tailp),*;)*);
         }
     };
 }

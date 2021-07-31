@@ -47,7 +47,7 @@ fn macro_dimers(c: &mut Criterion) {
         b.iter(|| {
             let mut dimers = Dimers::new();
             dimers.G = 1;
-            dimers.advance_until(7.);
+            dimers.advance_until(6.);
         })
     });
 }
@@ -62,7 +62,7 @@ fn api_dimers(c: &mut Criterion) {
             dimers.add_reaction(Rate::new(0.001, &[SRate::LMA2(Dimers::P)]), [0, 0, -2, 1]);
             dimers.add_reaction(Rate::new(0.1, &[SRate::LMA(Dimers::M)]), [0, -1, 0, 0]);
             dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::P)]), [0, 0, -1, 0]);
-            dimers.advance_until(5.);
+            dimers.advance_until(6.);
         })
     });
 }

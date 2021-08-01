@@ -11,6 +11,7 @@ description = "A fast stochastic simulator for chemical reaction networks"
 keywords = ["gillespie-algorithm", "systems-biology", "stochastic"]
 
 [dependencies]
+pyo3 = { version = "0.14.1", features = ["extension-module"] }
 rand = { version = "0.8.4", features = ["small_rng"] }
 rand_distr = "0.4.1"
 
@@ -19,6 +20,7 @@ criterion = "0.3.4"
 
 [lib]
 bench = false
+crate-type = ["lib", "cdylib"]
 
 [[bin]]
 name = "vilar"

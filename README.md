@@ -81,20 +81,40 @@ model from `t=0` to `t=200`, saving the state at time intervals of `1`.
 
 ![Vilar oscillator performance](https://github.com/Armavica/rebop/blob/master/benches/vilar/vilar.png)
 
-rebop is the fastest, both per simulation, and with compilation time
-included.
+`rebop` is the fastest, both per simulation, and with compilation time
+included. `rebopy` measures the performance of the function-based API
+through the Python bindings.
+
+## Python bindings
+
+Python bindings are available to expose the functional API to Python.
+Example for the SIR model:
+
+``` python
+import rebop
+
+sir = rebop.Gillespie()
+sir.add_reaction(0.1 / 1000, ['S', 'I'], ['I', 'I'])
+sir.add_reaction(0.01, ['I'], ['R'])
+print(sir)
+times, sol = sir.run({'S': 9999, 'I': 1}, tmax=250, nb_steps=250)
+```
+
+To run this Python file, you must first compile rebop with `cargo build
+--release` and copy or link the library next to the script: `ln -s
+target/release/librebop.so rebop.so`.
 
 ## Not (yet) features
 
 * propensities != reaction rates
-* Next reaction method (Gibson - Brooke)
+* Next reaction method (Gibson--Bruck)
 * Tau-leaping
 * Adaptive tau-leaping
 * Hybrid stoch / diff
 * Space (localizations)
 * Diffusion
 * Volume change
-* Michaelis-Menten
+* Michaelis--Menten
 * Time-varying inputs
 * Rule modeling
 * SBML

@@ -3,14 +3,14 @@ use rebop::gillespie::{AsIndex, Gillespie, Rate, SRate};
 use rebop::index_enum;
 use criterion::{criterion_group, criterion_main, Criterion};
 
-fn macro_sir(c: &mut Criterion) {
+fn macro_sir_10k(c: &mut Criterion) {
     define_system! {
         r_inf r_heal;
         SIR { S, I, R }
         infection   : S, I  => I, I @ r_inf
         healing     : I     => R    @ r_heal
     }
-    c.bench_function("macro_sir", |b| {
+    c.bench_function("macro_sir_10k", |b| {
         b.iter(|| {
             let mut sir = SIR::new();
             sir.r_inf = 0.1 / 10000.;
@@ -22,11 +22,47 @@ fn macro_sir(c: &mut Criterion) {
     });
 }
 
-fn api_sir(c: &mut Criterion) {
+#[allow(non_snake_case)]
+fn macro_sir_1M(c: &mut Criterion) {
+    define_system! {
+        r_inf r_heal;
+        SIR { S, I, R }
+        infection   : S, I  => I, I @ r_inf
+        healing     : I     => R    @ r_heal
+    }
+    c.bench_function("macro_sir_1M", |b| {
+        b.iter(|| {
+            let mut sir = SIR::new();
+            sir.r_inf = 0.1 / 10000.;
+            sir.r_heal = 0.05;
+            sir.S = 999999;
+            sir.I = 1;
+            sir.advance_until(1000.);
+        })
+    });
+}
+
+fn api_sir_10k(c: &mut Criterion) {
     index_enum! { enum SIR { S, I, R } }
-    c.bench_function("api_sir", |b| {
+    c.bench_function("api_sir_10k", |b| {
         b.iter(|| {
             let mut sir = Gillespie::new([9999, 1, 0]);
+            sir.add_reaction(
+                Rate::new(0.1 / 10000., &[SRate::LMA(SIR::S), SRate::LMA(SIR::I)]),
+                [-1, 1, 0],
+            );
+            sir.add_reaction(Rate::new(0.05, &[SRate::LMA(SIR::R)]), [0, -1, 1]);
+            sir.advance_until(1000.);
+        })
+    });
+}
+
+#[allow(non_snake_case)]
+fn api_sir_1M(c: &mut Criterion) {
+    index_enum! { enum SIR { S, I, R } }
+    c.bench_function("api_sir_1M", |b| {
+        b.iter(|| {
+            let mut sir = Gillespie::new([999999, 1, 0]);
             sir.add_reaction(
                 Rate::new(0.1 / 10000., &[SRate::LMA(SIR::S), SRate::LMA(SIR::I)]),
                 [-1, 1, 0],
@@ -167,9 +203,6 @@ fn macro_vilar(c: &mut Criterion) {
             );
             vilar.Da = 1;
             vilar.Dr = 1;
-            vilar.A = 10;
-            vilar.R = 10;
-            vilar.C = 10;
             vilar.advance_until(200.);
         })
     });
@@ -177,8 +210,10 @@ fn macro_vilar(c: &mut Criterion) {
 
 criterion_group!(
     benches,
-    api_sir,
-    macro_sir,
+    api_sir_10k,
+    macro_sir_10k,
+    api_sir_1M,
+    macro_sir_1M,
     api_dimers,
     macro_dimers,
     api_dimers2,

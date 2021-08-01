@@ -127,9 +127,9 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     /// assert!(dimers.get_species(&Dimers::D) > 0);
     /// ```
     pub fn advance_until(&mut self, tmax: f64) {
+        let mut cumulative_rates = Vec::with_capacity(self.rates.len());
         while self.t < tmax {
             let mut total_rate = 0.;
-            let mut cumulative_rates = Vec::with_capacity(self.rates.len());
             for r in &self.rates {
                 total_rate += r.rate(&self.species);
                 cumulative_rates.push(total_rate);
@@ -160,6 +160,7 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
             for (i, &r) in self.reactions[ireaction].iter().enumerate() {
                 self.species[i] += r;
             }
+            cumulative_rates.clear();
         }
     }
 }

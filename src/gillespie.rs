@@ -32,19 +32,19 @@ macro_rules! index_enum {
 
 /// Main structure, represents the problem and contains simulation methods.
 #[derive(Clone, Debug)]
-pub struct Gillespie<T: AsIndex, const N: usize> {
-    species: [isize; N],
+pub struct Gillespie<T: AsIndex> {
+    species: Vec<isize>,
     t: f64,
-    reactions: Vec<(Rate<T>, [isize; N])>,
+    reactions: Vec<(Rate<T>, Vec<isize>)>,
     rng: SmallRng,
 }
 
-impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
+impl<T: AsIndex + Clone> Gillespie<T> {
     /// Creates a new problem instance, with `N` different species of
     /// specified initial conditions.
-    pub fn new(species: [isize; N]) -> Self {
+    pub fn new<V: AsRef<[isize]>>(species: V) -> Self {
         Gillespie {
-            species,
+            species: species.as_ref().to_vec(),
             t: 0.,
             reactions: Vec::new(),
             rng: SmallRng::from_entropy(),
@@ -54,17 +54,17 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     ///
     /// ```
     /// use rebop::gillespie::Gillespie;
-    /// let mut p: Gillespie<usize, 4> = Gillespie::new([0, 1, 10, 100]);
+    /// let mut p: Gillespie<usize> = Gillespie::new([0, 1, 10, 100]);
     /// assert_eq!(p.nb_species(), 4);
     /// ```
     pub fn nb_species(&self) -> usize {
-        N
+        self.species.len()
     }
     /// Returns the number of reactions in the problem.
     ///
     /// ```
     /// use rebop::gillespie::Gillespie;
-    /// let mut p: Gillespie<usize, 4> = Gillespie::new([0, 1, 10, 100]);
+    /// let mut p: Gillespie<usize> = Gillespie::new([0, 1, 10, 100]);
     /// assert_eq!(p.nb_reactions(), 0);
     /// ```
     pub fn nb_reactions(&self) -> usize {
@@ -87,8 +87,9 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     /// // I -> R with rate 0.01
     /// sir.add_reaction(Rate::new(0.01, &[SRate::LMA(SIR::I)]), [0, -1, 1]);
     /// ```
-    pub fn add_reaction(&mut self, rate: Rate<T>, reaction: [isize; N]) {
-        self.reactions.push((rate, reaction));
+    pub fn add_reaction<V: AsRef<[isize]>>(&mut self, rate: Rate<T>, reaction: V) {
+        assert_eq!(reaction.as_ref().len(), self.species.len());
+        self.reactions.push((rate, reaction.as_ref().to_vec()));
     }
     /// Returns the current time in the model.
     pub fn get_time(&self) -> f64 {
@@ -98,7 +99,7 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     ///
     /// ```
     /// use rebop::gillespie::Gillespie;
-    /// let p: Gillespie<usize, 4> = Gillespie::new([0, 1, 10, 100]);
+    /// let p: Gillespie<usize> = Gillespie::new([0, 1, 10, 100]);
     /// assert_eq!(p.get_species(&2), 10);
     /// ```
     pub fn get_species(&self, s: &T) -> isize {

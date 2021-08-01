@@ -35,8 +35,7 @@ macro_rules! index_enum {
 pub struct Gillespie<T: AsIndex, const N: usize> {
     species: [isize; N],
     t: f64,
-    rates: Vec<Rate<T>>,
-    reactions: Vec<[isize; N]>,
+    reactions: Vec<(Rate<T>, [isize; N])>,
     rng: SmallRng,
 }
 
@@ -47,7 +46,6 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
         Gillespie {
             species,
             t: 0.,
-            rates: Vec::new(),
             reactions: Vec::new(),
             rng: SmallRng::from_entropy(),
         }
@@ -90,8 +88,7 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     /// sir.add_reaction(Rate::new(0.01, &[SRate::LMA(SIR::I)]), [0, -1, 1]);
     /// ```
     pub fn add_reaction(&mut self, rate: Rate<T>, reaction: [isize; N]) {
-        self.rates.push(rate);
-        self.reactions.push(reaction);
+        self.reactions.push((rate, reaction));
     }
     /// Returns the current time in the model.
     pub fn get_time(&self) -> f64 {
@@ -126,10 +123,10 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     /// assert!(dimers.get_species(&Dimers::D) > 0);
     /// ```
     pub fn advance_until(&mut self, tmax: f64) {
-        let mut rates = vec![f64::NAN; self.rates.len()];
+        let mut rates = vec![f64::NAN; self.reactions.len()];
         while self.t < tmax {
             let mut total_rate = 0.;
-            for (rate, num_rate) in self.rates.iter().zip(rates.iter_mut()) {
+            for ((rate, _), num_rate) in self.reactions.iter().zip(rates.iter_mut()) {
                 *num_rate = rate.rate(&self.species);
                 total_rate += *num_rate;
             }
@@ -145,7 +142,7 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
                 return;
             }
             let mut chosen_rate = total_rate * self.rng.gen::<f64>();
-            let mut ireaction = self.rates.len() - 1;
+            let mut ireaction = self.reactions.len() - 1;
             for (ir, rate) in rates.iter().enumerate() {
                 chosen_rate -= rate;
                 if chosen_rate < 0. {
@@ -155,7 +152,7 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
             };
             // here we have ireaction < self.reactions.len() because chosen_rate < total_rate
             // FIXME: remove the bound check
-            for (i, &r) in self.reactions[ireaction].iter().enumerate() {
+            for (i, &r) in self.reactions[ireaction].1.iter().enumerate() {
                 self.species[i] += r;
             }
         }

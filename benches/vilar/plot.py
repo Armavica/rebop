@@ -8,7 +8,9 @@ with open('vilar.csv', 'r') as file:
 data = np.loadtxt('vilar.csv', delimiter=',', skiprows=1)
 ns = data[:, 0]
 
-for i, (name, times) in enumerate(zip(header, data[:, 1:].T)):
+for i in [3, 1, 2, 0]:
+    name = header[i]
+    times = data[:, i+1]
     res = stats.linregress(ns, times)
     plt.plot(ns, times, 'o', color=f'C{i}', label=name)
     plt.plot(ns, res.intercept + res.slope * ns,

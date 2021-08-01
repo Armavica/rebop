@@ -175,6 +175,80 @@ fn macro_mm(c: &mut Criterion) {
     });
 }
 
+#[allow(non_snake_case)]
+fn api_vilar(c: &mut Criterion) {
+    index_enum! { enum Vilar { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C } }
+    let alphaA = 50.;
+    let alphapA = 500.;
+    let alphaR = 0.01;
+    let alphapR = 50.;
+    let betaA = 50.;
+    let betaR = 5.;
+    let deltaMA = 10.;
+    let deltaMR = 0.5;
+    let deltaA = 1.;
+    let deltaR = 0.2;
+    let gammaA = 1.;
+    let gammaR = 1.;
+    let gammaC = 2.;
+    let thetaA = 50.;
+    let thetaR = 100.;
+    c.bench_function("api_vilar", |b| {
+        b.iter(|| {
+            let mut vilar = Gillespie::new([1, 1, 0, 0, 0, 0, 0, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(gammaA, &[SRate::LMA(Vilar::Da), SRate::LMA(Vilar::A)]),
+                [-1, 0, 1, 0, 0, 0, -1, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(gammaR, &[SRate::LMA(Vilar::Dr), SRate::LMA(Vilar::A)]),
+                [0, -1, 0, 1, 0, 0, -1, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(thetaA, &[SRate::LMA(Vilar::Dpa)]),
+                [1, 0, -1, 0, 0, 0, 1, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(thetaR, &[SRate::LMA(Vilar::Dpr)]),
+                [0, 1, 0, -1, 0, 0, 1, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(alphaA, &[SRate::LMA(Vilar::Da)]),
+                [0, 0, 0, 0, 1, 0, 0, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(alphaR, &[SRate::LMA(Vilar::Dr)]),
+                [0, 0, 0, 0, 0, 1, 0, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(alphapA, &[SRate::LMA(Vilar::Dpa)]),
+                [0, 0, 0, 0, 1, 0, 0, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(alphapR, &[SRate::LMA(Vilar::Dpr)]),
+                [0, 0, 0, 0, 0, 1, 0, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(betaA, &[SRate::LMA(Vilar::Ma)]),
+                [0, 0, 0, 0, 0, 0, 1, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(betaR, &[SRate::LMA(Vilar::Mr)]),
+                [0, 0, 0, 0, 0, 0, 0, 1, 0]);
+            vilar.add_reaction(
+                Rate::new(gammaC, &[SRate::LMA(Vilar::A), SRate::LMA(Vilar::R)]),
+                [0, 0, 0, 0, 0, 0, -1, -1, 1]);
+            vilar.add_reaction(
+                Rate::new(gammaA, &[SRate::LMA(Vilar::C)]),
+                [0, 0, 0, 0, 0, 0, 0, 1, -1]);
+            vilar.add_reaction(
+                Rate::new(deltaMA, &[SRate::LMA(Vilar::Ma)]),
+                [0, 0, 0, 0, -1, 0, 0, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(deltaMR, &[SRate::LMA(Vilar::Mr)]),
+                [0, 0, 0, 0, 0, -1, 0, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(deltaA, &[SRate::LMA(Vilar::A)]),
+                [0, 0, 0, 0, 0, 0, -1, 0, 0]);
+            vilar.add_reaction(
+                Rate::new(deltaR, &[SRate::LMA(Vilar::R)]),
+                [0, 0, 0, 0, 0, 0, 0, -1, 0]);
+            vilar.advance_until(200.);
+        })
+    });
+}
+
 fn macro_vilar(c: &mut Criterion) {
     define_system! {
         alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
@@ -219,6 +293,7 @@ criterion_group!(
     api_dimers2,
     macro_dimers2,
     macro_mm,
+    api_vilar,
     macro_vilar,
 );
 criterion_main!(benches);

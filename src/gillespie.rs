@@ -4,7 +4,6 @@
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 use rand_distr::Exp1;
-use std::cmp::Ordering;
 
 /// Trait that a species type must implement.
 ///
@@ -127,12 +126,12 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
     /// assert!(dimers.get_species(&Dimers::D) > 0);
     /// ```
     pub fn advance_until(&mut self, tmax: f64) {
-        let mut cumulative_rates = Vec::with_capacity(self.rates.len());
+        let mut rates = vec![f64::NAN; self.rates.len()];
         while self.t < tmax {
             let mut total_rate = 0.;
-            for r in &self.rates {
-                total_rate += r.rate(&self.species);
-                cumulative_rates.push(total_rate);
+            for (rate, num_rate) in self.rates.iter().zip(rates.iter_mut()) {
+                *num_rate = rate.rate(&self.species);
+                total_rate += *num_rate;
             }
             // we don't want to use partial_cmp, for performance
             #[allow(clippy::neg_cmp_op_on_partial_ord)]
@@ -145,22 +144,20 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
                 self.t = tmax;
                 return;
             }
-            let chosen_rate = total_rate * self.rng.gen::<f64>();
-            let ireaction = match cumulative_rates.binary_search_by(|w| {
-                if *w <= chosen_rate {
-                    Ordering::Less
-                } else {
-                    Ordering::Greater
+            let mut chosen_rate = total_rate * self.rng.gen::<f64>();
+            let mut ireaction = self.rates.len() - 1;
+            for (ir, rate) in rates.iter().enumerate() {
+                chosen_rate -= rate;
+                if chosen_rate < 0. {
+                    ireaction = ir;
+                    break
                 }
-            }) {
-                Ok(ireaction) | Err(ireaction) => ireaction,
             };
             // here we have ireaction < self.reactions.len() because chosen_rate < total_rate
             // FIXME: remove the bound check
             for (i, &r) in self.reactions[ireaction].iter().enumerate() {
                 self.species[i] += r;
             }
-            cumulative_rates.clear();
         }
     }
 }

@@ -8,7 +8,7 @@ networks.
 [![Docs.rs](https://docs.rs/rebop/badge.svg)](https://docs.rs/rebop/)
 
 Two goals of this project are efficiency and convenience.
-The following macro defines a reaction network in a natural manner:
+The following macro defines a reaction network naturally:
 
 ``` rust
 define_system! {
@@ -63,14 +63,14 @@ which can produce an output such as
 
 On typical example networks, rebop outperformed all other software.
 
-*Disclaimer*: Most of these softwares contain much more features than
+*Disclaimer*: Most of this software contains much more features than
 rebop (e.g. spatial models, custom reaction rates, etc.).  Some of these
 features might require them to make compromises on speed.  Moreover,
 some can be conveniently used through wrappers (for example when the
 simulation code is written in C++ but the model is expressible in
 Python).  These wrappers can also add a significant overhead.
 
-To benchmark these softwares in the fairest possible conditions, we
+To benchmark these programs in the fairest possible conditions, we
 considered for everyone a typical situation where the model was just
 modified and we want to simulate it `N` times.  So the (re-)compilation
 time is included in this benchmark.

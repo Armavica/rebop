@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] -- 2021-08-01
+
+Increased performance by 3-5% by optimizing exponential sampling.
+
 ## [0.3.0] -- 2021-08-01
 
 Actual first release on [crates.io](https://crates.io).

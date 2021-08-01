@@ -1,10 +1,9 @@
 //! Function-based API to describe chemical reaction networks and
 //! simulate them.
 
-use rand::distributions::Distribution;
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
-use rand_distr::Exp;
+use rand_distr::Exp1;
 use std::cmp::Ordering;
 
 /// Trait that a species type must implement.
@@ -141,8 +140,7 @@ impl<T: AsIndex + Clone, const N: usize> Gillespie<T, N> {
                 self.t = tmax;
                 return;
             }
-            // unwrap is safe because we just checked that total_rate > 0
-            self.t += Exp::new(total_rate).unwrap().sample(&mut self.rng);
+            self.t += self.rng.sample::<f64, _>(Exp1) / total_rate;
             if self.t > tmax {
                 self.t = tmax;
                 return;

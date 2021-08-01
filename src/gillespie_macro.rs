@@ -53,10 +53,9 @@ macro_rules! define_system {
       $name:ident { $($species:ident),* }
       $($rname:ident : $($r:ident),* => $($p:ident),* @ $rate:expr)*
       ) => {
-        use rand::distributions::Distribution;
         use rand::{Rng, SeedableRng};
         use rand::rngs::SmallRng;
-        use rand_distr::Exp;
+        use rand_distr::Exp1;
         /// Structure representing the problem, with the species and the time.
         #[allow(non_snake_case)]
         #[derive(Clone, Debug)]
@@ -100,7 +99,7 @@ macro_rules! define_system {
                         self.t = tmax;
                         return
                     }
-                    self.t += Exp::new(total_rate).unwrap().sample(&mut self.rng);
+                    self.t += self.rng.sample::<f64, _>(Exp1) / total_rate;
                     if self.t > tmax {
                         self.t = tmax;
                         return

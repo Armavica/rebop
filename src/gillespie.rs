@@ -50,6 +50,10 @@ impl<T: AsIndex + Clone> Gillespie<T> {
             rng: SmallRng::from_entropy(),
         }
     }
+    /// Seeds the random number generator.
+    pub fn seed(&mut self, seed: u64) {
+        self.rng = SmallRng::seed_from_u64(seed);
+    }
     /// Returns the number of species in the problem.
     ///
     /// ```

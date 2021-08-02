@@ -75,6 +75,10 @@ macro_rules! define_system {
                     rng: SmallRng::from_entropy()
                 }
             }
+            /// Seeds the random number generator.
+            fn seed(&mut self, seed: u64) {
+                self.rng = SmallRng::seed_from_u64(seed);
+            }
             /// Constructs an object representing the problem,
             /// specifying parameter values.
             #[allow(non_snake_case)]

@@ -129,7 +129,7 @@ impl<T: AsIndex + Clone> Gillespie<T> {
     /// ```
     pub fn advance_until(&mut self, tmax: f64) {
         let mut rates = vec![f64::NAN; self.reactions.len()];
-        while self.t < tmax {
+        loop {
             let mut total_rate = 0.;
             for ((rate, _), num_rate) in self.reactions.iter().zip(rates.iter_mut()) {
                 *num_rate = rate.rate(&self.species);

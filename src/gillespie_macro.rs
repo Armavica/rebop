@@ -94,7 +94,7 @@ macro_rules! define_system {
             #[allow(non_snake_case)]
             fn advance_until(&mut self, tmax: f64) {
                 $(let $param = self.$param;)*
-                while self.t < tmax {
+                loop {
                     $(let $rname = $rate $(* (self.$r as f64))*;)*
                     let total_rate = 0. $(+ $rname)*;
                     // we don't want to use partial_cmp, for performance

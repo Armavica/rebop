@@ -249,6 +249,72 @@ fn api_vilar(c: &mut Criterion) {
     });
 }
 
+fn macro_vilar_best_order(c: &mut Criterion) {
+    define_system! {
+        alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
+        Vilar { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C }
+        translation_a       : Ma    => Ma, A    @ betaA
+        complexation        : A, R  => C        @ gammaC
+        decomplexation      : C     => R        @ deltaA
+        decay_prot_a        : A     =>          @ deltaA
+        decay_mRNA_a        : Ma    =>          @ deltaMA
+        transcription_p_a   : Dpa   => Dpa, Ma  @ alphapA
+        translation_r       : Mr    => Mr, R    @ betaR
+        decay_prot_r        : R     =>          @ deltaR
+        transcription_a     : Da    => Da, Ma   @ alphaA
+        activation_r        : Dr, A => Dpr      @ gammaR
+        deactivation_r      : Dpr   => Dr, A    @ thetaR
+        activation_a        : Da, A => Dpa      @ gammaA
+        deactivation_a      : Dpa   => Da, A    @ thetaA
+        transcription_p_r   : Dpr   => Dpr, Mr  @ alphapR
+        decay_mRNA_r        : Mr    =>          @ deltaMR
+        transcription_r     : Dr    => Dr, Mr   @ alphaR
+    }
+    c.bench_function("macro_vilar_best_order", |b| {
+        b.iter(|| {
+            let mut vilar = Vilar::with_parameters(
+                50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.,
+            );
+            vilar.Da = 1;
+            vilar.Dr = 1;
+            vilar.advance_until(200.);
+        })
+    });
+}
+
+fn macro_vilar_worst_order(c: &mut Criterion) {
+    define_system! {
+        alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
+        Vilar { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C }
+        transcription_r     : Dr    => Dr, Mr   @ alphaR
+        decay_mRNA_r        : Mr    =>          @ deltaMR
+        transcription_p_r   : Dpr   => Dpr, Mr  @ alphapR
+        deactivation_a      : Dpa   => Da, A    @ thetaA
+        activation_a        : Da, A => Dpa      @ gammaA
+        deactivation_r      : Dpr   => Dr, A    @ thetaR
+        activation_r        : Dr, A => Dpr      @ gammaR
+        transcription_a     : Da    => Da, Ma   @ alphaA
+        decay_prot_r        : R     =>          @ deltaR
+        translation_r       : Mr    => Mr, R    @ betaR
+        transcription_p_a   : Dpa   => Dpa, Ma  @ alphapA
+        decay_mRNA_a        : Ma    =>          @ deltaMA
+        decay_prot_a        : A     =>          @ deltaA
+        decomplexation      : C     => R        @ deltaA
+        complexation        : A, R  => C        @ gammaC
+        translation_a       : Ma    => Ma, A    @ betaA
+    }
+    c.bench_function("macro_vilar_worst_order", |b| {
+        b.iter(|| {
+            let mut vilar = Vilar::with_parameters(
+                50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.,
+            );
+            vilar.Da = 1;
+            vilar.Dr = 1;
+            vilar.advance_until(200.);
+        })
+    });
+}
+
 fn macro_vilar(c: &mut Criterion) {
     define_system! {
         alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
@@ -295,5 +361,7 @@ criterion_group!(
     macro_mm,
     api_vilar,
     macro_vilar,
+    macro_vilar_best_order,
+    macro_vilar_worst_order,
 );
 criterion_main!(benches);

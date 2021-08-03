@@ -7,7 +7,7 @@ fn macro_sir_10k(c: &mut Criterion) {
     define_system! {
         r_inf r_heal;
         SIR { S, I, R }
-        infection   : S, I  => I, I @ r_inf
+        infection   : S, I  => 2 I  @ r_inf
         healing     : I     => R    @ r_heal
     }
     c.bench_function("macro_sir_10k", |b| {
@@ -27,7 +27,7 @@ fn macro_sir_1M(c: &mut Criterion) {
     define_system! {
         r_inf r_heal;
         SIR { S, I, R }
-        infection   : S, I  => I, I @ r_inf
+        infection   : S, I  => 2 I  @ r_inf
         healing     : I     => R    @ r_heal
     }
     c.bench_function("macro_sir_1M", |b| {
@@ -79,7 +79,7 @@ fn macro_dimers(c: &mut Criterion) {
         Dimers { G, M, P, D }
         transcription : G    => G, M @ r_tx
         translation   : M    => M, P @ r_tl
-        dimerization  : P, P => D    @ r_dim
+        dimerization  : 2 P  => D    @ r_dim
         decay_mrna    : M    =>      @ r_decay_mrna
         decay_prot    : P    =>      @ r_decay_prot
     }
@@ -104,10 +104,7 @@ fn api_dimers(c: &mut Criterion) {
             let mut dimers = Gillespie::new([1, 0, 0, 0]);
             dimers.add_reaction(Rate::new(25., &[SRate::LMA(Dimers::G)]), [0, 1, 0, 0]);
             dimers.add_reaction(Rate::new(1000., &[SRate::LMA(Dimers::M)]), [0, 0, 1, 0]);
-            dimers.add_reaction(
-                Rate::new(0.001, &[SRate::LMA(Dimers::P), SRate::LMA(Dimers::P)]),
-                [0, 0, -2, 1],
-            );
+            dimers.add_reaction(Rate::new(0.001, &[SRate::LMA2(Dimers::P)]), [0, 0, -2, 1]);
             dimers.add_reaction(Rate::new(0.1, &[SRate::LMA(Dimers::M)]), [0, -1, 0, 0]);
             dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::P)]), [0, 0, -1, 0]);
             dimers.advance_until(6.);
@@ -120,8 +117,8 @@ fn macro_dimers2(c: &mut Criterion) {
         r_decay_monomer r_dimerization r_monomerization r_irreversible;
         Dimers { A, A_A, AA }
         decay_monomer   : A    =>       @ r_decay_monomer
-        dimerization    : A, A => A_A   @ r_dimerization
-        monomerization  : A_A  => A, A  @ r_monomerization
+        dimerization    : 2 A  => A_A   @ r_dimerization
+        monomerization  : A_A  => 2 A   @ r_monomerization
         irreversible    : A_A  => AA    @ r_irreversible
     }
     c.bench_function("macro_dimers2", |b| {
@@ -143,10 +140,7 @@ fn api_dimers2(c: &mut Criterion) {
         b.iter(|| {
             let mut dimers = Gillespie::new([100000, 0, 0]);
             dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::A)]), [-1, 0, 0]);
-            dimers.add_reaction(
-                Rate::new(1. / 500., &[SRate::LMA(Dimers::A), SRate::LMA(Dimers::A)]),
-                [-2, 1, 0],
-            );
+            dimers.add_reaction(Rate::new(1. / 500., &[SRate::LMA2(Dimers::A)]), [-2, 1, 0]);
             dimers.add_reaction(Rate::new(0.5, &[SRate::LMA(Dimers::A_A)]), [2, -1, 0]);
             dimers.add_reaction(Rate::new(1. / 25., &[SRate::LMA(Dimers::A_A)]), [0, -1, 1]);
             dimers.advance_until(25.);

@@ -118,7 +118,7 @@ impl<T: AsIndex + Clone> Gillespie<T> {
     /// let mut dimers = Gillespie::new([1, 0, 0, 0]);
     /// dimers.add_reaction(Rate::new(25., &[SRate::LMA(Dimers::G)]), [0, 1, 0, 0]);
     /// dimers.add_reaction(Rate::new(1000., &[SRate::LMA(Dimers::M)]), [0, 0, 1, 0]);
-    /// dimers.add_reaction(Rate::new(0.001, &[SRate::LMA(Dimers::P), SRate::LMA(Dimers::P)]), [0, 0, -2, 1]);
+    /// dimers.add_reaction(Rate::new(0.001, &[SRate::LMA2(Dimers::P)]), [0, 0, -2, 1]);
     /// dimers.add_reaction(Rate::new(0.1, &[SRate::LMA(Dimers::M)]), [0, -1, 0, 0]);
     /// dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::P)]), [0, 0, -1, 0]);
     /// assert_eq!(dimers.get_time(), 0.);
@@ -175,16 +175,28 @@ pub struct Rate<T: AsIndex> {
 
 /// This enum represents a factor of a reaction rate, used in the
 /// construction of a [`Rate`].
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum SRate<T: AsIndex> {
     /// Law of mass action: `LMA(T) = [T]`
     LMA(T),
+    /// Law of mass action of order 2: `LMA2(T) = [T] * ([T] - 1)`
+    LMA2(T),
+    /// Law of mass action of order n: `LMAn(T, n) = [T] * ([T] - 1) * ... * ([T] - n + 1)`
+    LMAn(T, usize),
     /// Michaelis--Menten: `MM(T, KC) = [T] / (KC + [T])`
     MM(T, f64),
     /// Positive Hill function: `PosHill(T, KC, n) = [T]^n / (KC^n + [T]^n)`
     PosHill(T, f64, f64),
     /// Negative Hill function: `NegHill(T, KC, n) = 1 - [T]^n / (KC^n + [T]^n)`
     NegHill(T, f64, f64),
+}
+
+impl<T: AsIndex> SRate<T> {
+    fn as_index(&self) -> usize {
+        match self {
+            SRate::LMA(x) | SRate::LMA2(x) | SRate::LMAn(x, _) | SRate::MM(x, _) | SRate::PosHill(x, _, _) | SRate::NegHill(x, _, _) => x.as_index(),
+        }
+    }
 }
 
 impl<T: AsIndex + Clone> Rate<T> {
@@ -208,6 +220,10 @@ impl<T: AsIndex + Clone> Rate<T> {
         for factor in &self.species {
             match *factor {
                 SRate::LMA(ref s) => r *= species[s.as_index()] as f64,
+                SRate::LMA2(ref s) => r *= species[s.as_index()] as f64 * (species[s.as_index()] - 1) as f64,
+                SRate::LMAn(ref s, n) => for i in 0..n {
+                    r *= (species[s.as_index()] - i as isize) as f64;
+                },
                 SRate::MM(ref s, k) => {
                     r *= species[s.as_index()] as f64 / (k + species[s.as_index()] as f64)
                 }
@@ -248,10 +264,7 @@ mod tests {
         let mut dimers = Gillespie::new([1, 0, 0, 0]);
         dimers.add_reaction(Rate::new(25., &[SRate::LMA(Dimers::G)]), [0, 1, 0, 0]);
         dimers.add_reaction(Rate::new(1000., &[SRate::LMA(Dimers::M)]), [0, 0, 1, 0]);
-        dimers.add_reaction(
-            Rate::new(0.001, &[SRate::LMA(Dimers::P), SRate::LMA(Dimers::P)]),
-            [0, 0, -2, 1],
-        );
+        dimers.add_reaction(Rate::new(0.001, &[SRate::LMA2(Dimers::P)]), [0, 0, -2, 1]);
         dimers.add_reaction(Rate::new(0.1, &[SRate::LMA(Dimers::M)]), [0, -1, 0, 0]);
         dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::P)]), [0, 0, -1, 0]);
         dimers.advance_until(1.);

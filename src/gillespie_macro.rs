@@ -51,7 +51,7 @@ macro_rules! define_system {
     (
       $($param:ident)*;
       $name:ident { $($species:ident),* }
-      $($rname:ident : $($r:ident),* => $($p:ident),* @ $rate:expr)*
+      $($rname:ident : $($($nr:literal)? $r:ident),* => $($($np:literal)? $p:ident),* @ $rate:expr)*
       ) => {
         /// Structure representing the problem, with the species and the time.
         #[allow(non_snake_case)]
@@ -96,7 +96,7 @@ macro_rules! define_system {
                 use $crate::rand::Rng;
                 $(let $param = self.$param;)*
                 loop {
-                    $(let $rname = $rate $(* (self.$r as f64))*;)*
+                    $(let $rname = $rate $(* $crate::_rate_lma!($($nr)? * self.$r) )*;)*
                     let total_rate = 0. $(+ $rname)*;
                     // we don't want to use partial_cmp, for performance
                     #[allow(clippy::neg_cmp_op_on_partial_ord)]
@@ -110,7 +110,7 @@ macro_rules! define_system {
                         return
                     }
                     let reaction_choice = total_rate * self.rng.gen::<f64>();
-                    $crate::_choice!(self reaction_choice 0.; $($rname: $($r),* => $($p),*;)*);
+                    $crate::_choice!(self reaction_choice 0.; $($rname: $($($nr)? $r),* => $($($np)? $p),*;)*);
                 }
             }
         }
@@ -119,16 +119,32 @@ macro_rules! define_system {
 
 /// Auxiliary macro used in `define_system`.
 #[macro_export]
+macro_rules! _rate_lma {
+    ($($n:literal)? * $species:expr) => {
+        {
+            let mut rate = $species;
+            $(
+                for i in 1..$n {
+                    rate *= $species - i;
+                }
+            )?
+            rate as f64
+        }
+    }
+}
+
+/// Auxiliary macro used in `define_system`.
+#[macro_export]
 macro_rules! _choice {
     ($self:ident $rc:ident $carry:expr; ) => {};
     ($self:ident $rc:ident $carry:expr;
-     $rname:ident: $($r:ident),* => $($p:ident),*;
-     $($tail:ident: $($tailr:ident),* => $($tailp:ident),*;)*) => {
+     $rname:ident: $($($nr:literal)? $r:ident),* => $($($np:literal)? $p:ident),*;
+     $($tail:ident: $($($tailnr:literal)? $tailr:ident),* => $($($tailnp:literal)? $tailp:ident),*;)*) => {
         if $rc < $carry + $rname {
-            $($self.$r -= 1;)*
-            $($self.$p += 1;)*
+            $($self.$r -= 1 $(+ $nr - 1)?;)*
+            $($self.$p += 1 $(+ $np - 1)?;)*
         } else {
-            $crate::_choice!($self $rc $carry + $rname; $($tail: $($tailr),* => $($tailp),*;)*);
+            $crate::_choice!($self $rc $carry + $rname; $($tail: $($($tailnr)? $tailr),* => $($($tailnp)? $tailp),*;)*);
         }
     };
 }

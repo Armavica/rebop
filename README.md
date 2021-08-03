@@ -14,11 +14,11 @@ The following macro defines a reaction network naturally:
 define_system! {
     r_tx r_tl r_dim r_decay_mrna r_decay_prot;
     Dimers { gene, mRNA, protein, dimer }
-    transcription : gene             => gene, mRNA    @ r_tx
-    translation   : mRNA             => mRNA, protein @ r_tl
-    dimerization  : protein, protein => dimer         @ r_dim
-    decay_mRNA    : mRNA             =>               @ r_decay_mrna
-    decay_protein : protein          =>               @ r_decay_prot
+    transcription : gene        => gene, mRNA    @ r_tx
+    translation   : mRNA        => mRNA, protein @ r_tl
+    dimerization  : 2 protein   => dimer         @ r_dim
+    decay_mRNA    : mRNA        =>               @ r_decay_mrna
+    decay_protein : protein     =>               @ r_decay_prot
 }
 ```
 
@@ -38,7 +38,7 @@ Or for the classic SIR example:
 define_system! {
     r_inf r_heal;
     SIR { S, I, R }
-    infection: S, I => I, I @ r_inf
+    infection: S, I => 2 I  @ r_inf
     healing  : I    => R    @ r_heal
 }
 

@@ -14,12 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     2nd and nth-order LMA.  They cannot be implemented in terms of
     `SRate::LMA`.
 * Added nth-order reactants and products to the macro DSL.
-
-### Changed
-
 * The libraries `rand` and `rand_distr` are now reexported to be more
     practical, notably this allows several system definitions in the
     same file.
+
+### Changed
+
+* Use `+` to separate species in macro DSL instead of `,`.
 
 ## [0.4.0] -- 2021-08-02
 

@@ -4,11 +4,11 @@ use rebop::define_system;
 define_system! {
     rtx rtl rdi rdm rdp;
     Dimers { gene, mRNA, protein, dimer }
-    r_transcription : gene             => gene, mRNA    @ rtx
-    r_translation   : mRNA             => mRNA, protein @ rtl
-    r_dimerization  : protein, protein => dimer         @ rdi
-    r_decay_mRNA    : mRNA             =>               @ rdm
-    r_decay_protein : protein          =>               @ rdp
+    r_transcription : gene      => gene + mRNA      @ rtx
+    r_translation   : mRNA      => mRNA + protein   @ rtl
+    r_dimerization  : 2 protein => dimer            @ rdi
+    r_decay_mRNA    : mRNA      =>                  @ rdm
+    r_decay_protein : protein   =>                  @ rdp
 }
 
 fn main() {

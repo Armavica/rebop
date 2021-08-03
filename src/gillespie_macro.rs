@@ -30,11 +30,11 @@
 /// define_system! {
 ///     rtx rtl rdi rdm rdp;
 ///     Dimers { gene, mRNA, protein, dimer }
-///     transcription   : gene              => gene, mRNA       @ rtx
-///     translation     : mRNA              => mRNA, protein    @ rtl
-///     dimerization    : protein, protein  => dimer            @ rdi
-///     decay_mRNA      : mRNA              =>                  @ rdm
-///     decay_prot      : protein           =>                  @ rdp
+///     transcription   : gene      => gene + mRNA      @ rtx
+///     translation     : mRNA      => mRNA + protein   @ rtl
+///     dimerization    : 2 protein => dimer            @ rdi
+///     decay_mRNA      : mRNA      =>                  @ rdm
+///     decay_prot      : protein   =>                  @ rdp
 /// }
 /// let mut dimers = Dimers::with_parameters(25., 1000., 0.001, 0.1, 1.);
 /// //                                       rtx,   rtl,   rdi, rdm,rdp
@@ -51,7 +51,10 @@ macro_rules! define_system {
     (
       $($param:ident)*;
       $name:ident { $($species:ident),* }
-      $($rname:ident : $($($nr:literal)? $r:ident),* => $($($np:literal)? $p:ident),* @ $rate:expr)*
+      $($rname:ident:
+          $($($nr:literal)? $r:ident)? $(+ $($tnr:literal)? $tr:ident)* =>
+          $($($np:literal)? $p:ident)? $(+ $($tnp:literal)? $tp:ident)*
+          @ $rate:expr)*
       ) => {
         /// Structure representing the problem, with the species and the time.
         #[allow(non_snake_case)]
@@ -96,7 +99,7 @@ macro_rules! define_system {
                 use $crate::rand::Rng;
                 $(let $param = self.$param;)*
                 loop {
-                    $(let $rname = $rate $(* $crate::_rate_lma!($($nr)? * self.$r) )*;)*
+                    $(let $rname = $rate $(* $crate::_rate_lma!($($nr)? * self.$r))? $(* $crate::_rate_lma!($($tnr)? * self.$tr) )*;)*
                     let total_rate = 0. $(+ $rname)*;
                     // we don't want to use partial_cmp, for performance
                     #[allow(clippy::neg_cmp_op_on_partial_ord)]
@@ -110,7 +113,10 @@ macro_rules! define_system {
                         return
                     }
                     let reaction_choice = total_rate * self.rng.gen::<f64>();
-                    $crate::_choice!(self reaction_choice 0.; $($rname: $($($nr)? $r),* => $($($np)? $p),*;)*);
+                    $crate::_choice!(self reaction_choice 0.;
+                        $($rname:
+                            $($($nr)? $r)? $(+ $($tnr)? $tr)* =>
+                            $($($np)? $p)? $(+ $($tnp)? $tp)*;)*);
                 }
             }
         }
@@ -138,13 +144,22 @@ macro_rules! _rate_lma {
 macro_rules! _choice {
     ($self:ident $rc:ident $carry:expr; ) => {};
     ($self:ident $rc:ident $carry:expr;
-     $rname:ident: $($($nr:literal)? $r:ident),* => $($($np:literal)? $p:ident),*;
-     $($tail:ident: $($($tailnr:literal)? $tailr:ident),* => $($($tailnp:literal)? $tailp:ident),*;)*) => {
+     $rname:ident:
+     $($($nr:literal)? $r:ident)? $(+ $($tnr:literal)? $tr:ident)* =>
+     $($($np:literal)? $p:ident)? $(+ $($tnp:literal)? $tp:ident)*;
+     $($tail:ident:
+         $($($tailnr:literal)? $tailr:ident)? $(+ $($tailtnr:literal)? $tailtr:ident)* =>
+         $($($tailnp:literal)? $tailp:ident)? $(+ $($tailtnp:literal)? $tailtp:ident)*;)*) => {
         if $rc < $carry + $rname {
-            $($self.$r -= 1 $(+ $nr - 1)?;)*
-            $($self.$p += 1 $(+ $np - 1)?;)*
+            $($self.$r -= 1 $(+ $nr - 1)?;)?
+            $($self.$tr -= 1 $(+ $tnr - 1)?;)*
+            $($self.$p += 1 $(+ $np - 1)?;)?
+            $($self.$tp += 1 $(+ $tnp - 1)?;)*
         } else {
-            $crate::_choice!($self $rc $carry + $rname; $($tail: $($($tailnr)? $tailr),* => $($($tailnp)? $tailp),*;)*);
+            $crate::_choice!($self $rc $carry + $rname;
+                $($tail:
+                    $($($tailnr)? $tailr)? $(+ $($tailtnr)? $tailtr)* =>
+                    $($($tailnp)? $tailp)? $(+ $($tailtnp)? $tailtp)*;)*);
         }
     };
 }
@@ -156,8 +171,8 @@ mod tests {
         define_system! {
             r1 r2;
             SIR { S, I, R }
-            r_infection: S, I   => I, I @ r1
-            r_remission: I      => R    @ r2
+            r_infection: S + I  => I + I    @ r1
+            r_remission: I      => R        @ r2
         }
         let mut sir = SIR::new();
         sir.r1 = 0.1 / 10000.;
@@ -172,11 +187,11 @@ mod tests {
         define_system! {
             rtx rtl rdi rdm rdp;
             Dimers { gene, mRNA, protein, dimer }
-            r_tx : gene             => gene, mRNA       @ rtx
-            r_tl : mRNA             => mRNA, protein    @ rtl
-            r_di : protein, protein => dimer            @ rdi
-            r_dm : mRNA             =>                  @ rdm
-            r_dp : protein          =>                  @ rdp
+            r_tx : gene         => gene + mRNA      @ rtx
+            r_tl : mRNA         => mRNA + protein   @ rtl
+            r_di : 2 protein    => dimer            @ rdi
+            r_dm : mRNA         =>                  @ rdm
+            r_dp : protein      =>                  @ rdp
         }
         let mut dimers = Dimers::with_parameters(25., 1000., 0.001, 0.1, 1.);
         dimers.gene = 1;

@@ -7,7 +7,7 @@ fn macro_sir_10k(c: &mut Criterion) {
     define_system! {
         r_inf r_heal;
         SIR { S, I, R }
-        infection   : S, I  => 2 I  @ r_inf
+        infection   : S + I => 2 I  @ r_inf
         healing     : I     => R    @ r_heal
     }
     c.bench_function("macro_sir_10k", |b| {
@@ -27,7 +27,7 @@ fn macro_sir_1M(c: &mut Criterion) {
     define_system! {
         r_inf r_heal;
         SIR { S, I, R }
-        infection   : S, I  => 2 I  @ r_inf
+        infection   : S + I => 2 I  @ r_inf
         healing     : I     => R    @ r_heal
     }
     c.bench_function("macro_sir_1M", |b| {
@@ -77,11 +77,11 @@ fn macro_dimers(c: &mut Criterion) {
     define_system! {
         r_tx r_tl r_dim r_decay_mrna r_decay_prot;
         Dimers { G, M, P, D }
-        transcription : G    => G, M @ r_tx
-        translation   : M    => M, P @ r_tl
-        dimerization  : 2 P  => D    @ r_dim
-        decay_mrna    : M    =>      @ r_decay_mrna
-        decay_prot    : P    =>      @ r_decay_prot
+        transcription : G    => G + M   @ r_tx
+        translation   : M    => M + P   @ r_tl
+        dimerization  : 2 P  => D       @ r_dim
+        decay_mrna    : M    =>         @ r_decay_mrna
+        decay_prot    : P    =>         @ r_decay_prot
     }
     c.bench_function("macro_dimers", |b| {
         b.iter(|| {
@@ -152,9 +152,9 @@ fn macro_mm(c: &mut Criterion) {
     define_system! {
         r_fwd r_bwd r_cat;
         MM { E, S, ES, P }
-        forward : E, S => ES      @ r_fwd
-        backward: ES   => E, S    @ r_bwd
-        cat     : ES   => P       @ r_cat
+        forward : E + S => ES       @ r_fwd
+        backward: ES    => E + S    @ r_bwd
+        cat     : ES    => P        @ r_cat
     }
     c.bench_function("macro_mm", |b| {
         b.iter(|| {
@@ -247,22 +247,22 @@ fn macro_vilar_best_order(c: &mut Criterion) {
     define_system! {
         alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
         Vilar { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C }
-        translation_a       : Ma    => Ma, A    @ betaA
-        complexation        : A, R  => C        @ gammaC
-        decomplexation      : C     => R        @ deltaA
-        decay_prot_a        : A     =>          @ deltaA
-        decay_mRNA_a        : Ma    =>          @ deltaMA
-        transcription_p_a   : Dpa   => Dpa, Ma  @ alphapA
-        translation_r       : Mr    => Mr, R    @ betaR
-        decay_prot_r        : R     =>          @ deltaR
-        transcription_a     : Da    => Da, Ma   @ alphaA
-        activation_r        : Dr, A => Dpr      @ gammaR
-        deactivation_r      : Dpr   => Dr, A    @ thetaR
-        activation_a        : Da, A => Dpa      @ gammaA
-        deactivation_a      : Dpa   => Da, A    @ thetaA
-        transcription_p_r   : Dpr   => Dpr, Mr  @ alphapR
-        decay_mRNA_r        : Mr    =>          @ deltaMR
-        transcription_r     : Dr    => Dr, Mr   @ alphaR
+        translation_a       : Ma        => Ma + A   @ betaA
+        complexation        : A + R     => C        @ gammaC
+        decomplexation      : C         => R        @ deltaA
+        decay_prot_a        : A         =>          @ deltaA
+        decay_mRNA_a        : Ma        =>          @ deltaMA
+        transcription_p_a   : Dpa       => Dpa + Ma @ alphapA
+        translation_r       : Mr        => Mr + R   @ betaR
+        decay_prot_r        : R         =>          @ deltaR
+        transcription_a     : Da        => Da + Ma  @ alphaA
+        activation_r        : Dr + A    => Dpr      @ gammaR
+        deactivation_r      : Dpr       => Dr + A   @ thetaR
+        activation_a        : Da + A    => Dpa      @ gammaA
+        deactivation_a      : Dpa       => Da + A   @ thetaA
+        transcription_p_r   : Dpr       => Dpr + Mr @ alphapR
+        decay_mRNA_r        : Mr        =>          @ deltaMR
+        transcription_r     : Dr        => Dr + Mr  @ alphaR
     }
     c.bench_function("macro_vilar_best_order", |b| {
         b.iter(|| {
@@ -280,22 +280,22 @@ fn macro_vilar_worst_order(c: &mut Criterion) {
     define_system! {
         alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
         Vilar { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C }
-        transcription_r     : Dr    => Dr, Mr   @ alphaR
-        decay_mRNA_r        : Mr    =>          @ deltaMR
-        transcription_p_r   : Dpr   => Dpr, Mr  @ alphapR
-        deactivation_a      : Dpa   => Da, A    @ thetaA
-        activation_a        : Da, A => Dpa      @ gammaA
-        deactivation_r      : Dpr   => Dr, A    @ thetaR
-        activation_r        : Dr, A => Dpr      @ gammaR
-        transcription_a     : Da    => Da, Ma   @ alphaA
-        decay_prot_r        : R     =>          @ deltaR
-        translation_r       : Mr    => Mr, R    @ betaR
-        transcription_p_a   : Dpa   => Dpa, Ma  @ alphapA
-        decay_mRNA_a        : Ma    =>          @ deltaMA
-        decay_prot_a        : A     =>          @ deltaA
-        decomplexation      : C     => R        @ deltaA
-        complexation        : A, R  => C        @ gammaC
-        translation_a       : Ma    => Ma, A    @ betaA
+        transcription_r     : Dr        => Dr + Mr  @ alphaR
+        decay_mRNA_r        : Mr        =>          @ deltaMR
+        transcription_p_r   : Dpr       => Dpr + Mr @ alphapR
+        deactivation_a      : Dpa       => Da + A   @ thetaA
+        activation_a        : Da + A    => Dpa      @ gammaA
+        deactivation_r      : Dpr       => Dr + A   @ thetaR
+        activation_r        : Dr + A    => Dpr      @ gammaR
+        transcription_a     : Da        => Da + Ma  @ alphaA
+        decay_prot_r        : R         =>          @ deltaR
+        translation_r       : Mr        => Mr + R   @ betaR
+        transcription_p_a   : Dpa       => Dpa + Ma @ alphapA
+        decay_mRNA_a        : Ma        =>          @ deltaMA
+        decay_prot_a        : A         =>          @ deltaA
+        decomplexation      : C         => R        @ deltaA
+        complexation        : A + R     => C        @ gammaC
+        translation_a       : Ma        => Ma + A   @ betaA
     }
     c.bench_function("macro_vilar_worst_order", |b| {
         b.iter(|| {
@@ -313,22 +313,22 @@ fn macro_vilar(c: &mut Criterion) {
     define_system! {
         alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
         Vilar { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C }
-        activation_a        : Da, A => Dpa      @ gammaA
-        activation_r        : Dr, A => Dpr      @ gammaR
-        deactivation_a      : Dpa   => Da, A    @ thetaA
-        deactivation_r      : Dpr   => Dr, A    @ thetaR
-        transcription_a     : Da    => Da, Ma   @ alphaA
-        transcription_r     : Dr    => Dr, Mr   @ alphaR
-        transcription_p_a   : Dpa   => Dpa, Ma  @ alphapA
-        transcription_p_r   : Dpr   => Dpr, Mr  @ alphapR
-        translation_a       : Ma    => Ma, A    @ betaA
-        translation_r       : Mr    => Mr, R    @ betaR
-        complexation        : A, R  => C        @ gammaC
-        decomplexation      : C     => R        @ deltaA
-        decay_mRNA_a        : Ma    =>          @ deltaMA
-        decay_mRNA_r        : Mr    =>          @ deltaMR
-        decay_prot_a        : A     =>          @ deltaA
-        decay_prot_r        : R     =>          @ deltaR
+        activation_a        : Da + A    => Dpa      @ gammaA
+        activation_r        : Dr + A    => Dpr      @ gammaR
+        deactivation_a      : Dpa       => Da + A   @ thetaA
+        deactivation_r      : Dpr       => Dr + A   @ thetaR
+        transcription_a     : Da        => Da + Ma  @ alphaA
+        transcription_r     : Dr        => Dr + Mr  @ alphaR
+        transcription_p_a   : Dpa       => Dpa + Ma @ alphapA
+        transcription_p_r   : Dpr       => Dpr + Mr @ alphapR
+        translation_a       : Ma        => Ma + A   @ betaA
+        translation_r       : Mr        => Mr + R   @ betaR
+        complexation        : A + R     => C        @ gammaC
+        decomplexation      : C         => R        @ deltaA
+        decay_mRNA_a        : Ma        =>          @ deltaMA
+        decay_mRNA_r        : Mr        =>          @ deltaMR
+        decay_prot_a        : A         =>          @ deltaA
+        decay_prot_r        : R         =>          @ deltaR
     }
     c.bench_function("macro_vilar", |b| {
         b.iter(|| {

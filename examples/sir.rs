@@ -4,8 +4,8 @@ use rebop::define_system;
 define_system! {
     r_inf r_heal;
     SIR { S, I, R }
-    infection   : S, I  => I, I @ r_inf
-    healing     : I     => R    @ r_heal
+    infection   : S + I => 2 I @ r_inf
+    healing     : I     => R   @ r_heal
 }
 
 fn main() {

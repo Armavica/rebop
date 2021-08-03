@@ -1,4 +1,3 @@
-![Maintenance](https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg)
 [![Build status](https://github.com/Armavica/rebop/actions/workflows/rust.yml/badge.svg)](https://github.com/Armavica/rebop/actions/)
 [![Crates.io](https://img.shields.io/crates/v/rebop)](https://crates.io/crates/rebop/)
 [![Docs.rs](https://docs.rs/rebop/badge.svg)](https://docs.rs/rebop/)
@@ -31,8 +30,8 @@ use rebop::define_system;
 define_system! {
     r_tx r_tl r_dim r_decay_mRNA r_decay_prot;
     Dimers { gene, mRNA, protein, dimer }
-    transcription   : gene      => gene, mRNA       @ r_tx
-    translation     : mRNA      => mRNA, protein    @ r_tl
+    transcription   : gene      => gene + mRNA      @ r_tx
+    translation     : mRNA      => mRNA + protein   @ r_tl
     dimerization    : 2 protein => dimer            @ r_dim
     decay_mRNA      : mRNA      =>                  @ r_decay_mRNA
     decay_protein   : protein   =>                  @ r_decay_prot
@@ -63,7 +62,7 @@ use rebop::define_system;
 define_system! {
     r_inf r_heal;
     SIR { S, I, R }
-    infection   : S, I  => 2 I  @ r_inf
+    infection   : S + I => 2 I  @ r_inf
     healing     : I     => R    @ r_heal
 }
 

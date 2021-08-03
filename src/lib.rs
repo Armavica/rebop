@@ -24,8 +24,8 @@
 //! define_system! {
 //!     r_tx r_tl r_dim r_decay_mRNA r_decay_prot;
 //!     Dimers { gene, mRNA, protein, dimer }
-//!     transcription   : gene      => gene, mRNA       @ r_tx
-//!     translation     : mRNA      => mRNA, protein    @ r_tl
+//!     transcription   : gene      => gene + mRNA      @ r_tx
+//!     translation     : mRNA      => mRNA + protein   @ r_tl
 //!     dimerization    : 2 protein => dimer            @ r_dim
 //!     decay_mRNA      : mRNA      =>                  @ r_decay_mRNA
 //!     decay_protein   : protein   =>                  @ r_decay_prot
@@ -41,8 +41,8 @@
 //! # define_system! {
 //! #     r_tx r_tl r_dim r_decay_mRNA r_decay_prot;
 //! #     Dimers { gene, mRNA, protein, dimer }
-//! #     transcription   : gene      => gene, mRNA       @ r_tx
-//! #     translation     : mRNA      => mRNA, protein    @ r_tl
+//! #     transcription   : gene      => gene + mRNA      @ r_tx
+//! #     translation     : mRNA      => mRNA + protein   @ r_tl
 //! #     dimerization    : 2 protein => dimer            @ r_dim
 //! #     decay_mRNA      : mRNA      =>                  @ r_decay_mRNA
 //! #     decay_protein   : protein   =>                  @ r_decay_prot
@@ -66,7 +66,7 @@
 //! define_system! {
 //!     r_inf r_heal;
 //!     SIR { S, I, R }
-//!     infection   : S, I  => 2 I  @ r_inf
+//!     infection   : S + I => 2 I  @ r_inf
 //!     healing     : I     => R    @ r_heal
 //! }
 //!

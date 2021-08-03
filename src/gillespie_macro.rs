@@ -53,9 +53,6 @@ macro_rules! define_system {
       $name:ident { $($species:ident),* }
       $($rname:ident : $($r:ident),* => $($p:ident),* @ $rate:expr)*
       ) => {
-        use rand::{Rng, SeedableRng};
-        use rand::rngs::SmallRng;
-        use rand_distr::Exp1;
         /// Structure representing the problem, with the species and the time.
         #[allow(non_snake_case)]
         #[derive(Clone, Debug)]
@@ -63,36 +60,40 @@ macro_rules! define_system {
             $($species:isize,)*
             $($param:f64,)*
             t: f64,
-            rng: SmallRng,
+            rng: $crate::rand::rngs::SmallRng,
         }
         impl $name {
             /// Constructs an object representing the problem.
             fn new() -> Self {
+                use $crate::rand::{Rng, SeedableRng};
                 $name {
                     $($species: 0,)*
                     $($param: f64::NAN,)*
                     t: 0.,
-                    rng: SmallRng::from_entropy()
+                    rng: $crate::rand::rngs::SmallRng::from_entropy()
                 }
             }
             /// Seeds the random number generator.
             fn seed(&mut self, seed: u64) {
-                self.rng = SmallRng::seed_from_u64(seed);
+                use $crate::rand::{Rng, SeedableRng};
+                self.rng = $crate::rand::rngs::SmallRng::seed_from_u64(seed);
             }
             /// Constructs an object representing the problem,
             /// specifying parameter values.
             #[allow(non_snake_case)]
             fn with_parameters($($param: f64),*) -> Self {
+                use $crate::rand::{Rng, SeedableRng};
                 $name {
                     $($species: 0,)*
                     $($param,)*
                     t: 0.,
-                    rng: SmallRng::from_entropy()
+                    rng: $crate::rand::rngs::SmallRng::from_entropy()
                 }
             }
             /// Simulates the problem until `t = tmax`.
             #[allow(non_snake_case)]
             fn advance_until(&mut self, tmax: f64) {
+                use $crate::rand::Rng;
                 $(let $param = self.$param;)*
                 loop {
                     $(let $rname = $rate $(* (self.$r as f64))*;)*
@@ -103,7 +104,7 @@ macro_rules! define_system {
                         self.t = tmax;
                         return
                     }
-                    self.t += self.rng.sample::<f64, _>(Exp1) / total_rate;
+                    self.t += self.rng.sample::<f64, _>($crate::rand_distr::Exp1) / total_rate;
                     if self.t > tmax {
                         self.t = tmax;
                         return

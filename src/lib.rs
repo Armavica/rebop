@@ -9,6 +9,9 @@ use pyo3::prelude::*;
 use pyo3::class::basic::PyObjectProtocol;
 use std::collections::HashMap;
 
+pub use rand;
+pub use rand_distr;
+
 pub mod gillespie;
 mod gillespie_macro;
 

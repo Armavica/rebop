@@ -342,6 +342,309 @@ fn macro_vilar(c: &mut Criterion) {
     });
 }
 
+fn macro_ring_10(c: &mut Criterion) {
+    define_system! {
+        k;
+        Ring { A0, A1, A2, A3, A4, A5, A6, A7, A8, A9 }
+        r0  : A0    => A1   @ k
+        r1  : A1    => A2   @ k
+        r2  : A2    => A3   @ k
+        r3  : A3    => A4   @ k
+        r4  : A4    => A5   @ k
+        r5  : A5    => A6   @ k
+        r6  : A6    => A7   @ k
+        r7  : A7    => A8   @ k
+        r8  : A8    => A9   @ k
+        r9  : A9    => A0  @ k
+    }
+    c.bench_function("macro_ring_10", |b| {
+        b.iter(|| {
+            let mut ring = Ring::new();
+            ring.k = 1.;
+            ring.A0 = 1000;
+            ring.advance_until(100.);
+        })
+    });
+}
+
+fn macro_ring_20(c: &mut Criterion) {
+    define_system! {
+        k;
+        Ring {
+            A0, A1, A2, A3, A4, A5, A6, A7, A8, A9,
+            A10, A11, A12, A13, A14, A15, A16, A17, A18, A19
+        }
+        r0  : A0    => A1   @ k
+        r1  : A1    => A2   @ k
+        r2  : A2    => A3   @ k
+        r3  : A3    => A4   @ k
+        r4  : A4    => A5   @ k
+        r5  : A5    => A6   @ k
+        r6  : A6    => A7   @ k
+        r7  : A7    => A8   @ k
+        r8  : A8    => A9   @ k
+        r9  : A9    => A10  @ k
+        r10 : A10   => A11  @ k
+        r11 : A11   => A12  @ k
+        r12 : A12   => A13  @ k
+        r13 : A13   => A14  @ k
+        r14 : A14   => A15  @ k
+        r15 : A15   => A16  @ k
+        r16 : A16   => A17  @ k
+        r17 : A17   => A18  @ k
+        r18 : A18   => A19  @ k
+        r19 : A19   => A0   @ k
+    }
+    c.bench_function("macro_ring_20", |b| {
+        b.iter(|| {
+            let mut ring = Ring::new();
+            ring.k = 1.;
+            ring.A0 = 1000;
+            ring.advance_until(100.);
+        })
+    });
+}
+
+fn macro_ring_30(c: &mut Criterion) {
+    define_system! {
+        k;
+        Ring {
+            A0, A1, A2, A3, A4, A5, A6, A7, A8, A9,
+            A10, A11, A12, A13, A14, A15, A16, A17, A18, A19,
+            A20, A21, A22, A23, A24, A25, A26, A27, A28, A29
+        }
+        r0  : A0    => A1   @ k
+        r1  : A1    => A2   @ k
+        r2  : A2    => A3   @ k
+        r3  : A3    => A4   @ k
+        r4  : A4    => A5   @ k
+        r5  : A5    => A6   @ k
+        r6  : A6    => A7   @ k
+        r7  : A7    => A8   @ k
+        r8  : A8    => A9   @ k
+        r9  : A9    => A10  @ k
+        r10 : A10   => A11  @ k
+        r11 : A11   => A12  @ k
+        r12 : A12   => A13  @ k
+        r13 : A13   => A14  @ k
+        r14 : A14   => A15  @ k
+        r15 : A15   => A16  @ k
+        r16 : A16   => A17  @ k
+        r17 : A17   => A18  @ k
+        r18 : A18   => A19  @ k
+        r19 : A19   => A20  @ k
+        r20 : A20   => A21  @ k
+        r21 : A21   => A22  @ k
+        r22 : A22   => A23  @ k
+        r23 : A23   => A24  @ k
+        r24 : A24   => A25  @ k
+        r25 : A25   => A26  @ k
+        r26 : A26   => A27  @ k
+        r27 : A27   => A28  @ k
+        r28 : A28   => A29  @ k
+        r29 : A29   => A0   @ k
+    }
+    c.bench_function("macro_ring_30", |b| {
+        b.iter(|| {
+            let mut ring = Ring::new();
+            ring.k = 1.;
+            ring.A0 = 1000;
+            ring.advance_until(100.);
+        })
+    });
+}
+
+fn macro_ring_40(c: &mut Criterion) {
+    define_system! {
+        k;
+        Ring {
+            A0, A1, A2, A3, A4, A5, A6, A7, A8, A9,
+            A10, A11, A12, A13, A14, A15, A16, A17, A18, A19,
+            A20, A21, A22, A23, A24, A25, A26, A27, A28, A29,
+            A30, A31, A32, A33, A34, A35, A36, A37, A38, A39
+        }
+        r0  : A0    => A1   @ k
+        r1  : A1    => A2   @ k
+        r2  : A2    => A3   @ k
+        r3  : A3    => A4   @ k
+        r4  : A4    => A5   @ k
+        r5  : A5    => A6   @ k
+        r6  : A6    => A7   @ k
+        r7  : A7    => A8   @ k
+        r8  : A8    => A9   @ k
+        r9  : A9    => A10  @ k
+        r10 : A10   => A11  @ k
+        r11 : A11   => A12  @ k
+        r12 : A12   => A13  @ k
+        r13 : A13   => A14  @ k
+        r14 : A14   => A15  @ k
+        r15 : A15   => A16  @ k
+        r16 : A16   => A17  @ k
+        r17 : A17   => A18  @ k
+        r18 : A18   => A19  @ k
+        r19 : A19   => A20  @ k
+        r20 : A20   => A21  @ k
+        r21 : A21   => A22  @ k
+        r22 : A22   => A23  @ k
+        r23 : A23   => A24  @ k
+        r24 : A24   => A25  @ k
+        r25 : A25   => A26  @ k
+        r26 : A26   => A27  @ k
+        r27 : A27   => A28  @ k
+        r28 : A28   => A29  @ k
+        r29 : A29   => A30  @ k
+        r30 : A30   => A31  @ k
+        r31 : A31   => A32  @ k
+        r32 : A32   => A33  @ k
+        r33 : A33   => A34  @ k
+        r34 : A34   => A35  @ k
+        r35 : A35   => A36  @ k
+        r36 : A36   => A37  @ k
+        r37 : A37   => A38  @ k
+        r38 : A38   => A39  @ k
+        r39 : A39   => A0   @ k
+    }
+    c.bench_function("macro_ring_40", |b| {
+        b.iter(|| {
+            let mut ring = Ring::new();
+            ring.k = 1.;
+            ring.A0 = 1000;
+            ring.advance_until(100.);
+        })
+    });
+}
+
+fn macro_ring_50(c: &mut Criterion) {
+    define_system! {
+        k;
+        Ring {
+            A0, A1, A2, A3, A4, A5, A6, A7, A8, A9,
+            A10, A11, A12, A13, A14, A15, A16, A17, A18, A19,
+            A20, A21, A22, A23, A24, A25, A26, A27, A28, A29,
+            A30, A31, A32, A33, A34, A35, A36, A37, A38, A39,
+            A40, A41, A42, A43, A44, A45, A46, A47, A48, A49
+        }
+        r0  : A0    => A1   @ k
+        r1  : A1    => A2   @ k
+        r2  : A2    => A3   @ k
+        r3  : A3    => A4   @ k
+        r4  : A4    => A5   @ k
+        r5  : A5    => A6   @ k
+        r6  : A6    => A7   @ k
+        r7  : A7    => A8   @ k
+        r8  : A8    => A9   @ k
+        r9  : A9    => A10  @ k
+        r10 : A10   => A11  @ k
+        r11 : A11   => A12  @ k
+        r12 : A12   => A13  @ k
+        r13 : A13   => A14  @ k
+        r14 : A14   => A15  @ k
+        r15 : A15   => A16  @ k
+        r16 : A16   => A17  @ k
+        r17 : A17   => A18  @ k
+        r18 : A18   => A19  @ k
+        r19 : A19   => A20  @ k
+        r20 : A20   => A21  @ k
+        r21 : A21   => A22  @ k
+        r22 : A22   => A23  @ k
+        r23 : A23   => A24  @ k
+        r24 : A24   => A25  @ k
+        r25 : A25   => A26  @ k
+        r26 : A26   => A27  @ k
+        r27 : A27   => A28  @ k
+        r28 : A28   => A29  @ k
+        r29 : A29   => A30  @ k
+        r30 : A30   => A31  @ k
+        r31 : A31   => A32  @ k
+        r32 : A32   => A33  @ k
+        r33 : A33   => A34  @ k
+        r34 : A34   => A35  @ k
+        r35 : A35   => A36  @ k
+        r36 : A36   => A37  @ k
+        r37 : A37   => A38  @ k
+        r38 : A38   => A39  @ k
+        r39 : A39   => A30  @ k
+        r40 : A40   => A41  @ k
+        r41 : A41   => A42  @ k
+        r42 : A42   => A43  @ k
+        r43 : A43   => A44  @ k
+        r44 : A44   => A45  @ k
+        r45 : A45   => A46  @ k
+        r46 : A46   => A47  @ k
+        r47 : A47   => A48  @ k
+        r48 : A48   => A49  @ k
+        r49 : A49   => A0   @ k
+    }
+    c.bench_function("macro_ring_50", |b| {
+        b.iter(|| {
+            let mut ring = Ring::new();
+            ring.k = 1.;
+            ring.A0 = 1000;
+            ring.advance_until(100.);
+        })
+    });
+}
+
+fn api_ring(n: usize, k: f64) -> Gillespie<usize> {
+    let mut x0 = vec![0; n];
+    x0[0] = 1000;
+    let mut ring = Gillespie::new(x0);
+    for i in 0..n {
+        let mut actions = vec![0; n];
+        actions[i] -= 1;
+        actions[(i+1)%n] += 1;
+        ring.add_reaction(Rate::new(k, &[SRate::LMA(i)]), actions);
+    }
+    ring
+}
+
+fn api_ring_10(c: &mut Criterion) {
+    c.bench_function("api_ring_10", |b| {
+        b.iter(|| {
+            let mut ring = api_ring(10, 1.);
+            ring.advance_until(100.);
+        })
+    });
+}
+
+fn api_ring_20(c: &mut Criterion) {
+    c.bench_function("api_ring_20", |b| {
+        b.iter(|| {
+            let mut ring = api_ring(20, 1.);
+            ring.advance_until(100.);
+        })
+    });
+}
+
+fn api_ring_30(c: &mut Criterion) {
+    c.bench_function("api_ring_30", |b| {
+        b.iter(|| {
+            let mut ring = api_ring(30, 1.);
+            ring.advance_until(100.);
+        })
+    });
+}
+
+fn api_ring_40(c: &mut Criterion) {
+    c.bench_function("api_ring_40", |b| {
+        b.iter(|| {
+            let mut ring = api_ring(40, 1.);
+            ring.advance_until(100.);
+        })
+    });
+}
+
+fn api_ring_50(c: &mut Criterion) {
+    c.bench_function("api_ring_50", |b| {
+        b.iter(|| {
+            let mut ring = api_ring(50, 1.);
+            ring.advance_until(100.);
+        })
+    });
+}
+
+
+
 criterion_group!(
     benches,
     api_sir_10k,
@@ -357,5 +660,16 @@ criterion_group!(
     macro_vilar,
     macro_vilar_best_order,
     macro_vilar_worst_order,
+    macro_ring_10,
+    api_ring_10,
+    macro_ring_20,
+    api_ring_20,
+    macro_ring_30,
+    api_ring_30,
+    macro_ring_40,
+    api_ring_40,
+    macro_ring_50,
+    api_ring_50,
 );
+
 criterion_main!(benches);

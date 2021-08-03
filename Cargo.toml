@@ -8,7 +8,10 @@ categories = ["algorithms", "mathematics", "science", "simulation"]
 homepage = "https://armavica.github.io/rebop/"
 repository = "https://github.com/Armavica/rebop/"
 description = "A fast stochastic simulator for chemical reaction networks"
-keywords = ["gillespie-algorithm", "systems-biology", "stochastic"]
+keywords = ["gillespie-algorithm", "systems-biology", "stochastic", "scientific-computing"]
+
+[badges]
+maintenance = { status = "actively-developed" }
 
 [dependencies]
 pyo3 = { version = "0.14.1", features = ["extension-module"] }
@@ -19,8 +22,9 @@ rand_distr = "0.4.1"
 criterion = "0.3.4"
 
 [lib]
-bench = false
+path = "src/lib.rs"
 crate-type = ["lib", "cdylib"]
+bench = false
 
 [[bin]]
 name = "vilar"

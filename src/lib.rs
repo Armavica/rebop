@@ -1,9 +1,237 @@
-//! rebop is a fast stochastic simulator for chemical reaction networks.
+//! rebop is a fast stochastic simulator for well-mixed chemical
+//! reaction networks.
 //!
-//! It offers two independent APIs to describe and simulate reaction
-//! networks: a macro-based implemented by [`define_system`], and a
-//! function-based implemented by the module [`gillespie`].
+//! Performance and ergonomics are taken very seriously.  For this reason,
+//! two independent APIs are provided to describe and simulate reaction
+//! networks:
 //!
+//! * a macro-based DSL implemented by [`define_system`], usually the
+//! most efficient, but that requires to compile a rust program;
+//! * a function-based API implemented by the module [`gillespie`], also
+//! available through Python bindings.  This one does not require a rust
+//! compilation and allows the system to be defined at run time.  It is
+//! typically 2 or 3 times slower as the macro DSL, but still faster
+//! than all other software tried.
+//!
+//! # The macro DSL
+//!
+//! It currently only supports reaction rates defined by the law of mass
+//! action.  The following macro defines a dimerization reaction network
+//! naturally:
+//!
+//! ```rust
+//! use rebop::define_system;
+//! define_system! {
+//!     r_tx r_tl r_dim r_decay_mRNA r_decay_prot;
+//!     Dimers { gene, mRNA, protein, dimer }
+//!     transcription   : gene      => gene, mRNA       @ r_tx
+//!     translation     : mRNA      => mRNA, protein    @ r_tl
+//!     dimerization    : 2 protein => dimer            @ r_dim
+//!     decay_mRNA      : mRNA      =>                  @ r_decay_mRNA
+//!     decay_protein   : protein   =>                  @ r_decay_prot
+//! }
+//! ```
+//!
+//! To simulate the system, put this definition in a rust code file and
+//! instanciate the problem, set the parameters, the initial values, and
+//! launch the simulation:
+//!
+//! ```rust
+//! # use rebop::define_system;
+//! # define_system! {
+//! #     r_tx r_tl r_dim r_decay_mRNA r_decay_prot;
+//! #     Dimers { gene, mRNA, protein, dimer }
+//! #     transcription   : gene      => gene, mRNA       @ r_tx
+//! #     translation     : mRNA      => mRNA, protein    @ r_tl
+//! #     dimerization    : 2 protein => dimer            @ r_dim
+//! #     decay_mRNA      : mRNA      =>                  @ r_decay_mRNA
+//! #     decay_protein   : protein   =>                  @ r_decay_prot
+//! # }
+//! let mut problem = Dimers::new();
+//! problem.r_tx = 25.0;
+//! problem.r_tl = 1000.0;
+//! problem.r_dim = 0.001;
+//! problem.r_decay_mRNA = 0.1;
+//! problem.r_decay_prot = 1.0;
+//! problem.gene = 1;
+//! problem.advance_until(1.0);
+//! println!("t = {}: dimer = {}", problem.t, problem.dimer);
+//! ```
+//!
+//! Or for the classic SIR example:
+//!
+//! ```rust
+//! use rebop::define_system;
+//!
+//! define_system! {
+//!     r_inf r_heal;
+//!     SIR { S, I, R }
+//!     infection   : S, I  => 2 I  @ r_inf
+//!     healing     : I     => R    @ r_heal
+//! }
+//!
+//! fn main() {
+//!     let mut problem = SIR::new();
+//!     problem.r_inf = 1e-4;
+//!     problem.r_heal = 0.01;
+//!     problem.S = 999;
+//!     problem.I = 1;
+//!     println!("time,S,I,R");
+//!     for t in 0..250 {
+//!         problem.advance_until(t as f64);
+//!         println!("{},{},{},{}", problem.t, problem.S, problem.I, problem.R);
+//!     }
+//! }
+//! ```
+//!
+//! which can produce an output similar to this one:
+//!
+//! ![Typical SIR output](https://github.com/Armavica/rebop/blob/master/sir.png)
+//!
+//! # The traditional API
+//!
+//! The function-based API allows models to be defined programmatically
+//! in Rust or in Python.  If one programs in Rust, one should generally
+//! prefer the macro DSL, unless one needs more complex rates, or if the
+//! model needs to be defined programmatically.  The SIR model is defined as:
+//!
+//! ```rust
+//! use rebop::index_enum;
+//! use rebop::gillespie::{AsIndex, Gillespie, Rate, SRate};
+//!
+//! index_enum! { enum SIR { S, I, R } }
+//! let mut sir = Gillespie::new([999, 1, 0]);
+//! // S + I => 2 I with rate 1e-4
+//! sir.add_reaction(
+//!     Rate::new(1e-4, &[SRate::LMA(SIR::S), SRate::LMA(SIR::I)]),
+//!     [-1, 1, 0]);
+//! // I => R with rate 0.01
+//! sir.add_reaction(Rate::new(0.01, &[SRate::LMA(SIR::I)]), [0, -1, 1]);
+//!
+//! println!("time,S,I,R");
+//! for t in 0..250 {
+//!     sir.advance_until(t as f64);
+//!     println!("{},{},{},{}", sir.get_time(), sir.get_species(&SIR::S), sir.get_species(&SIR::I), sir.get_species(&SIR::R));
+//! }
+//! ```
+//!
+//! # Python bindings
+//!
+//! This API shines through the Python bindings which allow one to
+//! define a model easily:
+//!
+//! ```python
+//! import rebop
+//!
+//! sir = rebop.Gillespie()
+//! sir.add_reaction(1e-4, ['S', 'I'], ['I', 'I'])
+//! sir.add_reaction(0.01, ['I'], ['R'])
+//! print(sir)
+//!
+//! times, sol = sir.run({'S': 999, 'I': 1}, tmax=250, nb_steps=250)
+//! ```
+//!
+//! While a pip package is being worked on, to run this Python file, you
+//! must currently first compile rebop with `cargo build --release`
+//! and copy or link the library next to the script: `ln -s
+//! target/release/librebop.so rebop.so`.
+//!
+//! # Performance
+//!
+//! Performance is taken very seriously, and as a result, rebop
+//! outperforms every other package and programming language that we
+//! tried.
+//!
+//! *Disclaimer*: Most of this software currently contains much more
+//! features than rebop (e.g. spatial models, custom reaction rates,
+//! etc.).  Some of these features might have required them to make
+//! compromises on speed.  Moreover, as much as we tried to keep the
+//! comparison fair, some return too much or too little data, or write
+//! them on disk.  The baseline that we tried to approach for all these
+//! programs is the following: *the model was just modified, we want
+//! to simulate it `N` times and print regularly spaced measurement
+//! points*.  This means that we always include initialization or
+//! (re-)compilation time if applicable.  We think that it is the most
+//! typical use-case of a researcher who works on the model.  This
+//! benchmark methods allows to record both the initialization time
+//! (y-intercept) and the simulation time per simulation (slope).
+//!
+//! Many small benchmarks on toy examples are tracked to guide the
+//! development.  To compare the performance with other software,
+//! we used a real-world model of low-medium size (9 species and 16
+//! reactions): the Vilar oscillator (*Mechanisms of noise-resistance
+//! in genetic oscillators*, Vilar et al., PNAS 2002).  Here, we
+//! simulate this model from `t=0` to `t=200`, reporting the state at
+//! time intervals of `1` time unit.
+//!
+//! ![Vilar oscillator benchmark](https://github.com/Armavica/rebop/blob/master/benches/vilar/vilar.png)
+//!
+//! We can see that rebop's macro DSL is the fastest of all, both in
+//! time per simulation, and with compilation time included.  The second
+//! fastest is rebop's traditional API invoked by convenience through
+//! the Python bindings.
+//!
+//! # Features to come
+//!
+//! * compartment volumes
+//! * arbitrary reaction rates
+//! * other SSA algorithms
+//! * tau-leaping
+//! * adaptive tau-leaping
+//! * hybrid models (continuous and discrete)
+//! * SBML
+//! * CLI interface
+//! * parameter estimation
+//! * local sensitivity analysis
+//! * parallelization
+//!
+//! # Features probably not to come
+//!
+//! * events
+//! * space (reaction-diffusion systems)
+//! * rule modelling
+//!
+//! # Benchmark ideas
+//!
+//! * DSMTS
+//! * purely decoupled exponentials
+//! * ring
+//! * Toggle switch
+//! * LacZ, LacY/LacZ (from STOCKS)
+//! * Lotka Volterra, Michaelis--Menten, Network (from StochSim)
+//! * G protein (from SimBiology)
+//! * Brusselator / Oregonator (from Cellware)
+//! * GAL, repressilator (from Dizzy)
+//!
+//! # Similar software
+//!
+//! ## Maintained
+//!
+//! * [GillesPy2](https://github.com/StochSS/GillesPy2)
+//! * [STEPS](https://github.com/CNS-OIST/STEPS)
+//! * [SimBiology](https://fr.mathworks.com/help/simbio/)
+//! * [Copasi](http://copasi.org/)
+//! * [BioNetGen](http://bionetgen.org/)
+//! * [VCell](http://vcell.org/)
+//! * [Smoldyn](http://www.smoldyn.org/)
+//! * [KaSim](https://kappalanguage.org/)
+//! * [StochPy](https://github.com/SystemsBioinformatics/stochpy)
+//! * [BioSimulator.jl](https://github.com/alanderos91/BioSimulator.jl)
+//! * [DiffEqJump.jl](https://github.com/SciML/DiffEqJump.jl)
+//! * [Gillespie.jl](https://github.com/sdwfrost/Gillespie.jl)
+//! * [GillespieSSA2](https://github.com/rcannood/GillespieSSA2)
+//! * [Cayenne](https://github.com/quantumbrake/cayenne)
+//!
+//! ## Seem unmaintained
+//!
+//! * [Dizzy](http://magnet.systemsbiology.net/software/Dizzy/)
+//! * [Cellware](http://www.bii.a-star.edu.sg/achievements/applications/cellware/)
+//! * [STOCKS](https://doi.org/10.1093/bioinformatics/18.3.470)
+//! * [StochSim](http://lenoverelab.org/perso/lenov/stochsim.html)
+//! * [Systems biology toolbox](http://www.sbtoolbox.org/)
+//! * [StochKit](https://github.com/StochSS/StochKit) (successor: GillesPy2)
+//! * [SmartCell](http://software.crg.es/smartcell/)
+//! * [NFsim](http://michaelsneddon.net/nfsim/)
 
 use pyo3::prelude::*;
 use pyo3::class::basic::PyObjectProtocol;

@@ -152,6 +152,12 @@ target/release/librebop.so rebop.so`.
 * [VCell](http://vcell.org/)
 * [Smoldyn](http://www.smoldyn.org/)
 * [KaSim](https://kappalanguage.org/)
+* [StochPy](https://github.com/SystemsBioinformatics/stochpy)
+* [BioSimulator.jl](https://github.com/alanderos91/BioSimulator.jl)
+* [DiffEqJump.jl](https://github.com/SciML/DiffEqJump.jl)
+* [Gillespie.jl](https://github.com/sdwfrost/Gillespie.jl)
+* [GillespieSSA2](https://github.com/rcannood/GillespieSSA2)
+* [Cayenne](https://github.com/quantumbrake/cayenne)
 
 #### Seem unmaintained
 
@@ -160,7 +166,7 @@ target/release/librebop.so rebop.so`.
 * [STOCKS](https://doi.org/10.1093/bioinformatics/18.3.470)
 * [StochSim](http://lenoverelab.org/perso/lenov/stochsim.html)
 * [Systems biology toolbox](http://www.sbtoolbox.org/)
-* [StochKit](https://github.com/StochSS/StochKit)
+* [StochKit](https://github.com/StochSS/StochKit) (successor: GillesPy2)
 * [SmartCell](http://software.crg.es/smartcell/)
 * [NFsim](http://michaelsneddon.net/nfsim/)
 

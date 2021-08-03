@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* The Rngs can now be seeded.
+* `SRate::LMA2` was reintroduced, along with `SRate::LMAn`, implementing
+    2nd and nth-order LMA.  They cannot be implemented in terms of
+    `SRate::LMA`.
+* Added nth-order reactants and products to the macro DSL.
+
+### Changed
+
+* The libraries `rand` and `rand_distr` are now reexported to be more
+    practical, notably this allows several system definitions in the
+    same file.
+
 ## [0.4.0] -- 2021-08-02
 
 This release introduces a proof of concept for Python bindings, as well

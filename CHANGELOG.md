@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] -- 2022-02-10
+
+The major change of this release is a change in the macro DSL to write
+reactions even more naturally, with `+` instead of `,`.  Example:
+`translation: mRNA => mRNA + GFP @ trans_rate`.
+
+It comes also with some performance improvements, mostly on the API side (~5%).
+
 ### Added
 
 * The Rngs can now be seeded.

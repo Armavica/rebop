@@ -10,7 +10,7 @@
 //! * a function-based API implemented by the module [`gillespie`], also
 //! available through Python bindings.  This one does not require a rust
 //! compilation and allows the system to be defined at run time.  It is
-//! typically 2 or 3 times slower as the macro DSL, but still faster
+//! typically 2 or 3 times slower than the macro DSL, but still faster
 //! than all other software tried.
 //!
 //! # The macro DSL

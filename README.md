@@ -127,10 +127,9 @@ print(sir)
 times, sol = sir.run({'S': 999, 'I': 1}, tmax=250, nb_steps=250)
 ```
 
-While a pip package is being worked on, to run this Python file, you
-must currently first compile rebop with `cargo build --release`
-and copy or link the library next to the script: `ln -s
-target/release/librebop.so rebop.so`.
+You can test this code by installing `rebop` with `pip install rebop`.  To
+build the Python bindings from source, the simplest is to clone it and use
+`maturin develop`.
 
 ## Performance
 

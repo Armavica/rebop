@@ -225,6 +225,7 @@ mod tests {
         }
         let mut birth_death = BirthDeath::new();
         birth_death.r_birth = 10.;
+        // forgot to define r_death which is then NaN, so no reaction happens
         birth_death.advance_until(100.);
         assert!((birth_death.t - 100.).abs() < f64::EPSILON);
         assert_eq!(birth_death.A, 0);

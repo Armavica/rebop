@@ -12,6 +12,7 @@ pub trait AsIndex {
     fn as_index(&self) -> usize;
 }
 
+// For the python implementation
 impl AsIndex for usize {
     fn as_index(&self) -> usize {
         *self
@@ -104,9 +105,9 @@ impl<T: AsIndex + Clone> Gillespie<T> {
     /// ```
     /// use rebop::gillespie::Gillespie;
     /// let p: Gillespie<usize> = Gillespie::new([0, 1, 10, 100]);
-    /// assert_eq!(p.get_species(&2), 10);
+    /// assert_eq!(p.get_species(2), 10);
     /// ```
-    pub fn get_species(&self, s: &T) -> isize {
+    pub fn get_species(&self, s: T) -> isize {
         self.species[s.as_index()]
     }
     /// Simulates the problem until `tmax`.
@@ -122,10 +123,10 @@ impl<T: AsIndex + Clone> Gillespie<T> {
     /// dimers.add_reaction(Rate::new(0.1, &[SRate::LMA(Dimers::M)]), [0, -1, 0, 0]);
     /// dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::P)]), [0, 0, -1, 0]);
     /// assert_eq!(dimers.get_time(), 0.);
-    /// assert_eq!(dimers.get_species(&Dimers::D), 0);
+    /// assert_eq!(dimers.get_species(Dimers::D), 0);
     /// dimers.advance_until(1.);
     /// assert_eq!(dimers.get_time(), 1.);
-    /// assert!(dimers.get_species(&Dimers::D) > 0);
+    /// assert!(dimers.get_species(Dimers::D) > 0);
     /// ```
     pub fn advance_until(&mut self, tmax: f64) {
         let mut rates = vec![f64::NAN; self.reactions.len()];
@@ -191,14 +192,6 @@ pub enum SRate<T: AsIndex> {
     NegHill(T, f64, f64),
 }
 
-impl<T: AsIndex> SRate<T> {
-    fn as_index(&self) -> usize {
-        match self {
-            SRate::LMA(x) | SRate::LMA2(x) | SRate::LMAn(x, _) | SRate::MM(x, _) | SRate::PosHill(x, _, _) | SRate::NegHill(x, _, _) => x.as_index(),
-        }
-    }
-}
-
 impl<T: AsIndex + Clone> Rate<T> {
     /// Creates a reaction rate with a numerical constant and several factors.
     ///
@@ -224,16 +217,12 @@ impl<T: AsIndex + Clone> Rate<T> {
                 SRate::LMAn(ref s, n) => for i in 0..n {
                     r *= (species[s.as_index()] - i as isize) as f64;
                 },
-                SRate::MM(ref s, k) => {
-                    r *= species[s.as_index()] as f64 / (k + species[s.as_index()] as f64)
-                }
-                SRate::PosHill(ref s, k, n) => {
-                    r *= (species[s.as_index()] as f64).powf(n)
-                        / (k.powf(n) + (species[s.as_index()] as f64).powf(n))
-                }
-                SRate::NegHill(ref s, k, n) => {
-                    r *= (1. + (species[s.as_index()] as f64 / k).powf(n)).recip()
-                }
+                SRate::MM(ref s, k) =>
+                    r *= species[s.as_index()] as f64 / (k + species[s.as_index()] as f64),
+                SRate::PosHill(ref s, k, n) =>
+                    r *= (1. + (k / species[s.as_index()] as f64).powf(n)).recip(),
+                SRate::NegHill(ref s, k, n) =>
+                    r *= (1. + (species[s.as_index()] as f64 / k).powf(n)).recip(),
             }
         }
         r
@@ -254,7 +243,7 @@ mod tests {
         sir.add_reaction(Rate::new(0.01, &[SRate::LMA(SIR::I)]), [0, -1, 1]);
         sir.advance_until(250.);
         assert_eq!(
-            sir.get_species(&SIR::S) + sir.get_species(&SIR::I) + sir.get_species(&SIR::R),
+            sir.get_species(SIR::S) + sir.get_species(SIR::I) + sir.get_species(SIR::R),
             10000
         );
     }
@@ -269,8 +258,8 @@ mod tests {
         dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::P)]), [0, 0, -1, 0]);
         dimers.advance_until(1.);
         println!("{:?}", dimers.species);
-        assert_eq!(dimers.get_species(&Dimers::G), 1);
-        assert!(1000 < dimers.get_species(&Dimers::D));
-        assert!(dimers.get_species(&Dimers::D) < 10000);
+        assert_eq!(dimers.get_species(Dimers::G), 1);
+        assert!(1000 < dimers.get_species(Dimers::D));
+        assert!(dimers.get_species(Dimers::D) < 10000);
     }
 }

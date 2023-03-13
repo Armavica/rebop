@@ -111,7 +111,7 @@
 //! println!("time,S,I,R");
 //! for t in 0..250 {
 //!     sir.advance_until(t as f64);
-//!     println!("{},{},{},{}", sir.get_time(), sir.get_species(&SIR::S), sir.get_species(&SIR::I), sir.get_species(&SIR::R));
+//!     println!("{},{},{},{}", sir.get_time(), sir.get_species(SIR::S), sir.get_species(SIR::I), sir.get_species(SIR::R));
 //! }
 //! ```
 //!
@@ -234,7 +234,6 @@
 //! * [NFsim](http://michaelsneddon.net/nfsim/)
 
 use pyo3::prelude::*;
-use pyo3::class::basic::PyObjectProtocol;
 use std::collections::HashMap;
 
 pub use rand;
@@ -262,11 +261,13 @@ impl Gillespie {
         Ok(self.species.len())
     }
     fn add_reaction(&mut self, rate: f64, reactants: Vec<String>, products: Vec<String>) -> PyResult<()> {
+        // Insert unknown reactants in known species
         for reactant in &reactants {
             if !self.species.contains_key(reactant) {
                 self.species.insert(reactant.clone(), self.species.len());
             }
         }
+        // Insert unknown products in known species
         for product in &products {
             if !self.species.contains_key(product) {
                 self.species.insert(product.clone(), self.species.len());
@@ -306,7 +307,7 @@ impl Gillespie {
             times.push(t);
             g.advance_until(t);
             for s in 0..self.species.len() {
-                species[s].push(g.get_species(&s));
+                species[s].push(g.get_species(s));
             }
         }
         let mut result = HashMap::new();
@@ -315,13 +316,8 @@ impl Gillespie {
         }
         Ok((times, result))
     }
-}
-
-#[pyproto]
-impl<'p> PyObjectProtocol<'p> for Gillespie {
     fn __str__(&self) -> PyResult<String>{
-        let mut s = String::new();
-        s.push_str(&format!("{} species and {} reactions\n", self.species.len(), self.reactions.len()));
+        let mut s = format!("{} species and {} reactions\n", self.species.len(), self.reactions.len());
         for (rate, reactants, products) in &self.reactions {
             s.push_str(&reactants.join(" + "));
             s.push_str(" --> ");

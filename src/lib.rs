@@ -260,7 +260,12 @@ impl Gillespie {
     fn nb_species(&self) -> PyResult<usize> {
         Ok(self.species.len())
     }
-    fn add_reaction(&mut self, rate: f64, reactants: Vec<String>, products: Vec<String>) -> PyResult<()> {
+    fn add_reaction(
+        &mut self,
+        rate: f64,
+        reactants: Vec<String>,
+        products: Vec<String>,
+    ) -> PyResult<()> {
         // Insert unknown reactants in known species
         for reactant in &reactants {
             if !self.species.contains_key(reactant) {
@@ -279,7 +284,12 @@ impl Gillespie {
     fn nb_reactions(&self) -> PyResult<usize> {
         Ok(self.reactions.len())
     }
-    fn run(&self, init: HashMap<String, usize>, tmax: f64, nb_steps: usize) -> PyResult<(Vec<f64>, HashMap<String, Vec<isize>>)> {
+    fn run(
+        &self,
+        init: HashMap<String, usize>,
+        tmax: f64,
+        nb_steps: usize,
+    ) -> PyResult<(Vec<f64>, HashMap<String, Vec<isize>>)> {
         let mut x0 = vec![0; self.species.len()];
         for (name, &value) in &init {
             if let Some(&id) = self.species.get(name) {
@@ -290,7 +300,11 @@ impl Gillespie {
         for (rate, reactants, products) in self.reactions.iter() {
             let rate = gillespie::Rate::new(
                 *rate,
-                &reactants.iter().map(|r| gillespie::SRate::LMA(self.species[r])).collect::<Vec<_>>());
+                &reactants
+                    .iter()
+                    .map(|r| gillespie::SRate::LMA(self.species[r]))
+                    .collect::<Vec<_>>(),
+            );
             let mut actions = vec![0; self.species.len()];
             for reactant in reactants {
                 actions[self.species[reactant]] -= 1;
@@ -316,8 +330,12 @@ impl Gillespie {
         }
         Ok((times, result))
     }
-    fn __str__(&self) -> PyResult<String>{
-        let mut s = format!("{} species and {} reactions\n", self.species.len(), self.reactions.len());
+    fn __str__(&self) -> PyResult<String> {
+        let mut s = format!(
+            "{} species and {} reactions\n",
+            self.species.len(),
+            self.reactions.len()
+        );
         for (rate, reactants, products) in &self.reactions {
             s.push_str(&reactants.join(" + "));
             s.push_str(" --> ");
@@ -333,4 +351,3 @@ fn rebop(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<Gillespie>()?;
     Ok(())
 }
-

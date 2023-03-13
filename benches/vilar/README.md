@@ -25,4 +25,3 @@ We simulated the Vilar oscillator model with several programs.
 ## DiffEqJump.jl (Julia)
 
 `time julia vilar.jl`
-

@@ -153,9 +153,9 @@ impl<T: AsIndex + Clone> Gillespie<T> {
                 chosen_rate -= rate;
                 if chosen_rate < 0. {
                     ireaction = ir;
-                    break
+                    break;
                 }
-            };
+            }
             // here we have ireaction < self.reactions.len() because chosen_rate < total_rate
             // FIXME: remove the bound check
             for (i, &r) in self.reactions[ireaction].1.iter().enumerate() {
@@ -213,16 +213,23 @@ impl<T: AsIndex + Clone> Rate<T> {
         for factor in &self.species {
             match *factor {
                 SRate::LMA(ref s) => r *= species[s.as_index()] as f64,
-                SRate::LMA2(ref s) => r *= species[s.as_index()] as f64 * (species[s.as_index()] - 1) as f64,
-                SRate::LMAn(ref s, n) => for i in 0..n {
-                    r *= (species[s.as_index()] - i as isize) as f64;
-                },
-                SRate::MM(ref s, k) =>
-                    r *= species[s.as_index()] as f64 / (k + species[s.as_index()] as f64),
-                SRate::PosHill(ref s, k, n) =>
-                    r *= (1. + (k / species[s.as_index()] as f64).powf(n)).recip(),
-                SRate::NegHill(ref s, k, n) =>
-                    r *= (1. + (species[s.as_index()] as f64 / k).powf(n)).recip(),
+                SRate::LMA2(ref s) => {
+                    r *= species[s.as_index()] as f64 * (species[s.as_index()] - 1) as f64
+                }
+                SRate::LMAn(ref s, n) => {
+                    for i in 0..n {
+                        r *= (species[s.as_index()] - i as isize) as f64;
+                    }
+                }
+                SRate::MM(ref s, k) => {
+                    r *= species[s.as_index()] as f64 / (k + species[s.as_index()] as f64)
+                }
+                SRate::PosHill(ref s, k, n) => {
+                    r *= (1. + (k / species[s.as_index()] as f64).powf(n)).recip()
+                }
+                SRate::NegHill(ref s, k, n) => {
+                    r *= (1. + (species[s.as_index()] as f64 / k).powf(n)).recip()
+                }
             }
         }
         r

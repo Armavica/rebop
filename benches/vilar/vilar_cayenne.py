@@ -55,4 +55,3 @@ sim.simulate(max_t=200, max_iter=700000, algorithm='direct')
 print(sim.results)
 # sim.plot()
 # plt.show()
-

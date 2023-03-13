@@ -23,7 +23,7 @@ class VilarOscillator(gillespy2.Model):
         gammaC = gillespy2.Parameter(name="gammaC", expression=2)
         thetaA = gillespy2.Parameter(name="thetaA", expression=50)
         thetaR = gillespy2.Parameter(name="thetaR", expression=100)
-        
+
         self.add_parameter([alphaA, alphaA_prime, alphaR, alphaR_prime, betaA, betaR,
                             deltaMA, deltaMR, deltaA, deltaR, gammaA, gammaR, gammaC,
                             thetaA, thetaR])
@@ -38,7 +38,7 @@ class VilarOscillator(gillespy2.Model):
         C = gillespy2.Species(name="C", initial_value=0, mode="discrete")
         A = gillespy2.Species(name="A", initial_value=0, mode="discrete")
         R = gillespy2.Species(name="R", initial_value=0, mode="discrete")
-        
+
         self.add_species([Da, Da_prime, Ma, Dr, Dr_prime, Mr, C, A, R])
 
         # Reactions
@@ -58,7 +58,7 @@ class VilarOscillator(gillespy2.Model):
         r14 = gillespy2.Reaction(name="r14", reactants={'Dr_prime': 1}, products={'Dr_prime': 1, 'Mr': 1}, rate="alphaR_prime")
         r15 = gillespy2.Reaction(name="r15", reactants={'Mr': 1}, products={}, rate="deltaMR")
         r16 = gillespy2.Reaction(name="r16", reactants={'Mr': 1}, products={'Mr': 1, 'R': 1}, rate="betaR")
-        
+
         self.add_reaction([r1, r2, r3, r4, r5, r6, r7, r8, r9,
                            r10, r11, r12, r13, r14, r15, r16])
 

@@ -1,7 +1,7 @@
+use criterion::{criterion_group, criterion_main, Criterion};
 use rebop::define_system;
 use rebop::gillespie::{AsIndex, Gillespie, Rate, SRate};
 use rebop::index_enum;
-use criterion::{criterion_group, criterion_main, Criterion};
 
 fn macro_sir_10k(c: &mut Criterion) {
     define_system! {
@@ -192,52 +192,68 @@ fn api_vilar(c: &mut Criterion) {
             let mut vilar = Gillespie::new([1, 1, 0, 0, 0, 0, 0, 0, 0]);
             vilar.add_reaction(
                 Rate::new(gammaA, &[SRate::LMA(Vilar::Da), SRate::LMA(Vilar::A)]),
-                [-1, 0, 1, 0, 0, 0, -1, 0, 0]);
+                [-1, 0, 1, 0, 0, 0, -1, 0, 0],
+            );
             vilar.add_reaction(
                 Rate::new(gammaR, &[SRate::LMA(Vilar::Dr), SRate::LMA(Vilar::A)]),
-                [0, -1, 0, 1, 0, 0, -1, 0, 0]);
+                [0, -1, 0, 1, 0, 0, -1, 0, 0],
+            );
             vilar.add_reaction(
                 Rate::new(thetaA, &[SRate::LMA(Vilar::Dpa)]),
-                [1, 0, -1, 0, 0, 0, 1, 0, 0]);
+                [1, 0, -1, 0, 0, 0, 1, 0, 0],
+            );
             vilar.add_reaction(
                 Rate::new(thetaR, &[SRate::LMA(Vilar::Dpr)]),
-                [0, 1, 0, -1, 0, 0, 1, 0, 0]);
+                [0, 1, 0, -1, 0, 0, 1, 0, 0],
+            );
             vilar.add_reaction(
                 Rate::new(alphaA, &[SRate::LMA(Vilar::Da)]),
-                [0, 0, 0, 0, 1, 0, 0, 0, 0]);
+                [0, 0, 0, 0, 1, 0, 0, 0, 0],
+            );
             vilar.add_reaction(
                 Rate::new(alphaR, &[SRate::LMA(Vilar::Dr)]),
-                [0, 0, 0, 0, 0, 1, 0, 0, 0]);
+                [0, 0, 0, 0, 0, 1, 0, 0, 0],
+            );
             vilar.add_reaction(
                 Rate::new(alphapA, &[SRate::LMA(Vilar::Dpa)]),
-                [0, 0, 0, 0, 1, 0, 0, 0, 0]);
+                [0, 0, 0, 0, 1, 0, 0, 0, 0],
+            );
             vilar.add_reaction(
                 Rate::new(alphapR, &[SRate::LMA(Vilar::Dpr)]),
-                [0, 0, 0, 0, 0, 1, 0, 0, 0]);
+                [0, 0, 0, 0, 0, 1, 0, 0, 0],
+            );
             vilar.add_reaction(
                 Rate::new(betaA, &[SRate::LMA(Vilar::Ma)]),
-                [0, 0, 0, 0, 0, 0, 1, 0, 0]);
+                [0, 0, 0, 0, 0, 0, 1, 0, 0],
+            );
             vilar.add_reaction(
                 Rate::new(betaR, &[SRate::LMA(Vilar::Mr)]),
-                [0, 0, 0, 0, 0, 0, 0, 1, 0]);
+                [0, 0, 0, 0, 0, 0, 0, 1, 0],
+            );
             vilar.add_reaction(
                 Rate::new(gammaC, &[SRate::LMA(Vilar::A), SRate::LMA(Vilar::R)]),
-                [0, 0, 0, 0, 0, 0, -1, -1, 1]);
+                [0, 0, 0, 0, 0, 0, -1, -1, 1],
+            );
             vilar.add_reaction(
                 Rate::new(gammaA, &[SRate::LMA(Vilar::C)]),
-                [0, 0, 0, 0, 0, 0, 0, 1, -1]);
+                [0, 0, 0, 0, 0, 0, 0, 1, -1],
+            );
             vilar.add_reaction(
                 Rate::new(deltaMA, &[SRate::LMA(Vilar::Ma)]),
-                [0, 0, 0, 0, -1, 0, 0, 0, 0]);
+                [0, 0, 0, 0, -1, 0, 0, 0, 0],
+            );
             vilar.add_reaction(
                 Rate::new(deltaMR, &[SRate::LMA(Vilar::Mr)]),
-                [0, 0, 0, 0, 0, -1, 0, 0, 0]);
+                [0, 0, 0, 0, 0, -1, 0, 0, 0],
+            );
             vilar.add_reaction(
                 Rate::new(deltaA, &[SRate::LMA(Vilar::A)]),
-                [0, 0, 0, 0, 0, 0, -1, 0, 0]);
+                [0, 0, 0, 0, 0, 0, -1, 0, 0],
+            );
             vilar.add_reaction(
                 Rate::new(deltaR, &[SRate::LMA(Vilar::R)]),
-                [0, 0, 0, 0, 0, 0, 0, -1, 0]);
+                [0, 0, 0, 0, 0, 0, 0, -1, 0],
+            );
             vilar.advance_until(200.);
         })
     });
@@ -592,7 +608,7 @@ fn api_ring(n: usize, k: f64) -> Gillespie<usize> {
     for i in 0..n {
         let mut actions = vec![0; n];
         actions[i] -= 1;
-        actions[(i+1)%n] += 1;
+        actions[(i + 1) % n] += 1;
         ring.add_reaction(Rate::new(k, &[SRate::LMA(i)]), actions);
     }
     ring
@@ -684,8 +700,6 @@ fn macro_flocculation_10(c: &mut Criterion) {
         })
     });
 }
-
-
 
 criterion_group!(
     benches,

@@ -242,6 +242,7 @@ pub use rand_distr;
 pub mod gillespie;
 mod gillespie_macro;
 
+/// Reaction system composed of species and reactions.
 #[pyclass]
 struct Gillespie {
     species: HashMap<String, usize>,
@@ -257,9 +258,14 @@ impl Gillespie {
             reactions: Vec::new(),
         }
     }
+    /// Number of species currently in the system
     fn nb_species(&self) -> PyResult<usize> {
         Ok(self.species.len())
     }
+    /// Add a Law of Mass Action reaction to the system.
+    ///
+    /// The forward reaction rate is `rate`, while `reactants` and `products` are lists of
+    /// respectively reactant names and product names.
     fn add_reaction(
         &mut self,
         rate: f64,
@@ -281,9 +287,16 @@ impl Gillespie {
         self.reactions.push((rate, reactants, products));
         Ok(())
     }
+    /// Number of reactions currently in the system.
     fn nb_reactions(&self) -> PyResult<usize> {
         Ok(self.reactions.len())
     }
+    /// Run the system until `tmax` with `nb_steps` steps.
+    ///
+    /// The initial configuration is specified in the dictionary `init`.
+    /// Returns `times, vars` where `times` is an array of `nb_steps + 1` uniformly spaced time
+    /// points between `0` and `tmax`, and `vars` is a dictionary of species name to array of
+    /// values at the given time points.
     fn run(
         &self,
         init: HashMap<String, usize>,

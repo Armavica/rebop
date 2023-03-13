@@ -643,6 +643,48 @@ fn api_ring_50(c: &mut Criterion) {
     });
 }
 
+fn macro_flocculation_10(c: &mut Criterion) {
+    define_system! {
+        k;
+        Flocculation {
+            A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10
+        }
+        r0  : 2 A1      => A2 @ k
+        r1  : A1 + A2   => A3 @ k
+        r2  : A1 + A3   => A4 @ k
+        r3  : A1 + A4   => A5 @ k
+        r4  : A1 + A5   => A6 @ k
+        r5  : A1 + A6   => A7 @ k
+        r6  : A1 + A7   => A8 @ k
+        r7  : A1 + A8   => A9 @ k
+        r8  : A1 + A9   => A10 @ k
+        r9  : 2 A2      => A4 @ k
+        r10 : A2 + A3   => A5 @ k
+        r11 : A2 + A4   => A6 @ k
+        r12 : A2 + A5   => A7 @ k
+        r13 : A2 + A6   => A8 @ k
+        r14 : A2 + A7   => A9 @ k
+        r15 : A2 + A8   => A10 @ k
+        r16 : 2 A3      => A6 @ k
+        r17 : A3 + A4   => A7 @ k
+        r18 : A3 + A5   => A8 @ k
+        r19 : A3 + A6   => A9 @ k
+        r20 : A3 + A7   => A10 @ k
+        r21 : 2 A4      => A8 @ k
+        r22 : A4 + A5   => A9 @ k
+        r23 : A4 + A6   => A10 @ k
+        r24 : 2 A5      => A10 @ k
+    }
+    c.bench_function("macro_flocculation_10", |b| {
+        b.iter(|| {
+            let mut f = Flocculation::new();
+            f.k = 1.;
+            f.A1 = 1000;
+            f.advance_until(100.);
+        })
+    });
+}
+
 
 
 criterion_group!(

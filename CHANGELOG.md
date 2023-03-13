@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] -- 2023-03-13
+
+This release comes with the Python package `rebop` which exposes the Python
+API.
+
+### Changed
+
+* The function `get_species` now takes a species instead of a reference to one.
+* The libraries pyo3 and rand were upgraded to versions 0.15.1 and 0.8.5.
+
 ## [0.5.0] -- 2022-02-10
 
 The major change of this release is a change in the macro DSL to write

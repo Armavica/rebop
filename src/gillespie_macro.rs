@@ -98,6 +98,7 @@ macro_rules! define_system {
             fn advance_until(&mut self, tmax: f64) {
                 use $crate::rand::Rng;
                 $(let $param = self.$param;)*
+                $(let $species = self.$species as f64;)*
                 loop {
                     $(let $rname = $rate $(* $crate::_rate_lma!($($nr)? * self.$r))? $(* $crate::_rate_lma!($($tnr)? * self.$tr) )*;)*
                     let total_rate = 0. $(+ $rname)*;

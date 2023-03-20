@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* It is now possible to refer to species amounts in the macro rate expressions.
+  The rate expressions are still multiplied by the law of mass action
+  constructed from the reactions.
+
 ## [0.5.1] -- 2023-03-13
 
 This release comes with the Python package `rebop` which exposes the Python

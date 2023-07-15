@@ -1,2 +1,5 @@
 target
 Cargo.lock
+.*.swp
+__pycache__
+*.abi3.so

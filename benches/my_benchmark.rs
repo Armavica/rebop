@@ -1,3 +1,4 @@
+#![allow(unused_variables)]
 use criterion::{criterion_group, criterion_main, Criterion};
 use rebop::define_system;
 use rebop::gillespie::{AsIndex, Gillespie, Rate, SRate};

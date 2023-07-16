@@ -1,4 +1,4 @@
-#![allow(mixed_script_confusables)]
+#![allow(mixed_script_confusables, unused_variables)]
 
 use rebop::define_system;
 

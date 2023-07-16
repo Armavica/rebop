@@ -1,73 +1,41 @@
 #![allow(unused_variables)]
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use rebop::define_system;
 use rebop::gillespie::{Gillespie, Rate};
 
-fn macro_sir_10k(c: &mut Criterion) {
+fn bench_sir(c: &mut Criterion) {
     define_system! {
         r_inf r_heal;
         SIR { S, I, R }
         infection   : S + I => 2 I  @ r_inf
         healing     : I     => R    @ r_heal
     }
-    c.bench_function("macro_sir_10k", |b| {
-        b.iter(|| {
-            let mut sir = SIR::new();
-            sir.seed(0);
-            sir.r_inf = 0.1 / 10000.;
-            sir.r_heal = 0.05;
-            sir.S = 9999;
-            sir.I = 1;
-            sir.advance_until(1000.);
-        })
-    });
-}
-
-#[allow(non_snake_case)]
-fn macro_sir_1M(c: &mut Criterion) {
-    define_system! {
-        r_inf r_heal;
-        SIR { S, I, R }
-        infection   : S + I => 2 I  @ r_inf
-        healing     : I     => R    @ r_heal
+    let mut group = c.benchmark_group("sir");
+    for n in &[10_000, 100_000, 1_000_000] {
+        group.bench_with_input(BenchmarkId::new("api", n), n, |b, n| {
+            b.iter(|| {
+                let mut sir = Gillespie::new_with_seed([n - 1, 1, 0], 0);
+                sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);
+                sir.add_reaction(Rate::lma(0.05, [0, 1, 0]), [0, -1, 1]);
+                sir.advance_until(1000.);
+            })
+        });
+        group.bench_with_input(BenchmarkId::new("macro", n), n, |b, n| {
+            b.iter(|| {
+                let mut sir = SIR::new();
+                sir.seed(0);
+                sir.r_inf = 0.1 / 10000.;
+                sir.r_heal = 0.05;
+                sir.S = n - 1;
+                sir.I = 1;
+                sir.advance_until(1000.);
+            })
+        });
     }
-    c.bench_function("macro_sir_1M", |b| {
-        b.iter(|| {
-            let mut sir = SIR::new();
-            sir.seed(0);
-            sir.r_inf = 0.1 / 10000.;
-            sir.r_heal = 0.05;
-            sir.S = 999999;
-            sir.I = 1;
-            sir.advance_until(1000.);
-        })
-    });
+    group.finish();
 }
 
-fn api_sir_10k(c: &mut Criterion) {
-    c.bench_function("api_sir_10k", |b| {
-        b.iter(|| {
-            let mut sir = Gillespie::new_with_seed([9999, 1, 0], 0);
-            sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);
-            sir.add_reaction(Rate::lma(0.05, [0, 1, 0]), [0, -1, 1]);
-            sir.advance_until(1000.);
-        })
-    });
-}
-
-#[allow(non_snake_case)]
-fn api_sir_1M(c: &mut Criterion) {
-    c.bench_function("api_sir_1M", |b| {
-        b.iter(|| {
-            let mut sir = Gillespie::new_with_seed([999999, 1, 0], 0);
-            sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);
-            sir.add_reaction(Rate::lma(0.05, [0, 1, 0]), [0, -1, 1]);
-            sir.advance_until(1000.);
-        })
-    });
-}
-
-fn macro_dimers(c: &mut Criterion) {
+fn bench_dimers(c: &mut Criterion) {
     define_system! {
         r_tx r_tl r_dim r_decay_mrna r_decay_prot;
         Dimers { G, M, P, D }
@@ -77,7 +45,8 @@ fn macro_dimers(c: &mut Criterion) {
         decay_mrna    : M    =>         @ r_decay_mrna
         decay_prot    : P    =>         @ r_decay_prot
     }
-    c.bench_function("macro_dimers", |b| {
+    let mut group = c.benchmark_group("dimers");
+    group.bench_function("macro", |b| {
         b.iter(|| {
             let mut dimers = Dimers::new();
             dimers.seed(0);
@@ -90,10 +59,7 @@ fn macro_dimers(c: &mut Criterion) {
             dimers.advance_until(6.);
         })
     });
-}
-
-fn api_dimers(c: &mut Criterion) {
-    c.bench_function("api_dimers", |b| {
+    group.bench_function("api", |b| {
         b.iter(|| {
             let mut dimers = Gillespie::new_with_seed([1, 0, 0, 0], 0);
             dimers.add_reaction(Rate::lma(25., [1, 0, 0, 0]), [0, 1, 0, 0]);
@@ -104,9 +70,10 @@ fn api_dimers(c: &mut Criterion) {
             dimers.advance_until(6.);
         })
     });
+    group.finish()
 }
 
-fn macro_dimers2(c: &mut Criterion) {
+fn bench_dimers2(c: &mut Criterion) {
     define_system! {
         r_decay_monomer r_dimerization r_monomerization r_irreversible;
         Dimers { A, A_A, AA }
@@ -115,7 +82,8 @@ fn macro_dimers2(c: &mut Criterion) {
         monomerization  : A_A  => 2 A   @ r_monomerization
         irreversible    : A_A  => AA    @ r_irreversible
     }
-    c.bench_function("macro_dimers2", |b| {
+    let mut group = c.benchmark_group("dimers2");
+    group.bench_function("macro", |b| {
         b.iter(|| {
             let mut dimers = Dimers::new();
             dimers.seed(0);
@@ -127,10 +95,7 @@ fn macro_dimers2(c: &mut Criterion) {
             dimers.advance_until(25.);
         })
     });
-}
-
-fn api_dimers2(c: &mut Criterion) {
-    c.bench_function("api_dimers2", |b| {
+    group.bench_function("api", |b| {
         b.iter(|| {
             let mut dimers = Gillespie::new_with_seed([100000, 0, 0], 0);
             dimers.add_reaction(Rate::lma(1., [1, 0, 0]), [-1, 0, 0]);
@@ -140,9 +105,10 @@ fn api_dimers2(c: &mut Criterion) {
             dimers.advance_until(25.);
         })
     });
+    group.finish()
 }
 
-fn macro_mm(c: &mut Criterion) {
+fn bench_mm(c: &mut Criterion) {
     define_system! {
         r_fwd r_bwd r_cat;
         MM { E, S, ES, P }
@@ -150,7 +116,8 @@ fn macro_mm(c: &mut Criterion) {
         backward: ES    => E + S    @ r_bwd
         cat     : ES    => P        @ r_cat
     }
-    c.bench_function("macro_mm", |b| {
+    let mut group = c.benchmark_group("mm");
+    group.bench_function("macro", |b| {
         b.iter(|| {
             let mut mm = MM::new();
             mm.seed(0);
@@ -162,10 +129,23 @@ fn macro_mm(c: &mut Criterion) {
             mm.advance_until(100.);
         })
     });
+    group.bench_function("api", |b| {
+        b.iter(|| {
+            let r_fwd = 0.0017;
+            let r_bwd = 0.5;
+            let r_cat = 0.1;
+            let mut mm = Gillespie::new_with_seed([301, 120, 0, 0], 0);
+            mm.add_reaction(Rate::lma(r_fwd, [1, 1, 0, 0]), [-1, -1, 1, 0]);
+            mm.add_reaction(Rate::lma(r_bwd, [0, 0, 1, 0]), [1, 1, -1, 0]);
+            mm.add_reaction(Rate::lma(r_cat, [0, 0, 1, 0]), [0, 0, -1, 1]);
+            mm.advance_until(100.);
+        })
+    });
+    group.finish();
 }
 
 #[allow(non_snake_case)]
-fn api_vilar(c: &mut Criterion) {
+fn api_vilar() {
     // Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C
     let alphaA = 50.;
     let alphapA = 500.;
@@ -182,147 +162,75 @@ fn api_vilar(c: &mut Criterion) {
     let gammaC = 2.;
     let thetaA = 50.;
     let thetaR = 100.;
-    c.bench_function("api_vilar", |b| {
-        b.iter(|| {
-            let mut vilar = Gillespie::new_with_seed([1, 1, 0, 0, 0, 0, 0, 0, 0], 0);
-            vilar.add_reaction(
-                Rate::lma(gammaA, [1, 0, 0, 0, 0, 0, 1, 0, 0]),
-                [-1, 0, 1, 0, 0, 0, -1, 0, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(gammaR, [0, 1, 0, 0, 0, 0, 1, 0, 0]),
-                [0, -1, 0, 1, 0, 0, -1, 0, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(thetaA, [0, 0, 1, 0, 0, 0, 0, 0, 0]),
-                [1, 0, -1, 0, 0, 0, 1, 0, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(thetaR, [0, 0, 0, 1, 0, 0, 0, 0, 0]),
-                [0, 1, 0, -1, 0, 0, 1, 0, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(alphaA, [1, 0, 0, 0, 0, 0, 0, 0, 0]),
-                [0, 0, 0, 0, 1, 0, 0, 0, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(alphaR, [0, 1, 0, 0, 0, 0, 0, 0, 0]),
-                [0, 0, 0, 0, 0, 1, 0, 0, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(alphapA, [0, 0, 1, 0, 0, 0, 0, 0, 0]),
-                [0, 0, 0, 0, 1, 0, 0, 0, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(alphapR, [0, 0, 0, 1, 0, 0, 0, 0, 0]),
-                [0, 0, 0, 0, 0, 1, 0, 0, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(betaA, [0, 0, 0, 0, 1, 0, 0, 0, 0]),
-                [0, 0, 0, 0, 0, 0, 1, 0, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(betaR, [0, 0, 0, 0, 0, 1, 0, 0, 0]),
-                [0, 0, 0, 0, 0, 0, 0, 1, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(gammaC, [0, 0, 0, 0, 0, 0, 1, 1, 0]),
-                [0, 0, 0, 0, 0, 0, -1, -1, 1],
-            );
-            vilar.add_reaction(
-                Rate::lma(gammaA, [0, 0, 0, 0, 0, 0, 0, 0, 1]),
-                [0, 0, 0, 0, 0, 0, 0, 1, -1],
-            );
-            vilar.add_reaction(
-                Rate::lma(deltaMA, [0, 0, 0, 0, 1, 0, 0, 0, 0]),
-                [0, 0, 0, 0, -1, 0, 0, 0, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(deltaMR, [0, 0, 0, 0, 0, 1, 0, 0, 0]),
-                [0, 0, 0, 0, 0, -1, 0, 0, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(deltaA, [0, 0, 0, 0, 0, 0, 1, 0, 0]),
-                [0, 0, 0, 0, 0, 0, -1, 0, 0],
-            );
-            vilar.add_reaction(
-                Rate::lma(deltaR, [0, 0, 0, 0, 0, 0, 0, 1, 0]),
-                [0, 0, 0, 0, 0, 0, 0, -1, 0],
-            );
-            vilar.advance_until(200.);
-        })
-    });
+    let mut vilar = Gillespie::new_with_seed([1, 1, 0, 0, 0, 0, 0, 0, 0], 0);
+    vilar.add_reaction(
+        Rate::lma(gammaA, [1, 0, 0, 0, 0, 0, 1, 0, 0]),
+        [-1, 0, 1, 0, 0, 0, -1, 0, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(gammaR, [0, 1, 0, 0, 0, 0, 1, 0, 0]),
+        [0, -1, 0, 1, 0, 0, -1, 0, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(thetaA, [0, 0, 1, 0, 0, 0, 0, 0, 0]),
+        [1, 0, -1, 0, 0, 0, 1, 0, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(thetaR, [0, 0, 0, 1, 0, 0, 0, 0, 0]),
+        [0, 1, 0, -1, 0, 0, 1, 0, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(alphaA, [1, 0, 0, 0, 0, 0, 0, 0, 0]),
+        [0, 0, 0, 0, 1, 0, 0, 0, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(alphaR, [0, 1, 0, 0, 0, 0, 0, 0, 0]),
+        [0, 0, 0, 0, 0, 1, 0, 0, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(alphapA, [0, 0, 1, 0, 0, 0, 0, 0, 0]),
+        [0, 0, 0, 0, 1, 0, 0, 0, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(alphapR, [0, 0, 0, 1, 0, 0, 0, 0, 0]),
+        [0, 0, 0, 0, 0, 1, 0, 0, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(betaA, [0, 0, 0, 0, 1, 0, 0, 0, 0]),
+        [0, 0, 0, 0, 0, 0, 1, 0, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(betaR, [0, 0, 0, 0, 0, 1, 0, 0, 0]),
+        [0, 0, 0, 0, 0, 0, 0, 1, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(gammaC, [0, 0, 0, 0, 0, 0, 1, 1, 0]),
+        [0, 0, 0, 0, 0, 0, -1, -1, 1],
+    );
+    vilar.add_reaction(
+        Rate::lma(gammaA, [0, 0, 0, 0, 0, 0, 0, 0, 1]),
+        [0, 0, 0, 0, 0, 0, 0, 1, -1],
+    );
+    vilar.add_reaction(
+        Rate::lma(deltaMA, [0, 0, 0, 0, 1, 0, 0, 0, 0]),
+        [0, 0, 0, 0, -1, 0, 0, 0, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(deltaMR, [0, 0, 0, 0, 0, 1, 0, 0, 0]),
+        [0, 0, 0, 0, 0, -1, 0, 0, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(deltaA, [0, 0, 0, 0, 0, 0, 1, 0, 0]),
+        [0, 0, 0, 0, 0, 0, -1, 0, 0],
+    );
+    vilar.add_reaction(
+        Rate::lma(deltaR, [0, 0, 0, 0, 0, 0, 0, 1, 0]),
+        [0, 0, 0, 0, 0, 0, 0, -1, 0],
+    );
+    vilar.advance_until(200.);
 }
 
-fn macro_vilar_best_order(c: &mut Criterion) {
-    define_system! {
-        alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
-        Vilar { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C }
-        translation_a       : Ma        => Ma + A   @ betaA
-        complexation        : A + R     => C        @ gammaC
-        decomplexation      : C         => R        @ deltaA
-        decay_prot_a        : A         =>          @ deltaA
-        decay_mRNA_a        : Ma        =>          @ deltaMA
-        transcription_p_a   : Dpa       => Dpa + Ma @ alphapA
-        translation_r       : Mr        => Mr + R   @ betaR
-        decay_prot_r        : R         =>          @ deltaR
-        transcription_a     : Da        => Da + Ma  @ alphaA
-        activation_r        : Dr + A    => Dpr      @ gammaR
-        deactivation_r      : Dpr       => Dr + A   @ thetaR
-        activation_a        : Da + A    => Dpa      @ gammaA
-        deactivation_a      : Dpa       => Da + A   @ thetaA
-        transcription_p_r   : Dpr       => Dpr + Mr @ alphapR
-        decay_mRNA_r        : Mr        =>          @ deltaMR
-        transcription_r     : Dr        => Dr + Mr  @ alphaR
-    }
-    c.bench_function("macro_vilar_best_order", |b| {
-        b.iter(|| {
-            let mut vilar = Vilar::with_parameters(
-                50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.,
-            );
-            vilar.seed(0);
-            vilar.Da = 1;
-            vilar.Dr = 1;
-            vilar.advance_until(200.);
-        })
-    });
-}
-
-fn macro_vilar_worst_order(c: &mut Criterion) {
-    define_system! {
-        alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
-        Vilar { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C }
-        transcription_r     : Dr        => Dr + Mr  @ alphaR
-        decay_mRNA_r        : Mr        =>          @ deltaMR
-        transcription_p_r   : Dpr       => Dpr + Mr @ alphapR
-        deactivation_a      : Dpa       => Da + A   @ thetaA
-        activation_a        : Da + A    => Dpa      @ gammaA
-        deactivation_r      : Dpr       => Dr + A   @ thetaR
-        activation_r        : Dr + A    => Dpr      @ gammaR
-        transcription_a     : Da        => Da + Ma  @ alphaA
-        decay_prot_r        : R         =>          @ deltaR
-        translation_r       : Mr        => Mr + R   @ betaR
-        transcription_p_a   : Dpa       => Dpa + Ma @ alphapA
-        decay_mRNA_a        : Ma        =>          @ deltaMA
-        decay_prot_a        : A         =>          @ deltaA
-        decomplexation      : C         => R        @ deltaA
-        complexation        : A + R     => C        @ gammaC
-        translation_a       : Ma        => Ma + A   @ betaA
-    }
-    c.bench_function("macro_vilar_worst_order", |b| {
-        b.iter(|| {
-            let mut vilar = Vilar::with_parameters(
-                50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.,
-            );
-            vilar.seed(0);
-            vilar.Da = 1;
-            vilar.Dr = 1;
-            vilar.advance_until(200.);
-        })
-    });
-}
-
-fn macro_vilar(c: &mut Criterion) {
+fn bench_vilar(c: &mut Criterion) {
     define_system! {
         alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
         Vilar { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C }
@@ -343,9 +251,50 @@ fn macro_vilar(c: &mut Criterion) {
         decay_prot_a        : A         =>          @ deltaA
         decay_prot_r        : R         =>          @ deltaR
     }
-    c.bench_function("macro_vilar", |b| {
+    define_system! {
+        alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
+        VilarBestOrder { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C }
+        translation_a       : Ma        => Ma + A   @ betaA
+        complexation        : A + R     => C        @ gammaC
+        decomplexation      : C         => R        @ deltaA
+        decay_prot_a        : A         =>          @ deltaA
+        decay_mRNA_a        : Ma        =>          @ deltaMA
+        transcription_p_a   : Dpa       => Dpa + Ma @ alphapA
+        translation_r       : Mr        => Mr + R   @ betaR
+        decay_prot_r        : R         =>          @ deltaR
+        transcription_a     : Da        => Da + Ma  @ alphaA
+        activation_r        : Dr + A    => Dpr      @ gammaR
+        deactivation_r      : Dpr       => Dr + A   @ thetaR
+        activation_a        : Da + A    => Dpa      @ gammaA
+        deactivation_a      : Dpa       => Da + A   @ thetaA
+        transcription_p_r   : Dpr       => Dpr + Mr @ alphapR
+        decay_mRNA_r        : Mr        =>          @ deltaMR
+        transcription_r     : Dr        => Dr + Mr  @ alphaR
+    }
+    define_system! {
+        alphaA alphapA alphaR alphapR betaA betaR deltaMA deltaMR deltaA deltaR gammaA gammaR gammaC thetaA thetaR;
+        VilarWorstOrder { Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C }
+        transcription_r     : Dr        => Dr + Mr  @ alphaR
+        decay_mRNA_r        : Mr        =>          @ deltaMR
+        transcription_p_r   : Dpr       => Dpr + Mr @ alphapR
+        deactivation_a      : Dpa       => Da + A   @ thetaA
+        activation_a        : Da + A    => Dpa      @ gammaA
+        deactivation_r      : Dpr       => Dr + A   @ thetaR
+        activation_r        : Dr + A    => Dpr      @ gammaR
+        transcription_a     : Da        => Da + Ma  @ alphaA
+        decay_prot_r        : R         =>          @ deltaR
+        translation_r       : Mr        => Mr + R   @ betaR
+        transcription_p_a   : Dpa       => Dpa + Ma @ alphapA
+        decay_mRNA_a        : Ma        =>          @ deltaMA
+        decay_prot_a        : A         =>          @ deltaA
+        decomplexation      : C         => R        @ deltaA
+        complexation        : A + R     => C        @ gammaC
+        translation_a       : Ma        => Ma + A   @ betaA
+    }
+    let mut group = c.benchmark_group("vilar");
+    group.bench_function("macro/normal_order", |b| {
         b.iter(|| {
-            let mut vilar = Vilar::with_parameters(
+            let mut vilar = VilarBestOrder::with_parameters(
                 50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.,
             );
             vilar.seed(0);
@@ -354,9 +303,33 @@ fn macro_vilar(c: &mut Criterion) {
             vilar.advance_until(200.);
         })
     });
+    group.bench_function("macro/best_order", |b| {
+        b.iter(|| {
+            let mut vilar = VilarBestOrder::with_parameters(
+                50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.,
+            );
+            vilar.seed(0);
+            vilar.Da = 1;
+            vilar.Dr = 1;
+            vilar.advance_until(200.);
+        })
+    });
+    group.bench_function("macro/worst_order", |b| {
+        b.iter(|| {
+            let mut vilar = VilarWorstOrder::with_parameters(
+                50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.,
+            );
+            vilar.seed(0);
+            vilar.Da = 1;
+            vilar.Dr = 1;
+            vilar.advance_until(200.);
+        })
+    });
+    group.bench_function("api/normal_order", |b| b.iter(|| api_vilar()));
+    group.finish();
 }
 
-fn macro_ring_10(c: &mut Criterion) {
+fn macro_ring_10() {
     define_system! {
         k;
         Ring { A0, A1, A2, A3, A4, A5, A6, A7, A8, A9 }
@@ -371,18 +344,14 @@ fn macro_ring_10(c: &mut Criterion) {
         r8  : A8    => A9   @ k
         r9  : A9    => A0  @ k
     }
-    c.bench_function("macro_ring_10", |b| {
-        b.iter(|| {
-            let mut ring = Ring::new();
-            ring.seed(0);
-            ring.k = 1.;
-            ring.A0 = 1000;
-            ring.advance_until(100.);
-        })
-    });
+    let mut ring = Ring::new();
+    ring.seed(0);
+    ring.k = 1.;
+    ring.A0 = 1000;
+    ring.advance_until(100.);
 }
 
-fn macro_ring_20(c: &mut Criterion) {
+fn macro_ring_20() {
     define_system! {
         k;
         Ring {
@@ -410,18 +379,14 @@ fn macro_ring_20(c: &mut Criterion) {
         r18 : A18   => A19  @ k
         r19 : A19   => A0   @ k
     }
-    c.bench_function("macro_ring_20", |b| {
-        b.iter(|| {
-            let mut ring = Ring::new();
-            ring.seed(0);
-            ring.k = 1.;
-            ring.A0 = 1000;
-            ring.advance_until(100.);
-        })
-    });
+    let mut ring = Ring::new();
+    ring.seed(0);
+    ring.k = 1.;
+    ring.A0 = 1000;
+    ring.advance_until(100.);
 }
 
-fn macro_ring_30(c: &mut Criterion) {
+fn macro_ring_30() {
     define_system! {
         k;
         Ring {
@@ -460,18 +425,14 @@ fn macro_ring_30(c: &mut Criterion) {
         r28 : A28   => A29  @ k
         r29 : A29   => A0   @ k
     }
-    c.bench_function("macro_ring_30", |b| {
-        b.iter(|| {
-            let mut ring = Ring::new();
-            ring.seed(0);
-            ring.k = 1.;
-            ring.A0 = 1000;
-            ring.advance_until(100.);
-        })
-    });
+    let mut ring = Ring::new();
+    ring.seed(0);
+    ring.k = 1.;
+    ring.A0 = 1000;
+    ring.advance_until(100.);
 }
 
-fn macro_ring_40(c: &mut Criterion) {
+fn macro_ring_40() {
     define_system! {
         k;
         Ring {
@@ -521,18 +482,14 @@ fn macro_ring_40(c: &mut Criterion) {
         r38 : A38   => A39  @ k
         r39 : A39   => A0   @ k
     }
-    c.bench_function("macro_ring_40", |b| {
-        b.iter(|| {
-            let mut ring = Ring::new();
-            ring.seed(0);
-            ring.k = 1.;
-            ring.A0 = 1000;
-            ring.advance_until(100.);
-        })
-    });
+    let mut ring = Ring::new();
+    ring.seed(0);
+    ring.k = 1.;
+    ring.A0 = 1000;
+    ring.advance_until(100.);
 }
 
-fn macro_ring_50(c: &mut Criterion) {
+fn macro_ring_50() {
     define_system! {
         k;
         Ring {
@@ -593,15 +550,11 @@ fn macro_ring_50(c: &mut Criterion) {
         r48 : A48   => A49  @ k
         r49 : A49   => A0   @ k
     }
-    c.bench_function("macro_ring_50", |b| {
-        b.iter(|| {
-            let mut ring = Ring::new();
-            ring.seed(0);
-            ring.k = 1.;
-            ring.A0 = 1000;
-            ring.advance_until(100.);
-        })
-    });
+    let mut ring = Ring::new();
+    ring.seed(0);
+    ring.k = 1.0;
+    ring.A0 = 1000;
+    ring.advance_until(100.);
 }
 
 fn api_ring(n: usize, k: f64) -> Gillespie {
@@ -619,52 +572,35 @@ fn api_ring(n: usize, k: f64) -> Gillespie {
     ring
 }
 
-fn api_ring_10(c: &mut Criterion) {
-    c.bench_function("api_ring_10", |b| {
-        b.iter(|| {
-            let mut ring = api_ring(10, 1.);
-            ring.advance_until(100.);
-        })
+fn bench_ring(c: &mut Criterion) {
+    let mut group = c.benchmark_group("ring");
+    for n in &[10, 20, 30, 40, 50] {
+        group.bench_with_input(BenchmarkId::new("api", n), n, |b, n| {
+            b.iter(|| {
+                let mut ring = api_ring(*n, 1.0);
+                ring.advance_until(100.);
+            })
+        });
+    }
+    group.bench_function(BenchmarkId::new("macro", 10), |b| {
+        b.iter(|| macro_ring_10())
     });
+    group.bench_function(BenchmarkId::new("macro", 20), |b| {
+        b.iter(|| macro_ring_20())
+    });
+    group.bench_function(BenchmarkId::new("macro", 30), |b| {
+        b.iter(|| macro_ring_30())
+    });
+    group.bench_function(BenchmarkId::new("macro", 40), |b| {
+        b.iter(|| macro_ring_40())
+    });
+    group.bench_function(BenchmarkId::new("macro", 50), |b| {
+        b.iter(|| macro_ring_50())
+    });
+    group.finish();
 }
 
-fn api_ring_20(c: &mut Criterion) {
-    c.bench_function("api_ring_20", |b| {
-        b.iter(|| {
-            let mut ring = api_ring(20, 1.);
-            ring.advance_until(100.);
-        })
-    });
-}
-
-fn api_ring_30(c: &mut Criterion) {
-    c.bench_function("api_ring_30", |b| {
-        b.iter(|| {
-            let mut ring = api_ring(30, 1.);
-            ring.advance_until(100.);
-        })
-    });
-}
-
-fn api_ring_40(c: &mut Criterion) {
-    c.bench_function("api_ring_40", |b| {
-        b.iter(|| {
-            let mut ring = api_ring(40, 1.);
-            ring.advance_until(100.);
-        })
-    });
-}
-
-fn api_ring_50(c: &mut Criterion) {
-    c.bench_function("api_ring_50", |b| {
-        b.iter(|| {
-            let mut ring = api_ring(50, 1.);
-            ring.advance_until(100.);
-        })
-    });
-}
-
-fn macro_flocculation_10(c: &mut Criterion) {
+fn macro_flocculation_10(x0: isize) {
     define_system! {
         k;
         Flocculation {
@@ -696,43 +632,63 @@ fn macro_flocculation_10(c: &mut Criterion) {
         r23 : A4 + A6   => A10 @ k
         r24 : 2 A5      => A10 @ k
     }
-    c.bench_function("macro_flocculation_10", |b| {
-        b.iter(|| {
-            let mut f = Flocculation::new();
-            f.seed(0);
-            f.k = 1.;
-            f.A1 = 1000;
-            f.advance_until(100.);
-        })
-    });
+    let mut f = Flocculation::new();
+    f.seed(0);
+    f.k = 1.;
+    f.A1 = x0;
+    f.advance_until(1000.);
+}
+
+fn api_flocculation(n: usize, k: f64, n0: isize) -> Gillespie {
+    let mut x0 = vec![0; n];
+    x0[0] = n0;
+    let mut flocculation = Gillespie::new_with_seed(x0, 0);
+    for i in 1..=n / 2 {
+        for j in i..=n - i {
+            let mut reactants = vec![0; n];
+            let mut jump = vec![0; n];
+            reactants[i - 1] += 1;
+            reactants[j - 1] += 1;
+            jump[i - 1] -= 1;
+            jump[j - 1] -= 1;
+            jump[i + j - 1] += 1;
+            flocculation.add_reaction(Rate::lma(k, reactants), jump);
+        }
+    }
+    flocculation
+}
+
+fn bench_flocculation(c: &mut Criterion) {
+    let mut group = c.benchmark_group("flocculation");
+    for x0 in &[1_000, 100_000] {
+        for n in &[10, 20, 30, 40, 50] {
+            group.bench_with_input(
+                BenchmarkId::new("api", format!("{n} {x0}")),
+                &(n, x0),
+                |b, &(n, x0)| {
+                    b.iter(|| {
+                        let mut flocculation = api_flocculation(*n, 1.0, *x0);
+                        flocculation.advance_until(1000.);
+                    })
+                },
+            );
+        }
+        group.bench_function(BenchmarkId::new("macro", format!("10 {x0}")), |b| {
+            b.iter(|| macro_flocculation_10(*x0))
+        });
+    }
+    group.finish();
 }
 
 criterion_group!(
     benches,
-    api_sir_10k,
-    macro_sir_10k,
-    api_sir_1M,
-    macro_sir_1M,
-    api_dimers,
-    macro_dimers,
-    api_dimers2,
-    macro_dimers2,
-    macro_mm,
-    api_vilar,
-    macro_vilar,
-    macro_vilar_best_order,
-    macro_vilar_worst_order,
-    macro_ring_10,
-    api_ring_10,
-    macro_ring_20,
-    api_ring_20,
-    macro_ring_30,
-    api_ring_30,
-    macro_ring_40,
-    api_ring_40,
-    macro_ring_50,
-    api_ring_50,
-    macro_flocculation_10,
+    bench_sir,
+    bench_dimers,
+    bench_dimers2,
+    bench_mm,
+    bench_vilar,
+    bench_ring,
+    bench_flocculation,
 );
 
 criterion_main!(benches);

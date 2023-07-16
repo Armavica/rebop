@@ -14,6 +14,7 @@ fn macro_sir_10k(c: &mut Criterion) {
     c.bench_function("macro_sir_10k", |b| {
         b.iter(|| {
             let mut sir = SIR::new();
+            sir.seed(0);
             sir.r_inf = 0.1 / 10000.;
             sir.r_heal = 0.05;
             sir.S = 9999;
@@ -34,6 +35,7 @@ fn macro_sir_1M(c: &mut Criterion) {
     c.bench_function("macro_sir_1M", |b| {
         b.iter(|| {
             let mut sir = SIR::new();
+            sir.seed(0);
             sir.r_inf = 0.1 / 10000.;
             sir.r_heal = 0.05;
             sir.S = 999999;
@@ -87,6 +89,7 @@ fn macro_dimers(c: &mut Criterion) {
     c.bench_function("macro_dimers", |b| {
         b.iter(|| {
             let mut dimers = Dimers::new();
+            dimers.seed(0);
             dimers.r_tx = 25.;
             dimers.r_tl = 1000.;
             dimers.r_dim = 0.001;
@@ -125,6 +128,7 @@ fn macro_dimers2(c: &mut Criterion) {
     c.bench_function("macro_dimers2", |b| {
         b.iter(|| {
             let mut dimers = Dimers::new();
+            dimers.seed(0);
             dimers.r_decay_monomer = 1.;
             dimers.r_dimerization = 1. / 500.;
             dimers.r_monomerization = 0.5;
@@ -160,6 +164,7 @@ fn macro_mm(c: &mut Criterion) {
     c.bench_function("macro_mm", |b| {
         b.iter(|| {
             let mut mm = MM::new();
+            mm.seed(0);
             mm.r_fwd = 0.0017;
             mm.r_bwd = 0.5;
             mm.r_cat = 0.1;
@@ -286,6 +291,7 @@ fn macro_vilar_best_order(c: &mut Criterion) {
             let mut vilar = Vilar::with_parameters(
                 50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.,
             );
+            vilar.seed(0);
             vilar.Da = 1;
             vilar.Dr = 1;
             vilar.advance_until(200.);
@@ -319,6 +325,7 @@ fn macro_vilar_worst_order(c: &mut Criterion) {
             let mut vilar = Vilar::with_parameters(
                 50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.,
             );
+            vilar.seed(0);
             vilar.Da = 1;
             vilar.Dr = 1;
             vilar.advance_until(200.);
@@ -352,6 +359,7 @@ fn macro_vilar(c: &mut Criterion) {
             let mut vilar = Vilar::with_parameters(
                 50., 500., 0.01, 50., 50., 5., 10., 0.5, 1., 0.2, 1., 1., 2., 50., 100.,
             );
+            vilar.seed(0);
             vilar.Da = 1;
             vilar.Dr = 1;
             vilar.advance_until(200.);
@@ -377,6 +385,7 @@ fn macro_ring_10(c: &mut Criterion) {
     c.bench_function("macro_ring_10", |b| {
         b.iter(|| {
             let mut ring = Ring::new();
+            ring.seed(0);
             ring.k = 1.;
             ring.A0 = 1000;
             ring.advance_until(100.);
@@ -415,6 +424,7 @@ fn macro_ring_20(c: &mut Criterion) {
     c.bench_function("macro_ring_20", |b| {
         b.iter(|| {
             let mut ring = Ring::new();
+            ring.seed(0);
             ring.k = 1.;
             ring.A0 = 1000;
             ring.advance_until(100.);
@@ -464,6 +474,7 @@ fn macro_ring_30(c: &mut Criterion) {
     c.bench_function("macro_ring_30", |b| {
         b.iter(|| {
             let mut ring = Ring::new();
+            ring.seed(0);
             ring.k = 1.;
             ring.A0 = 1000;
             ring.advance_until(100.);
@@ -524,6 +535,7 @@ fn macro_ring_40(c: &mut Criterion) {
     c.bench_function("macro_ring_40", |b| {
         b.iter(|| {
             let mut ring = Ring::new();
+            ring.seed(0);
             ring.k = 1.;
             ring.A0 = 1000;
             ring.advance_until(100.);
@@ -595,6 +607,7 @@ fn macro_ring_50(c: &mut Criterion) {
     c.bench_function("macro_ring_50", |b| {
         b.iter(|| {
             let mut ring = Ring::new();
+            ring.seed(0);
             ring.k = 1.;
             ring.A0 = 1000;
             ring.advance_until(100.);
@@ -695,6 +708,7 @@ fn macro_flocculation_10(c: &mut Criterion) {
     c.bench_function("macro_flocculation_10", |b| {
         b.iter(|| {
             let mut f = Flocculation::new();
+            f.seed(0);
             f.k = 1.;
             f.A1 = 1000;
             f.advance_until(100.);

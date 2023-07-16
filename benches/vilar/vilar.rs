@@ -45,7 +45,7 @@ fn main() {
         vilar.Dr = 1;
         for i in 1..=200 {
             vilar.advance_until(i as f64);
-            println!("{}, {}, {}", vilar.A, vilar.R, vilar.C);
         }
+        println!("{}, {}, {}", vilar.A, vilar.R, vilar.C);
     }
 }

@@ -51,7 +51,7 @@ fn api_sir_10k(c: &mut Criterion) {
                 Rate::new(0.1 / 10000., &[SRate::LMA(SIR::S), SRate::LMA(SIR::I)]),
                 [-1, 1, 0],
             );
-            sir.add_reaction(Rate::new(0.05, &[SRate::LMA(SIR::R)]), [0, -1, 1]);
+            sir.add_reaction(Rate::new(0.05, &[SRate::LMA(SIR::I)]), [0, -1, 1]);
             sir.advance_until(1000.);
         })
     });
@@ -67,7 +67,7 @@ fn api_sir_1M(c: &mut Criterion) {
                 Rate::new(0.1 / 10000., &[SRate::LMA(SIR::S), SRate::LMA(SIR::I)]),
                 [-1, 1, 0],
             );
-            sir.add_reaction(Rate::new(0.05, &[SRate::LMA(SIR::R)]), [0, -1, 1]);
+            sir.add_reaction(Rate::new(0.05, &[SRate::LMA(SIR::I)]), [0, -1, 1]);
             sir.advance_until(1000.);
         })
     });

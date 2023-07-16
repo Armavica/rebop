@@ -96,22 +96,19 @@
 //! model needs to be defined programmatically.  The SIR model is defined as:
 //!
 //! ```rust
-//! use rebop::index_enum;
-//! use rebop::gillespie::{AsIndex, Gillespie, Rate, SRate};
+//! use rebop::gillespie::{Gillespie, Rate};
 //!
-//! index_enum! { enum SIR { S, I, R } }
 //! let mut sir = Gillespie::new([999, 1, 0]);
+//! //                           [  S, I, R]
 //! // S + I => 2 I with rate 1e-4
-//! sir.add_reaction(
-//!     Rate::new(1e-4, &[SRate::LMA(SIR::S), SRate::LMA(SIR::I)]),
-//!     [-1, 1, 0]);
+//! sir.add_reaction(Rate::lma(1e-4, [1, 1, 0]), [-1, 1, 0]);
 //! // I => R with rate 0.01
-//! sir.add_reaction(Rate::new(0.01, &[SRate::LMA(SIR::I)]), [0, -1, 1]);
+//! sir.add_reaction(Rate::lma(0.01, [0, 1, 0]), [0, -1, 1]);
 //!
 //! println!("time,S,I,R");
 //! for t in 0..250 {
 //!     sir.advance_until(t as f64);
-//!     println!("{},{},{},{}", sir.get_time(), sir.get_species(SIR::S), sir.get_species(SIR::I), sir.get_species(SIR::R));
+//!     println!("{},{},{},{}", sir.get_time(), sir.get_species(0), sir.get_species(1), sir.get_species(2));
 //! }
 //! ```
 //!
@@ -309,15 +306,13 @@ impl Gillespie {
                 x0[id] = value as isize;
             }
         }
-        let mut g = gillespie::Gillespie::<usize>::new(x0);
+        let mut g = gillespie::Gillespie::new(x0);
         for (rate, reactants, products) in self.reactions.iter() {
-            let rate = gillespie::Rate::new(
-                *rate,
-                &reactants
-                    .iter()
-                    .map(|r| gillespie::SRate::LMA(self.species[r]))
-                    .collect::<Vec<_>>(),
-            );
+            let mut vreactants = vec![0; self.species.len()];
+            for reactant in reactants {
+                vreactants[self.species[reactant]] += 1;
+            }
+            let rate = gillespie::Rate::lma(*rate, vreactants);
             let mut actions = vec![0; self.species.len()];
             for reactant in reactants {
                 actions[self.species[reactant]] -= 1;

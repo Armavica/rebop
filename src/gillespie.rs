@@ -51,6 +51,14 @@ impl<T: AsIndex + Clone> Gillespie<T> {
             rng: SmallRng::from_entropy(),
         }
     }
+    pub fn new_with_seed<V: AsRef<[isize]>>(species: V, seed: u64) -> Self {
+        Gillespie {
+            species: species.as_ref().to_vec(),
+            t: 0.,
+            reactions: Vec::new(),
+            rng: SmallRng::seed_from_u64(seed),
+        }
+    }
     /// Seeds the random number generator.
     pub fn seed(&mut self, seed: u64) {
         self.rng = SmallRng::seed_from_u64(seed);

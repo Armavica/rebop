@@ -47,7 +47,7 @@ fn api_sir_10k(c: &mut Criterion) {
     index_enum! { enum SIR { S, I, R } }
     c.bench_function("api_sir_10k", |b| {
         b.iter(|| {
-            let mut sir = Gillespie::new([9999, 1, 0]);
+            let mut sir = Gillespie::new_with_seed([9999, 1, 0], 0);
             sir.add_reaction(
                 Rate::new(0.1 / 10000., &[SRate::LMA(SIR::S), SRate::LMA(SIR::I)]),
                 [-1, 1, 0],
@@ -63,7 +63,7 @@ fn api_sir_1M(c: &mut Criterion) {
     index_enum! { enum SIR { S, I, R } }
     c.bench_function("api_sir_1M", |b| {
         b.iter(|| {
-            let mut sir = Gillespie::new([999999, 1, 0]);
+            let mut sir = Gillespie::new_with_seed([999999, 1, 0], 0);
             sir.add_reaction(
                 Rate::new(0.1 / 10000., &[SRate::LMA(SIR::S), SRate::LMA(SIR::I)]),
                 [-1, 1, 0],
@@ -102,7 +102,7 @@ fn api_dimers(c: &mut Criterion) {
     index_enum! { enum Dimers { G, M, P, D } }
     c.bench_function("api_dimers", |b| {
         b.iter(|| {
-            let mut dimers = Gillespie::new([1, 0, 0, 0]);
+            let mut dimers = Gillespie::new_with_seed([1, 0, 0, 0], 0);
             dimers.add_reaction(Rate::new(25., &[SRate::LMA(Dimers::G)]), [0, 1, 0, 0]);
             dimers.add_reaction(Rate::new(1000., &[SRate::LMA(Dimers::M)]), [0, 0, 1, 0]);
             dimers.add_reaction(Rate::new(0.001, &[SRate::LMA2(Dimers::P)]), [0, 0, -2, 1]);
@@ -139,7 +139,7 @@ fn api_dimers2(c: &mut Criterion) {
     index_enum! { enum Dimers { A, A_A, AA } }
     c.bench_function("api_dimers2", |b| {
         b.iter(|| {
-            let mut dimers = Gillespie::new([100000, 0, 0]);
+            let mut dimers = Gillespie::new_with_seed([100000, 0, 0], 0);
             dimers.add_reaction(Rate::new(1., &[SRate::LMA(Dimers::A)]), [-1, 0, 0]);
             dimers.add_reaction(Rate::new(1. / 500., &[SRate::LMA2(Dimers::A)]), [-2, 1, 0]);
             dimers.add_reaction(Rate::new(0.5, &[SRate::LMA(Dimers::A_A)]), [2, -1, 0]);
@@ -190,7 +190,7 @@ fn api_vilar(c: &mut Criterion) {
     let thetaR = 100.;
     c.bench_function("api_vilar", |b| {
         b.iter(|| {
-            let mut vilar = Gillespie::new([1, 1, 0, 0, 0, 0, 0, 0, 0]);
+            let mut vilar = Gillespie::new_with_seed([1, 1, 0, 0, 0, 0, 0, 0, 0], 0);
             vilar.add_reaction(
                 Rate::new(gammaA, &[SRate::LMA(Vilar::Da), SRate::LMA(Vilar::A)]),
                 [-1, 0, 1, 0, 0, 0, -1, 0, 0],
@@ -605,7 +605,7 @@ fn macro_ring_50(c: &mut Criterion) {
 fn api_ring(n: usize, k: f64) -> Gillespie<usize> {
     let mut x0 = vec![0; n];
     x0[0] = 1000;
-    let mut ring = Gillespie::new(x0);
+    let mut ring = Gillespie::new_with_seed(x0, 0);
     for i in 0..n {
         let mut actions = vec![0; n];
         actions[i] -= 1;

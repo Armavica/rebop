@@ -198,6 +198,10 @@ impl Gillespie {
     pub fn get_time(&self) -> f64 {
         self.t
     }
+    /// Sets the current time in the model.
+    pub fn set_time(&mut self, t: f64) {
+        self.t = t;
+    }
     /// Returns the current amount of a species.
     ///
     /// ```
@@ -207,6 +211,11 @@ impl Gillespie {
     /// ```
     pub fn get_species(&self, s: usize) -> isize {
         self.species[s]
+    }
+    /// Sets the amount of species in the model.
+    pub fn set_species<V: AsRef<[isize]>>(&mut self, species: V) {
+        assert_eq!(species.as_ref().len(), self.species.len());
+        self.species = species.as_ref().to_vec();
     }
     /// Simulates the problem until `tmax`.
     ///

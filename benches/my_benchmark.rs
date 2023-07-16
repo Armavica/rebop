@@ -108,6 +108,95 @@ fn bench_dimers2(c: &mut Criterion) {
     group.finish()
 }
 
+#[rustfmt::skip]
+fn api_erk() {
+    let k1 = 0.00166;
+    let k2 = 0.0001;
+    let k3 = 0.1;
+    let k4 = 0.00166;
+    let h1 = 0.02;
+    let h2 = 0.001;
+    let h3 = 0.02;
+    let h4 = 0.02;
+    let km1 = 0.0001;
+    let km3 = 0.1;
+    let hm1 = 0.02;
+    let hm3 = 0.02;
+    let mut erk = Gillespie::new_with_seed([201, 100, 10, 20, 2, 23, 10, 10, 10], 0);
+    // M    MKK     M_MKK   Mp_MKK  MKP     Mpp     Mp  Mpp_MKP     Mp_MKP
+    // 1     2        3        4     5       6      7      8          9
+    erk.add_reaction(Rate::lma(k1,  [1, 1, 0, 0, 0, 0, 0, 0, 0]), [-1, -1, 1, 0, 0, 0, 0, 0, 0]);
+    erk.add_reaction(Rate::lma(km1, [0, 0, 1, 0, 0, 0, 0, 0, 0]), [1, 1, -1, 0, 0, 0, 0, 0, 0]);
+    erk.add_reaction(Rate::lma(k2,  [0, 0, 1, 0, 0, 0, 0, 0, 0]), [0, 1, -1, 0, 0, 0, 1, 0, 0]);
+
+    erk.add_reaction(Rate::lma(k3,  [0, 1, 0, 0, 0, 0, 1, 0, 0]), [0, -1, 0, 1, 0, 0, -1, 0, 0]);
+    erk.add_reaction(Rate::lma(km3, [0, 0, 0, 1, 0, 0, 0, 0, 0]), [0, 1, 0, -1, 0, 0, 1, 0, 0]);
+    erk.add_reaction(Rate::lma(k4,  [0, 0, 0, 1, 0, 0, 0, 0, 0]), [0, 1, 0, -1, 0, 1, 0, 0, 0]);
+
+    erk.add_reaction(Rate::lma(h1,  [0, 0, 0, 0, 1, 1, 0, 0, 0]), [0, 0, 0, 0, -1, -1, 0, 1, 0]);
+    erk.add_reaction(Rate::lma(hm1, [0, 0, 0, 0, 0, 0, 0, 1, 0]), [0, 0, 0, 0, 1, 1, 0, -1, 0]);
+    erk.add_reaction(Rate::lma(h2,  [0, 0, 0, 0, 0, 0, 0, 1, 0]), [0, 0, 0, 0, 1, 0, 1, -1, 0]);
+
+    erk.add_reaction(Rate::lma(h3,  [0, 0, 0, 0, 1, 0, 1, 0, 0]), [0, 0, 0, 0, -1, 0, -1, 0, 1]);
+    erk.add_reaction(Rate::lma(hm3, [0, 0, 0, 0, 0, 0, 0, 0, 1]), [0, 0, 0, 0, 1, 0, 1, 0, -1]);
+    erk.add_reaction(Rate::lma(h4,  [0, 0, 0, 0, 0, 0, 0, 0, 1]), [1, 0, 0, 0, 1, 0, 0, 0, -1]);
+
+    erk.advance_until(1000.0);
+}
+
+fn macro_erk() {
+    define_system! {
+        k1 k2 k3 k4 h1 h2 h3 h4 km1 km3 hm1 hm3;
+        Erk { M, Mp, Mpp, MKK, MKP, M_MKK, Mp_MKK, Mp_MKP, Mpp_MKP }
+
+        f1: M + MKK     => M_MKK        @ k1
+        r1: M_MKK       => M + MKK      @ km1
+        i1: M_MKK       => Mp + MKK     @ k2
+
+        f2: Mp + MKK    => Mp_MKK       @ k3
+        r2: Mp_MKK      => Mp + MKK     @ km3
+        i2: Mp_MKK      => Mpp + MKK    @ k4
+
+        f3: Mpp + MKP   => Mpp_MKP      @ h1
+        r3: Mpp_MKP     => Mpp + MKP    @ hm1
+        i3: Mpp_MKP     => Mp + MKP     @ h2
+
+        f4: Mp + MKP    => Mp_MKP       @ h3
+        r4: Mp_MKP      => Mp + MKP     @ hm3
+        i4: Mp_MKP      => M + MKP      @ h4
+    }
+    let mut erk = Erk::new();
+    erk.k1 = 0.00166;
+    erk.k2 = 0.0001;
+    erk.k3 = 0.1;
+    erk.k4 = 0.00166;
+    erk.h1 = 0.02;
+    erk.h2 = 0.001;
+    erk.h3 = 0.02;
+    erk.h4 = 0.02;
+    erk.km1 = 0.0001;
+    erk.km3 = 0.1;
+    erk.hm1 = 0.02;
+    erk.hm3 = 0.02;
+    erk.M = 201;
+    erk.MKK = 100;
+    erk.M_MKK = 10;
+    erk.Mp_MKK = 20;
+    erk.MKP = 2;
+    erk.Mpp = 23;
+    erk.Mp = 10;
+    erk.Mpp_MKP = 10;
+    erk.Mp_MKP = 10;
+    erk.advance_until(1000.0);
+}
+
+fn bench_erk(c: &mut Criterion) {
+    let mut group = c.benchmark_group("erk");
+    group.bench_function("macro", |b| b.iter(|| macro_erk()));
+    group.bench_function("api", |b| b.iter(|| api_erk()));
+    group.finish();
+}
+
 fn bench_mm(c: &mut Criterion) {
     define_system! {
         r_fwd r_bwd r_cat;
@@ -144,6 +233,7 @@ fn bench_mm(c: &mut Criterion) {
     group.finish();
 }
 
+#[rustfmt::skip]
 #[allow(non_snake_case)]
 fn api_vilar() {
     // Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C
@@ -163,70 +253,22 @@ fn api_vilar() {
     let thetaA = 50.;
     let thetaR = 100.;
     let mut vilar = Gillespie::new_with_seed([1, 1, 0, 0, 0, 0, 0, 0, 0], 0);
-    vilar.add_reaction(
-        Rate::lma(gammaA, [1, 0, 0, 0, 0, 0, 1, 0, 0]),
-        [-1, 0, 1, 0, 0, 0, -1, 0, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(gammaR, [0, 1, 0, 0, 0, 0, 1, 0, 0]),
-        [0, -1, 0, 1, 0, 0, -1, 0, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(thetaA, [0, 0, 1, 0, 0, 0, 0, 0, 0]),
-        [1, 0, -1, 0, 0, 0, 1, 0, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(thetaR, [0, 0, 0, 1, 0, 0, 0, 0, 0]),
-        [0, 1, 0, -1, 0, 0, 1, 0, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(alphaA, [1, 0, 0, 0, 0, 0, 0, 0, 0]),
-        [0, 0, 0, 0, 1, 0, 0, 0, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(alphaR, [0, 1, 0, 0, 0, 0, 0, 0, 0]),
-        [0, 0, 0, 0, 0, 1, 0, 0, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(alphapA, [0, 0, 1, 0, 0, 0, 0, 0, 0]),
-        [0, 0, 0, 0, 1, 0, 0, 0, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(alphapR, [0, 0, 0, 1, 0, 0, 0, 0, 0]),
-        [0, 0, 0, 0, 0, 1, 0, 0, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(betaA, [0, 0, 0, 0, 1, 0, 0, 0, 0]),
-        [0, 0, 0, 0, 0, 0, 1, 0, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(betaR, [0, 0, 0, 0, 0, 1, 0, 0, 0]),
-        [0, 0, 0, 0, 0, 0, 0, 1, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(gammaC, [0, 0, 0, 0, 0, 0, 1, 1, 0]),
-        [0, 0, 0, 0, 0, 0, -1, -1, 1],
-    );
-    vilar.add_reaction(
-        Rate::lma(gammaA, [0, 0, 0, 0, 0, 0, 0, 0, 1]),
-        [0, 0, 0, 0, 0, 0, 0, 1, -1],
-    );
-    vilar.add_reaction(
-        Rate::lma(deltaMA, [0, 0, 0, 0, 1, 0, 0, 0, 0]),
-        [0, 0, 0, 0, -1, 0, 0, 0, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(deltaMR, [0, 0, 0, 0, 0, 1, 0, 0, 0]),
-        [0, 0, 0, 0, 0, -1, 0, 0, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(deltaA, [0, 0, 0, 0, 0, 0, 1, 0, 0]),
-        [0, 0, 0, 0, 0, 0, -1, 0, 0],
-    );
-    vilar.add_reaction(
-        Rate::lma(deltaR, [0, 0, 0, 0, 0, 0, 0, 1, 0]),
-        [0, 0, 0, 0, 0, 0, 0, -1, 0],
-    );
+    vilar.add_reaction(Rate::lma(gammaA,  [1, 0, 0, 0, 0, 0, 1, 0, 0]), [-1, 0, 1, 0, 0, 0, -1, 0, 0]);
+    vilar.add_reaction(Rate::lma(gammaR,  [0, 1, 0, 0, 0, 0, 1, 0, 0]), [0, -1, 0, 1, 0, 0, -1, 0, 0]);
+    vilar.add_reaction(Rate::lma(thetaA,  [0, 0, 1, 0, 0, 0, 0, 0, 0]), [1, 0, -1, 0, 0, 0, 1, 0, 0]);
+    vilar.add_reaction(Rate::lma(thetaR,  [0, 0, 0, 1, 0, 0, 0, 0, 0]), [0, 1, 0, -1, 0, 0, 1, 0, 0]);
+    vilar.add_reaction(Rate::lma(alphaA,  [1, 0, 0, 0, 0, 0, 0, 0, 0]), [0, 0, 0, 0, 1, 0, 0, 0, 0]);
+    vilar.add_reaction(Rate::lma(alphaR,  [0, 1, 0, 0, 0, 0, 0, 0, 0]), [0, 0, 0, 0, 0, 1, 0, 0, 0]);
+    vilar.add_reaction(Rate::lma(alphapA, [0, 0, 1, 0, 0, 0, 0, 0, 0]), [0, 0, 0, 0, 1, 0, 0, 0, 0]);
+    vilar.add_reaction(Rate::lma(alphapR, [0, 0, 0, 1, 0, 0, 0, 0, 0]), [0, 0, 0, 0, 0, 1, 0, 0, 0]);
+    vilar.add_reaction(Rate::lma(betaA,   [0, 0, 0, 0, 1, 0, 0, 0, 0]), [0, 0, 0, 0, 0, 0, 1, 0, 0]);
+    vilar.add_reaction(Rate::lma(betaR,   [0, 0, 0, 0, 0, 1, 0, 0, 0]), [0, 0, 0, 0, 0, 0, 0, 1, 0]);
+    vilar.add_reaction(Rate::lma(gammaC,  [0, 0, 0, 0, 0, 0, 1, 1, 0]), [0, 0, 0, 0, 0, 0, -1, -1, 1]);
+    vilar.add_reaction(Rate::lma(gammaA,  [0, 0, 0, 0, 0, 0, 0, 0, 1]), [0, 0, 0, 0, 0, 0, 0, 1, -1]);
+    vilar.add_reaction(Rate::lma(deltaMA, [0, 0, 0, 0, 1, 0, 0, 0, 0]), [0, 0, 0, 0, -1, 0, 0, 0, 0]);
+    vilar.add_reaction(Rate::lma(deltaMR, [0, 0, 0, 0, 0, 1, 0, 0, 0]), [0, 0, 0, 0, 0, -1, 0, 0, 0]);
+    vilar.add_reaction(Rate::lma(deltaA,  [0, 0, 0, 0, 0, 0, 1, 0, 0]), [0, 0, 0, 0, 0, 0, -1, 0, 0]);
+    vilar.add_reaction(Rate::lma(deltaR,  [0, 0, 0, 0, 0, 0, 0, 1, 0]), [0, 0, 0, 0, 0, 0, 0, -1, 0]);
     vilar.advance_until(200.);
 }
 
@@ -686,9 +728,10 @@ criterion_group!(
     bench_dimers,
     bench_dimers2,
     bench_mm,
+    bench_erk,
     bench_vilar,
-    bench_ring,
     bench_flocculation,
+    bench_ring,
 );
 
 criterion_main!(benches);

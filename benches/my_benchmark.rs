@@ -664,7 +664,7 @@ fn macro_flocculation_10(c: &mut Criterion) {
     define_system! {
         k;
         Flocculation {
-            A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10
+            A1, A2, A3, A4, A5, A6, A7, A8, A9, A10
         }
         r0  : 2 A1      => A2 @ k
         r1  : A1 + A2   => A3 @ k
@@ -727,6 +727,7 @@ criterion_group!(
     api_ring_40,
     macro_ring_50,
     api_ring_50,
+    macro_flocculation_10,
 );
 
 criterion_main!(benches);

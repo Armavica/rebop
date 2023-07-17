@@ -34,13 +34,13 @@ impl Expr {
 
 #[derive(Clone, Debug)]
 pub enum Rate {
-    LMA(f64, Vec<usize>),
-    LMASparse(f64, Vec<(usize, usize)>),
+    LMA(f64, Vec<u32>),
+    LMASparse(f64, Vec<(u32, u32)>),
     Expr(Expr),
 }
 
 impl Rate {
-    pub fn lma<V: AsRef<[usize]>>(rate: f64, reactants: V) -> Self {
+    pub fn lma<V: AsRef<[u32]>>(rate: f64, reactants: V) -> Self {
         Rate::LMA(rate, reactants.as_ref().to_vec())
     }
     pub fn sparse(self) -> Self {
@@ -50,7 +50,7 @@ impl Rate {
                     .iter()
                     .enumerate()
                     .filter_map(|(index, &exponent)| {
-                        Some((index, exponent)).filter(|&(_, exponent)| exponent > 0)
+                        Some((index as u32, exponent)).filter(|&(_, exponent)| exponent > 0)
                     })
                     .collect();
                 Rate::LMASparse(rate, sparse)
@@ -69,8 +69,7 @@ impl Rate {
                 }),
             Rate::LMASparse(mut rate, sparse) => {
                 for &(index, exponent) in sparse.iter() {
-                    let n = *unsafe { species.get_unchecked(index) };
-                    //let n = species[index];
+                    let n = *unsafe { species.get_unchecked(index as usize) };
                     for i in (n + 1 - exponent as isize)..=n {
                         rate *= i as f64;
                     }

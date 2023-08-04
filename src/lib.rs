@@ -262,12 +262,14 @@ impl Gillespie {
     /// Add a Law of Mass Action reaction to the system.
     ///
     /// The forward reaction rate is `rate`, while `reactants` and `products` are lists of
-    /// respectively reactant names and product names.
+    /// respectively reactant names and product names.  Add the reverse reaction with the rate
+    /// `reverse_rate` if it is not `None`.
     fn add_reaction(
         &mut self,
         rate: f64,
         reactants: Vec<String>,
         products: Vec<String>,
+        reverse_rate: Option<f64>,
     ) -> PyResult<()> {
         // Insert unknown reactants in known species
         for reactant in &reactants {
@@ -281,7 +283,11 @@ impl Gillespie {
                 self.species.insert(product.clone(), self.species.len());
             }
         }
-        self.reactions.push((rate, reactants, products));
+        self.reactions
+            .push((rate, reactants.clone(), products.clone()));
+        if let Some(rrate) = reverse_rate {
+            self.reactions.push((rrate, products, reactants));
+        }
         Ok(())
     }
     /// Number of reactions currently in the system.

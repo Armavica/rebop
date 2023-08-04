@@ -125,7 +125,7 @@
 //! sir.add_reaction(0.01, ['I'], ['R'])
 //! print(sir)
 //!
-//! times, sol = sir.run({'S': 999, 'I': 1}, tmax=250, nb_steps=250)
+//! df = sir.run({'S': 999, 'I': 1}, tmax=250, nb_steps=250)
 //! ```
 //!
 //! While a pip package is being worked on, to run this Python file, you

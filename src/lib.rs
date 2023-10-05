@@ -363,6 +363,7 @@ impl Gillespie {
 
 #[pymodule]
 fn rebop(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     m.add_class::<Gillespie>()?;
     Ok(())
 }

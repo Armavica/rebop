@@ -1,5 +1,5 @@
 import xarray as xr
-from .rebop import Gillespie
+from .rebop import Gillespie, __version__
 
 og_run = Gillespie.run
 

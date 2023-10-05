@@ -241,7 +241,7 @@ impl Gillespie {
 
             // we don't want to use partial_cmp, for performance
             #[allow(clippy::neg_cmp_op_on_partial_ord)]
-            if !(total_rate > 0.) {
+            if !(0. < total_rate) {
                 self.t = tmax;
                 return;
             }

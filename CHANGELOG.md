@@ -7,11 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] -- 2023-10-05
+
 ### Added
 
 * It is now possible to refer to species amounts in the macro rate expressions.
   The rate expressions are still multiplied by the law of mass action
   constructed from the reactions.
+* Functions have been added to the API engine to set time and species amounts.
+* An optional argument to the Python API has been added to specify reverse
+  reactions more easily.
+
+### Changed
+
+* The Python results are now returned as an `xarray.Dataset` instead of a
+  dictionary.
+* The API engine has been rewritten to make it faster and more modular.
+  Notably, the API to specify reaction rates in Rust changed from enums to
+  vectors.
 
 ## [0.5.1] -- 2023-03-13
 

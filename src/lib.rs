@@ -329,6 +329,7 @@ impl Gillespie {
             g.add_reaction(rate, actions);
         }
         let mut times = Vec::new();
+        // species.shape = (species, nb_steps)
         let mut species = vec![Vec::new(); self.species.len()];
         for i in 0..=nb_steps {
             let t = tmax * i as f64 / nb_steps as f64;

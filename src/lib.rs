@@ -88,12 +88,33 @@
 //!
 //! ![Typical SIR output](https://github.com/Armavica/rebop/blob/master/sir.png)
 //!
+//! # Python bindings
+//!
+//! This API shines through the Python bindings which allow one to
+//! define a model easily:
+//!
+//! ```python
+//! import rebop
+//!
+//! sir = rebop.Gillespie()
+//! sir.add_reaction(1e-4, ['S', 'I'], ['I', 'I'])
+//! sir.add_reaction(0.01, ['I'], ['R'])
+//! print(sir)
+//!
+//! df = sir.run({'S': 999, 'I': 1}, tmax=250, nb_steps=250)
+//! ```
+//!
+//! You can test this code by installing `rebop` from PyPI with
+//! `pip install rebop`. To build the Python bindings from source,
+//! the simplest is to clone this git repository and use `maturin
+//! develop`.
+//!
 //! # The traditional API
 //!
-//! The function-based API allows models to be defined programmatically
-//! in Rust or in Python.  If one programs in Rust, one should generally
-//! prefer the macro DSL, unless one needs more complex rates, or if the
-//! model needs to be defined programmatically.  The SIR model is defined as:
+//! The function-based API underlying the Python package is also available
+//! from Rust, if you want to be able to define models at run time (instead
+//! of at compilation time with the macro DSL demonstrated above).
+//! The SIR model is defined as:
 //!
 //! ```rust
 //! use rebop::gillespie::{Gillespie, Rate};
@@ -111,27 +132,6 @@
 //!     println!("{},{},{},{}", sir.get_time(), sir.get_species(0), sir.get_species(1), sir.get_species(2));
 //! }
 //! ```
-//!
-//! # Python bindings
-//!
-//! This API shines through the Python bindings which allow one to
-//! define a model easily:
-//!
-//! ```python
-//! import rebop
-//!
-//! sir = rebop.Gillespie()
-//! sir.add_reaction(1e-4, ['S', 'I'], ['I', 'I'])
-//! sir.add_reaction(0.01, ['I'], ['R'])
-//! print(sir)
-//!
-//! df = sir.run({'S': 999, 'I': 1}, tmax=250, nb_steps=250)
-//! ```
-//!
-//! While a pip package is being worked on, to run this Python file, you
-//! must currently first compile rebop with `cargo build --release`
-//! and copy or link the library next to the script: `ln -s
-//! target/release/librebop.so rebop.so`.
 //!
 //! # Performance
 //!

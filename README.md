@@ -16,7 +16,7 @@ most efficient, but that requires to compile a rust program;
 * a function-based API implemented by the module [`gillespie`], also
 available through Python bindings.  This one does not require a rust
 compilation and allows the system to be defined at run time.  It is
-typically 2 or 3 times slower as the macro DSL, but still faster
+typically 2 or 3 times slower than the macro DSL, but still faster
 than all other software tried.
 
 ## The macro DSL
@@ -84,33 +84,6 @@ which can produce an output similar to this one:
 
 ![Typical SIR output](https://github.com/Armavica/rebop/blob/master/sir.png)
 
-## The traditional API
-
-The function-based API allows models to be defined programmatically
-in Rust or in Python.  If one programs in Rust, one should generally
-prefer the macro DSL, unless one needs more complex rates, or if the
-model needs to be defined programmatically.  The SIR model is defined as:
-
-```rust
-use rebop::index_enum;
-use rebop::gillespie::{AsIndex, Gillespie, Rate, SRate};
-
-index_enum! { enum SIR { S, I, R } }
-let mut sir = Gillespie::new([999, 1, 0]);
-// S + I => 2 I with rate 1e-4
-sir.add_reaction(
-    Rate::new(1e-4, &[SRate::LMA(SIR::S), SRate::LMA(SIR::I)]),
-    [-1, 1, 0]);
-// I => R with rate 0.01
-sir.add_reaction(Rate::new(0.01, &[SRate::LMA(SIR::I)]), [0, -1, 1]);
-
-println!("time,S,I,R");
-for t in 0..250 {
-    sir.advance_until(t as f64);
-    println!("{},{},{},{}", sir.get_time(), sir.get_species(&SIR::S), sir.get_species(&SIR::I), sir.get_species(&SIR::R));
-}
-```
-
 ## Python bindings
 
 This API shines through the Python bindings which allow one to
@@ -127,9 +100,34 @@ print(sir)
 df = sir.run({'S': 999, 'I': 1}, tmax=250, nb_steps=250)
 ```
 
-You can test this code by installing `rebop` with `pip install rebop`.  To
-build the Python bindings from source, the simplest is to clone it and use
-`maturin develop`.
+You can test this code by installing `rebop` from PyPI with
+`pip install rebop`. To build the Python bindings from source,
+the simplest is to clone this git repository and use `maturin
+develop`.
+
+## The traditional API
+
+The function-based API underlying the Python package is also available
+from Rust, if you want to be able to define models at run time (instead
+of at compilation time with the macro DSL demonstrated above).
+The SIR model is defined as:
+
+```rust
+use rebop::gillespie::{Gillespie, Rate};
+
+let mut sir = Gillespie::new([999, 1, 0]);
+//                           [  S, I, R]
+// S + I => 2 I with rate 1e-4
+sir.add_reaction(Rate::lma(1e-4, [1, 1, 0]), [-1, 1, 0]);
+// I => R with rate 0.01
+sir.add_reaction(Rate::lma(0.01, [0, 1, 0]), [0, -1, 1]);
+
+println!("time,S,I,R");
+for t in 0..250 {
+    sir.advance_until(t as f64);
+    println!("{},{},{},{}", sir.get_time(), sir.get_species(0), sir.get_species(1), sir.get_species(2));
+}
+```
 
 ## Performance
 

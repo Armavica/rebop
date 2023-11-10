@@ -28,10 +28,10 @@ class Gillespie:
 
     def add_reaction(
         self,
-        rate: float,
+        rate: float | str,
         reactants: list[str],
         products: list[str],
-        reverse_rate: float | None = None,
+        reverse_rate: float | str | None = None,
     ) -> None:
         """Add a Law of Mass Action reaction to the system.
 

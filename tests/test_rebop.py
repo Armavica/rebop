@@ -87,3 +87,22 @@ def test_var_names(nb_steps: int) -> None:
         assert s not in ds_subset
 
     assert ds_all[subset_to_save] == ds_subset
+
+
+def test_arbitrary_rates() -> None:
+    s = rebop.Gillespie()
+    s.add_reaction("B", [], ["A"])
+    ds_no_b = s.run({}, tmax=10, nb_steps=100)
+    s = rebop.Gillespie()
+    s.add_reaction("B", [], ["A"])
+    ds_init_b = s.run({"B": 1}, tmax=10, nb_steps=100)
+    s = rebop.Gillespie()
+    s.add_reaction("B", [], ["A"])
+    s.add_reaction(1, [], ["B"])
+    ds_with_b = s.run({}, tmax=10, nb_steps=100)
+
+    assert (ds_no_b.A == 0).all()
+    assert (ds_no_b.B == 0).all()
+    assert ds_init_b.A[-1] >= 1
+    assert (ds_init_b.B == 1).all()
+    assert ds_with_b.A[-1] >= 1

@@ -43,6 +43,9 @@ impl Rate {
     pub fn lma<V: AsRef<[u32]>>(rate: f64, reactants: V) -> Self {
         Rate::LMA(rate, reactants.as_ref().to_vec())
     }
+    pub fn expr(expr: Expr) -> Self {
+        Rate::Expr(expr)
+    }
     pub fn sparse(self) -> Self {
         match self {
             Rate::LMA(rate, reactants) => {

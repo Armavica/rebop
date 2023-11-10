@@ -236,6 +236,7 @@ use std::collections::HashMap;
 pub use rand;
 pub use rand_distr;
 
+mod expr;
 pub mod gillespie;
 mod gillespie_macro;
 

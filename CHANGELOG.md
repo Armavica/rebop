@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* It is now possible to specify a random seed from Python to run the simulator.
+
 ## [0.6.1] -- 2023-10-05
 
 Patch release to fix distribution to PyPI.  The release is now happening

@@ -58,8 +58,7 @@ impl Rate {
                     .collect();
                 Rate::LMASparse(rate, sparse)
             }
-            Rate::LMASparse(_, _) => self,
-            Rate::Expr(_) => unimplemented!(),
+            Rate::LMASparse(_, _) | Rate::Expr(_) => self,
         }
     }
     fn rate(&self, species: &[isize]) -> f64 {

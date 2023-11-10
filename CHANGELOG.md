@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * It is now possible to specify a random seed from Python to run the simulator.
+* It is now possible to specify arbitrary rates from Python as strings.
 
 ## [0.6.1] -- 2023-10-05
 

@@ -230,6 +230,7 @@
 //! * [SmartCell](http://software.crg.es/smartcell/)
 //! * [NFsim](http://michaelsneddon.net/nfsim/)
 
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use std::collections::HashMap;
 
@@ -240,11 +241,46 @@ mod expr;
 pub mod gillespie;
 mod gillespie_macro;
 
+use expr::NomExpr;
+
 /// Reaction system composed of species and reactions.
 #[pyclass]
 struct Gillespie {
     species: HashMap<String, usize>,
-    reactions: Vec<(f64, Vec<String>, Vec<String>)>,
+    reactions: Vec<(Rate, Vec<String>, Vec<String>)>,
+}
+
+#[derive(Clone, Debug, FromPyObject)]
+enum PyRate {
+    Lma(f64),
+    Expr(String),
+}
+
+#[derive(Clone, Debug)]
+enum Rate {
+    Lma(f64, Vec<String>),
+    Expr(NomExpr),
+}
+
+impl Rate {
+    fn new(rate: PyRate, reactants: &[String]) -> Result<Self, expr::RateParseError> {
+        match rate {
+            PyRate::Lma(c) => Ok(Rate::Lma(c, reactants.to_vec())),
+            PyRate::Expr(rate) => rate.parse().map(Rate::Expr),
+        }
+    }
+    fn to_gillespie_rate(&self, species: &HashMap<String, usize>) -> gillespie::Rate {
+        match self {
+            Rate::Lma(rate, reactants) => gillespie::Rate::lma(
+                *rate,
+                reactants
+                    .iter()
+                    .map(|s| species[s] as u32)
+                    .collect::<Vec<_>>(),
+            ),
+            Rate::Expr(nomexpr) => gillespie::Rate::expr(nomexpr.to_expr(species)),
+        }
+    }
 }
 
 #[pymethods]
@@ -267,11 +303,16 @@ impl Gillespie {
     /// `reverse_rate` if it is not `None`.
     fn add_reaction(
         &mut self,
-        rate: f64,
+        rate: PyRate,
         reactants: Vec<String>,
         products: Vec<String>,
-        reverse_rate: Option<f64>,
+        reverse_rate: Option<PyRate>,
     ) -> PyResult<()> {
+        // Convert PyRate into Rate (and possibly fail with rate parse error)
+        let rate = match Rate::new(rate, &reactants) {
+            Ok(rate) => rate,
+            Err(_) => return Err(PyValueError::new_err("Rate expression not understood")),
+        };
         // Insert unknown reactants in known species
         for reactant in &reactants {
             if !self.species.contains_key(reactant) {
@@ -287,7 +328,7 @@ impl Gillespie {
         self.reactions
             .push((rate, reactants.clone(), products.clone()));
         if let Some(rrate) = reverse_rate {
-            self.reactions.push((rrate, products, reactants));
+            self.add_reaction(rrate, products, reactants, None)?;
         }
         Ok(())
     }
@@ -324,7 +365,6 @@ impl Gillespie {
             for reactant in reactants {
                 vreactants[self.species[reactant]] += 1;
             }
-            let rate = gillespie::Rate::lma(*rate, vreactants);
             let mut actions = vec![0; self.species.len()];
             for reactant in reactants {
                 actions[self.species[reactant]] -= 1;
@@ -332,6 +372,7 @@ impl Gillespie {
             for product in products {
                 actions[self.species[product]] += 1;
             }
+            let rate = rate.to_gillespie_rate(&self.species);
             g.add_reaction(rate, actions);
         }
         let mut times = Vec::new();
@@ -361,7 +402,7 @@ impl Gillespie {
             s.push_str(&reactants.join(" + "));
             s.push_str(" --> ");
             s.push_str(&products.join(" + "));
-            s.push_str(&format!(" @ {}\n", rate));
+            s.push_str(&format!(" @ {rate:?}\n"));
         }
         Ok(s)
     }

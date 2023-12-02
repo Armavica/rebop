@@ -87,67 +87,59 @@ pub(crate) struct RateParseError;
 impl FromStr for NomExpr {
     type Err = RateParseError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parsing::nomexpr(s)
-            .map_err(|e| {
-                println!("{e}");
-                e
-            })
-            .map_err(|_| RateParseError {})
+    fn from_str(mut s: &str) -> Result<Self, Self::Err> {
+        parsing::nomexpr(&mut s).map_err(|_| RateParseError {})
     }
 }
 
 mod parsing {
     use super::NomExpr;
     use winnow::ascii::{alpha1, alphanumeric1, float, space0};
-    use winnow::branch::alt;
-    use winnow::bytes::{one_of, tag};
-    use winnow::combinator::{fold_repeat, repeat};
-    use winnow::error::Error;
-    use winnow::sequence::{delimited, preceded};
-    use winnow::IResult;
+    use winnow::combinator::{alt, delimited, fold_repeat, preceded, repeat};
+    use winnow::prelude::*;
+    use winnow::token::one_of;
     use winnow::Parser;
 
-    fn constant(s: &str) -> IResult<&str, NomExpr> {
+    fn constant(s: &mut &str) -> PResult<NomExpr> {
         float.map(|c| NomExpr::Constant(c)).parse_next(s)
     }
 
-    fn concentration(s: &str) -> IResult<&str, NomExpr> {
+    fn concentration(s: &mut &str) -> PResult<NomExpr> {
         // from nom recipes
         (
-            alt((alpha1, tag("_"))),
-            repeat::<_, _, Vec<_>, _, _>(0.., alt((alphanumeric1, tag("_")))),
+            alt((alpha1, "_")),
+            repeat::<_, _, Vec<_>, _, _>(0.., alt((alphanumeric1, "_"))),
         )
             .recognize()
             .map(|c: &str| NomExpr::Concentration(c.to_string()))
             .parse_next(s)
     }
 
-    fn parentheses(s: &str) -> IResult<&str, NomExpr> {
-        delimited(tag("("), delimited(space0, expr, space0), tag(")")).parse_next(s)
+    fn parentheses(s: &mut &str) -> PResult<NomExpr> {
+        delimited("(", delimited(space0, expr, space0), ")").parse_next(s)
     }
 
-    fn expr(s: &str) -> IResult<&str, NomExpr> {
+    fn expr(s: &mut &str) -> PResult<NomExpr> {
         alt((add_sub, term)).parse_next(s)
     }
 
-    fn term(s: &str) -> IResult<&str, NomExpr> {
+    fn term(s: &mut &str) -> PResult<NomExpr> {
         alt((mul_div, factor)).parse_next(s)
     }
 
-    fn factor(s: &str) -> IResult<&str, NomExpr> {
+    fn factor(s: &mut &str) -> PResult<NomExpr> {
         alt((pow, atom)).parse_next(s)
     }
 
-    fn atom(s: &str) -> IResult<&str, NomExpr> {
+    fn atom(s: &mut &str) -> PResult<NomExpr> {
         alt((constant, exp, concentration, parentheses)).parse_next(s)
     }
 
-    fn add_sub(s: &str) -> IResult<&str, NomExpr> {
-        let (s, first) = term(s)?;
-        let (s, rest) = fold_repeat(
+    fn add_sub(s: &mut &str) -> PResult<NomExpr> {
+        let first = term(s)?;
+        let rest = fold_repeat(
             0..,
-            (delimited(space0, one_of("+-"), space0), term),
+            (delimited(space0, one_of(['+', '-']), space0), term),
             || first.clone(),
             |acc: NomExpr, (op, f)| match op {
                 '+' => NomExpr::Add(Box::new(acc), Box::new(f)),
@@ -156,14 +148,14 @@ mod parsing {
             },
         )
         .parse_next(s)?;
-        Ok((s, rest))
+        Ok(rest)
     }
 
-    fn mul_div(s: &str) -> IResult<&str, NomExpr> {
-        let (s, first) = factor(s)?;
-        let (s, rest) = fold_repeat(
+    fn mul_div(s: &mut &str) -> PResult<NomExpr> {
+        let first = factor(s)?;
+        let rest = fold_repeat(
             0..,
-            (delimited(space0, one_of("*/"), space0), factor),
+            (delimited(space0, one_of(['*', '/']), space0), factor),
             || first.clone(),
             |acc: NomExpr, (op, f)| match op {
                 '*' => NomExpr::Mul(Box::new(acc), Box::new(f)),
@@ -172,24 +164,24 @@ mod parsing {
             },
         )
         .parse_next(s)?;
-        Ok((s, rest))
+        Ok(rest)
     }
 
-    fn pow(s: &str) -> IResult<&str, NomExpr> {
-        let (s, a) = atom(s)?;
-        let (s, _) = delimited(space0, tag("^"), space0).parse_next(s)?;
-        let (s, b) = atom(s)?;
-        Ok((s, NomExpr::Pow(Box::new(a), Box::new(b))))
+    fn pow(s: &mut &str) -> PResult<NomExpr> {
+        let a = atom(s)?;
+        let _ = delimited(space0, "^", space0).parse_next(s)?;
+        let b = atom(s)?;
+        Ok(NomExpr::Pow(Box::new(a), Box::new(b)))
     }
 
-    fn exp(s: &str) -> IResult<&str, NomExpr> {
-        preceded(tag("exp"), parentheses)
+    fn exp(s: &mut &str) -> PResult<NomExpr> {
+        preceded("exp", parentheses)
             .map(|e| NomExpr::Exp(Box::new(e)))
             .parse_next(s)
     }
 
-    pub(crate) fn nomexpr(s: &str) -> Result<NomExpr, Error<String>> {
-        expr.parse(s).map_err(Error::into_owned)
+    pub(crate) fn nomexpr(s: &mut &str) -> PResult<NomExpr> {
+        expr.parse_next(s)
     }
 
     #[test]

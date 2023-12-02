@@ -89,7 +89,6 @@ impl FromStr for NomExpr {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         parsing::nomexpr(s)
-            .map(|(_, e)| e)
             .map_err(|e| {
                 println!("{e}");
                 e
@@ -100,32 +99,32 @@ impl FromStr for NomExpr {
 
 mod parsing {
     use super::NomExpr;
-    use nom::branch::alt;
-    use nom::bytes::complete::tag;
-    use nom::character::complete::{alpha1, alphanumeric1, char, one_of, space0};
-    use nom::combinator::{all_consuming, map, recognize};
-    use nom::multi::{fold_many0, many0_count};
-    use nom::number::complete::double;
-    use nom::sequence::{delimited, pair, preceded};
-    use nom::IResult;
+    use winnow::branch::alt;
+    use winnow::bytes::{one_of, tag};
+    use winnow::character::{alpha1, alphanumeric1, float, space0};
+    use winnow::error::Error;
+    use winnow::multi::{fold_many0, many0};
+    use winnow::sequence::{delimited, preceded};
+    use winnow::IResult;
+    use winnow::{FinishIResult, Parser};
 
     fn constant(s: &str) -> IResult<&str, NomExpr> {
-        map(double, |c| NomExpr::Constant(c))(s)
+        float.map(|c| NomExpr::Constant(c)).parse_next(s)
     }
 
     fn concentration(s: &str) -> IResult<&str, NomExpr> {
         // from nom recipes
-        map(
-            recognize(pair(
-                alt((alpha1, tag("_"))),
-                many0_count(alt((alphanumeric1, tag("_")))),
-            )),
-            |c: &str| NomExpr::Concentration(c.to_string()),
-        )(s)
+        (
+            alt((alpha1, tag("_"))),
+            many0::<&str, &str, Vec<_>, _, _>(alt((alphanumeric1, tag("_")))),
+        )
+            .recognize()
+            .map(|c: &str| NomExpr::Concentration(c.to_string()))
+            .parse_next(s)
     }
 
     fn parentheses(s: &str) -> IResult<&str, NomExpr> {
-        delimited(char('('), delimited(space0, expr, space0), char(')'))(s)
+        delimited(tag("("), delimited(space0, expr, space0), tag(")"))(s)
     }
 
     fn expr(s: &str) -> IResult<&str, NomExpr> {
@@ -147,7 +146,7 @@ mod parsing {
     fn add_sub(s: &str) -> IResult<&str, NomExpr> {
         let (s, first) = term(s)?;
         let (s, rest) = fold_many0(
-            pair(delimited(space0, one_of("+-"), space0), term),
+            (delimited(space0, one_of("+-"), space0), term),
             || first.clone(),
             |acc: NomExpr, (op, f)| match op {
                 '+' => NomExpr::Add(Box::new(acc), Box::new(f)),
@@ -161,7 +160,7 @@ mod parsing {
     fn mul_div(s: &str) -> IResult<&str, NomExpr> {
         let (s, first) = factor(s)?;
         let (s, rest) = fold_many0(
-            pair(delimited(space0, one_of("*/"), space0), factor),
+            (delimited(space0, one_of("*/"), space0), factor),
             || first.clone(),
             |acc: NomExpr, (op, f)| match op {
                 '*' => NomExpr::Mul(Box::new(acc), Box::new(f)),
@@ -180,13 +179,13 @@ mod parsing {
     }
 
     fn exp(s: &str) -> IResult<&str, NomExpr> {
-        map(preceded(tag("exp"), parentheses), |e| {
-            NomExpr::Exp(Box::new(e))
-        })(s)
+        preceded(tag("exp"), parentheses)
+            .map(|e| NomExpr::Exp(Box::new(e)))
+            .parse_next(s)
     }
 
-    pub(crate) fn nomexpr(s: &str) -> IResult<&str, NomExpr> {
-        all_consuming(expr)(s)
+    pub(crate) fn nomexpr(s: &str) -> Result<NomExpr, Error<String>> {
+        expr(s).finish().map_err(Error::into_owned)
     }
 
     #[test]

@@ -95,13 +95,12 @@ impl FromStr for NomExpr {
 mod parsing {
     use super::NomExpr;
     use winnow::ascii::{alpha1, alphanumeric1, float, space0};
-    use winnow::combinator::{alt, delimited, fold_repeat, preceded, repeat};
+    use winnow::combinator::{alt, delimited, preceded, repeat, separated_foldl1, separated_pair};
     use winnow::prelude::*;
     use winnow::token::one_of;
-    use winnow::Parser;
 
     fn constant(s: &mut &str) -> PResult<NomExpr> {
-        float.map(|c| NomExpr::Constant(c)).parse_next(s)
+        float.map(NomExpr::Constant).parse_next(s)
     }
 
     fn concentration(s: &mut &str) -> PResult<NomExpr> {
@@ -111,7 +110,8 @@ mod parsing {
             repeat::<_, _, Vec<_>, _, _>(0.., alt((alphanumeric1, "_"))),
         )
             .recognize()
-            .map(|c: &str| NomExpr::Concentration(c.to_string()))
+            .map(str::to_string)
+            .map(NomExpr::Concentration)
             .parse_next(s)
     }
 
@@ -136,47 +136,41 @@ mod parsing {
     }
 
     fn add_sub(s: &mut &str) -> PResult<NomExpr> {
-        let first = term(s)?;
-        let rest = fold_repeat(
-            0..,
-            (delimited(space0, one_of(['+', '-']), space0), term),
-            || first.clone(),
-            |acc: NomExpr, (op, f)| match op {
-                '+' => NomExpr::Add(Box::new(acc), Box::new(f)),
-                '-' => NomExpr::Sub(Box::new(acc), Box::new(f)),
+        separated_foldl1(
+            term,
+            delimited(space0, one_of(['+', '-']), space0),
+            |a, op, b| match op {
+                '+' => NomExpr::Add(Box::new(a), Box::new(b)),
+                '-' => NomExpr::Sub(Box::new(a), Box::new(b)),
                 _ => unreachable!(),
             },
         )
-        .parse_next(s)?;
-        Ok(rest)
+        .parse_next(s)
     }
 
     fn mul_div(s: &mut &str) -> PResult<NomExpr> {
-        let first = factor(s)?;
-        let rest = fold_repeat(
-            0..,
-            (delimited(space0, one_of(['*', '/']), space0), factor),
-            || first.clone(),
-            |acc: NomExpr, (op, f)| match op {
-                '*' => NomExpr::Mul(Box::new(acc), Box::new(f)),
-                '/' => NomExpr::Div(Box::new(acc), Box::new(f)),
+        separated_foldl1(
+            factor,
+            delimited(space0, one_of(['*', '/']), space0),
+            |a, op, b| match op {
+                '*' => NomExpr::Mul(Box::new(a), Box::new(b)),
+                '/' => NomExpr::Div(Box::new(a), Box::new(b)),
                 _ => unreachable!(),
             },
         )
-        .parse_next(s)?;
-        Ok(rest)
+        .parse_next(s)
     }
 
     fn pow(s: &mut &str) -> PResult<NomExpr> {
-        let a = atom(s)?;
-        let _ = delimited(space0, "^", space0).parse_next(s)?;
-        let b = atom(s)?;
-        Ok(NomExpr::Pow(Box::new(a), Box::new(b)))
+        separated_pair(atom, (space0, '^', space0), atom)
+            .map(|(a, b)| NomExpr::Pow(Box::new(a), Box::new(b)))
+            .parse_next(s)
     }
 
     fn exp(s: &mut &str) -> PResult<NomExpr> {
         preceded("exp", parentheses)
-            .map(|e| NomExpr::Exp(Box::new(e)))
+            .map(Box::new)
+            .map(NomExpr::Exp)
             .parse_next(s)
     }
 

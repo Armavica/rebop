@@ -241,7 +241,7 @@ mod expr;
 pub mod gillespie;
 mod gillespie_macro;
 
-use expr::NomExpr;
+use expr::PExpr;
 
 /// Reaction system composed of species and reactions.
 #[pyclass]
@@ -259,7 +259,7 @@ enum PyRate {
 #[derive(Clone, Debug)]
 enum Rate {
     Lma(f64, Vec<String>),
-    Expr(NomExpr),
+    Expr(PExpr),
 }
 
 impl Rate {

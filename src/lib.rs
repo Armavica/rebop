@@ -299,12 +299,13 @@ impl Gillespie {
     /// The initial configuration is specified in the dictionary `init`.
     /// Returns `times, vars` where `times` is an array of `nb_steps + 1` uniformly spaced time
     /// points between `0` and `tmax`, and `vars` is a dictionary of species name to array of
-    /// values at the given time points.
+    /// values at the given time points.  One can specify a random `seed` for reproducibility.
     fn run(
         &self,
         init: HashMap<String, usize>,
         tmax: f64,
         nb_steps: usize,
+        seed: Option<u64>,
     ) -> PyResult<(Vec<f64>, HashMap<String, Vec<isize>>)> {
         let mut x0 = vec![0; self.species.len()];
         for (name, &value) in &init {
@@ -312,7 +313,11 @@ impl Gillespie {
                 x0[id] = value as isize;
             }
         }
-        let mut g = gillespie::Gillespie::new(x0);
+        let mut g = match seed {
+            Some(seed) => gillespie::Gillespie::new_with_seed(x0, seed),
+            None => gillespie::Gillespie::new(x0),
+        };
+
         for (rate, reactants, products) in self.reactions.iter() {
             let mut vreactants = vec![0; self.species.len()];
             for reactant in reactants {

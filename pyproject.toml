@@ -30,6 +30,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"tests/test_*.py" = ["D", "S101", "PLR2004", "ANN201"]
 "examples/*" = ["INP001"]
 "examples/sir.py" = ["T201"]
 "python/rebop/__init__.py" = ["D104"]

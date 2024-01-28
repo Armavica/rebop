@@ -101,7 +101,7 @@
 //! sir.add_reaction(0.01, ['I'], ['R'])
 //! print(sir)
 //!
-//! df = sir.run({'S': 999, 'I': 1}, tmax=250, nb_steps=250)
+//! ds = sir.run({'S': 999, 'I': 1}, tmax=250, nb_steps=250)
 //! ```
 //!
 //! You can test this code by installing `rebop` from PyPI with

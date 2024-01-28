@@ -1,0 +1,22 @@
+name: pre-commit
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    env:
+      SKIP: no-commit-to-branch
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:  # run pre-commit on our oldest supported python version
+          python-version: 3.9
+    - uses: pre-commit/action@v3.0.0

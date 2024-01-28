@@ -11,12 +11,12 @@ def run_xarray(self: Gillespie, init: dict[str, int], tmax: float, nb_steps: int
     Returns an xarray Dataset.
     """
     times, result = og_run(self, init, tmax, nb_steps)
-    df = xr.Dataset(
+    ds = xr.Dataset(
         data_vars={
             name: xr.DataArray(values, dims="time", coords={"time": times})
             for name, values in result.items()
         }
     )
-    return df
+    return ds
 
 Gillespie.run = run_xarray

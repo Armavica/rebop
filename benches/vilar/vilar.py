@@ -37,4 +37,4 @@ vilar.add_reaction(deltaR, ['R'], [])
 print(vilar)
 
 for _ in range(100):
-    df = vilar.run({'Da': 1, 'Dr': 1}, tmax=200, nb_steps=200)
+    ds = vilar.run({'Da': 1, 'Dr': 1}, tmax=200, nb_steps=200)

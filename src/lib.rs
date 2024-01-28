@@ -33,7 +33,7 @@
 //! ```
 //!
 //! To simulate the system, put this definition in a rust code file and
-//! instanciate the problem, set the parameters, the initial values, and
+//! instantiate the problem, set the parameters, the initial values, and
 //! launch the simulation:
 //!
 //! ```rust

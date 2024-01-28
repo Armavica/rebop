@@ -21,3 +21,9 @@ repos:
     hooks:
       - id: fmt
       - id: cargo-check
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.14
+    hooks:
+      - id: ruff-format
+      - id: ruff
+        args: [ --fix ]

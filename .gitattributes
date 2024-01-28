@@ -1,2 +1,2 @@
 # Exclude the benchmarks from github language stats
-benches/* linguist-documentation
+benches/** linguist-documentation

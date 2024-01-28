@@ -1,3 +1,13 @@
+"""This example implements the classical SIR model.
+
+There are three categories of people:
+* S: Susceptible
+* I: Infected
+* R: Recovered
+
+    S + I -> 2 I
+    I     ->   R
+"""
 import rebop
 
 sir = rebop.Gillespie()

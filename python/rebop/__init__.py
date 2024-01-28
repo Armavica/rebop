@@ -1,11 +1,19 @@
 import xarray as xr
+
 from .rebop import Gillespie, __version__
+
+__all__ = ("Gillespie", "__version__")
 
 og_run = Gillespie.run
 
-def run_xarray(self: Gillespie, init: dict[str, int], tmax: float, nb_steps: int) -> xr.Dataset:
-    """
-    Run the system until `tmax` with `nb_steps` steps.
+
+def run_xarray(
+    self: Gillespie,
+    init: dict[str, int],
+    tmax: float,
+    nb_steps: int,
+) -> xr.Dataset:
+    """Run the system until `tmax` with `nb_steps` steps.
 
     The initial configuration is specified in the dictionary `init`.
     Returns an xarray Dataset.
@@ -15,8 +23,9 @@ def run_xarray(self: Gillespie, init: dict[str, int], tmax: float, nb_steps: int
         data_vars={
             name: xr.DataArray(values, dims="time", coords={"time": times})
             for name, values in result.items()
-        }
+        },
     )
     return ds
+
 
 Gillespie.run = run_xarray

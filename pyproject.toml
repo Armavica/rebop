@@ -14,11 +14,6 @@ dependencies = ["xarray >= 2023.01"]
 extend-exclude = ["benches/*"]
 target-version = "py39"
 
-[tool.ruff.per-file-ignores]
-"examples/*" = ["INP001"]
-"examples/sir.py" = ["T201"]
-"python/rebop/__init__.py" = ["D104"]
-
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
@@ -27,5 +22,10 @@ ignore = [
   "RET504",  # Unnecessary asignment before return
 ]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.per-file-ignores]
+"examples/*" = ["INP001"]
+"examples/sir.py" = ["T201"]
+"python/rebop/__init__.py" = ["D104"]
+
+[tool.ruff.lint.pydocstyle]
 convention = "google"

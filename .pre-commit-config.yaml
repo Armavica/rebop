@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-ast
       - id: check-merge-conflict
@@ -13,7 +13,7 @@ repos:
       - id: trailing-whitespace
       - id: mixed-line-ending
   - repo: https://github.com/crate-ci/typos
-    rev: v1.17.2
+    rev: typos-dict-v0.11.20
     hooks:
       - id: typos
   - repo: https://github.com/doublify/pre-commit-rust
@@ -22,7 +22,7 @@ repos:
       - id: fmt
       - id: cargo-check
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.14
+    rev: v0.4.8
     hooks:
       - id: ruff-format
       - id: ruff

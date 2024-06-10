@@ -8,6 +8,7 @@ There are three categories of people:
     S + I -> 2 I
     I     ->   R
 """
+
 import rebop
 
 sir = rebop.Gillespie()

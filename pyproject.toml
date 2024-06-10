@@ -12,7 +12,7 @@ dependencies = ["xarray >= 2023.01"]
 
 [tool.ruff]
 extend-exclude = ["benches/*"]
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["ALL"]

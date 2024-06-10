@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+* Upgraded PyO3 to v0.21.2.
+
 ## [0.6.1] -- 2023-10-05
 
 Patch release to fix distribution to PyPI.  The release is now happening

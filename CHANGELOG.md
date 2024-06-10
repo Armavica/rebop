@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] -- 2024-06-10
+
 ### Added
 
 * It is now possible to specify a random seed from Python to run the simulator.

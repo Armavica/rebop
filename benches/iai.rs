@@ -42,9 +42,58 @@ fn bench_sir_api(n: isize) -> isize {
     black_box(sir_api(black_box(n)))
 }
 
+#[rustfmt::skip]
+#[allow(non_snake_case)]
+fn vilar_api(tmax: f64) {
+    // Da, Dr, Dpa, Dpr, Ma, Mr, A, R, C
+    let alphaA = 50.;
+    let alphapA = 500.;
+    let alphaR = 0.01;
+    let alphapR = 50.;
+    let betaA = 50.;
+    let betaR = 5.;
+    let deltaMA = 10.;
+    let deltaMR = 0.5;
+    let deltaA = 1.;
+    let deltaR = 0.2;
+    let gammaA = 1.;
+    let gammaR = 1.;
+    let gammaC = 2.;
+    let thetaA = 50.;
+    let thetaR = 100.;
+    let mut vilar = Gillespie::new_with_seed([1, 1, 0, 0, 0, 0, 0, 0, 0], 0);
+    vilar.add_reaction(Rate::lma(gammaA,  [1, 0, 0, 0, 0, 0, 1, 0, 0]), [-1, 0, 1, 0, 0, 0, -1, 0, 0]);
+    vilar.add_reaction(Rate::lma(gammaR,  [0, 1, 0, 0, 0, 0, 1, 0, 0]), [0, -1, 0, 1, 0, 0, -1, 0, 0]);
+    vilar.add_reaction(Rate::lma(thetaA,  [0, 0, 1, 0, 0, 0, 0, 0, 0]), [1, 0, -1, 0, 0, 0, 1, 0, 0]);
+    vilar.add_reaction(Rate::lma(thetaR,  [0, 0, 0, 1, 0, 0, 0, 0, 0]), [0, 1, 0, -1, 0, 0, 1, 0, 0]);
+    vilar.add_reaction(Rate::lma(alphaA,  [1, 0, 0, 0, 0, 0, 0, 0, 0]), [0, 0, 0, 0, 1, 0, 0, 0, 0]);
+    vilar.add_reaction(Rate::lma(alphaR,  [0, 1, 0, 0, 0, 0, 0, 0, 0]), [0, 0, 0, 0, 0, 1, 0, 0, 0]);
+    vilar.add_reaction(Rate::lma(alphapA, [0, 0, 1, 0, 0, 0, 0, 0, 0]), [0, 0, 0, 0, 1, 0, 0, 0, 0]);
+    vilar.add_reaction(Rate::lma(alphapR, [0, 0, 0, 1, 0, 0, 0, 0, 0]), [0, 0, 0, 0, 0, 1, 0, 0, 0]);
+    vilar.add_reaction(Rate::lma(betaA,   [0, 0, 0, 0, 1, 0, 0, 0, 0]), [0, 0, 0, 0, 0, 0, 1, 0, 0]);
+    vilar.add_reaction(Rate::lma(betaR,   [0, 0, 0, 0, 0, 1, 0, 0, 0]), [0, 0, 0, 0, 0, 0, 0, 1, 0]);
+    vilar.add_reaction(Rate::lma(gammaC,  [0, 0, 0, 0, 0, 0, 1, 1, 0]), [0, 0, 0, 0, 0, 0, -1, -1, 1]);
+    vilar.add_reaction(Rate::lma(gammaA,  [0, 0, 0, 0, 0, 0, 0, 0, 1]), [0, 0, 0, 0, 0, 0, 0, 1, -1]);
+    vilar.add_reaction(Rate::lma(deltaMA, [0, 0, 0, 0, 1, 0, 0, 0, 0]), [0, 0, 0, 0, -1, 0, 0, 0, 0]);
+    vilar.add_reaction(Rate::lma(deltaMR, [0, 0, 0, 0, 0, 1, 0, 0, 0]), [0, 0, 0, 0, 0, -1, 0, 0, 0]);
+    vilar.add_reaction(Rate::lma(deltaA,  [0, 0, 0, 0, 0, 0, 1, 0, 0]), [0, 0, 0, 0, 0, 0, -1, 0, 0]);
+    vilar.add_reaction(Rate::lma(deltaR,  [0, 0, 0, 0, 0, 0, 0, 1, 0]), [0, 0, 0, 0, 0, 0, 0, -1, 0]);
+    vilar.advance_until(tmax);
+}
+
+#[library_benchmark]
+fn bench_vilar_api() {
+    black_box(vilar_api(black_box(200.)))
+}
+
 library_benchmark_group!(
-    name = sir_group;
+    name = sir;
     benchmarks = bench_sir_macro, bench_sir_api
 );
 
-main!(library_benchmark_groups = sir_group);
+library_benchmark_group!(
+    name = vilar;
+    benchmarks = bench_vilar_api
+);
+
+main!(library_benchmark_groups = sir, vilar);

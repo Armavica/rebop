@@ -21,6 +21,7 @@ generate-import-lib = ["pyo3/generate-import-lib"]
 
 [dev-dependencies]
 criterion = "0.5.1"
+iai-callgrind = "0.11.1"
 
 [lib]
 path = "src/lib.rs"
@@ -36,6 +37,14 @@ bench = false
 name = "my_benchmark"
 harness = false
 
+[[bench]]
+name = "iai"
+harness = false
+
 [profile.release]
 lto = true
 codegen-units = 1
+
+[profile.iai]
+inherits = "release"
+debug = true

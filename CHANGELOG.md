@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* Added a `advance_one_reaction` to the API, that allows calling the Python API
+`run` function with `nb_steps=0` in order to return all reactions.
+
 ### Changed
 
 * Upgrade PyO3 to v0.22.1.

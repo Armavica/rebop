@@ -301,6 +301,8 @@ impl Gillespie {
     /// Returns `times, vars` where `times` is an array of `nb_steps + 1` uniformly spaced time
     /// points between `0` and `tmax`, and `vars` is a dictionary of species name to array of
     /// values at the given time points.  One can specify a random `seed` for reproducibility.
+    /// If `nb_steps` is `0`, then returns all reactions, ending with the first that happens at
+    /// or after `tmax`.
     #[pyo3(signature = (init, tmax, nb_steps, seed=None))]
     fn run(
         &self,
@@ -338,12 +340,28 @@ impl Gillespie {
         let mut times = Vec::new();
         // species.shape = (species, nb_steps)
         let mut species = vec![Vec::new(); self.species.len()];
-        for i in 0..=nb_steps {
-            let t = tmax * i as f64 / nb_steps as f64;
-            times.push(t);
-            g.advance_until(t);
+        if nb_steps > 0 {
+            for i in 0..=nb_steps {
+                let t = tmax * i as f64 / nb_steps as f64;
+                times.push(t);
+                g.advance_until(t);
+                for s in 0..self.species.len() {
+                    species[s].push(g.get_species(s));
+                }
+            }
+        } else {
+            // nb_steps = 0: we return every step
+            let mut rates = vec![f64::NAN; g.nb_reactions()];
+            times.push(g.get_time());
             for s in 0..self.species.len() {
                 species[s].push(g.get_species(s));
+            }
+            while g.get_time() < tmax {
+                g._advance_one_reaction(&mut rates);
+                times.push(g.get_time());
+                for s in 0..self.species.len() {
+                    species[s].push(g.get_species(s));
+                }
             }
         }
         let mut result = HashMap::new();

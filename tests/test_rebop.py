@@ -34,3 +34,19 @@ def test_fixed_seed():
     assert ds.S[-1] == 0
     assert ds.I[-1] == 166
     assert ds.R[-1] == 834
+
+
+@pytest.mark.parametrize("seed", range(10))
+def test_all_reactions(seed: int):
+    tmax = 250
+    sir = sir_model()
+    ds = sir.run({"S": 999, "I": 1}, tmax=tmax, nb_steps=0, seed=seed)
+    assert ds.time[0] == 0
+    assert ds.time[-1] > tmax
+    assert all(ds.time.diff(dim="time") > 0)
+    if np.isinf(ds.time[-1].to_numpy()):
+        ds = ds.isel(time=range(ds.time.size - 1))
+    dds = ds.diff(dim="time")
+    assert set(dds.S.to_numpy()) <= {-1, 0}
+    assert set(dds.I.to_numpy()) <= {-1, 1}
+    assert set(dds.R.to_numpy()) <= {0, 1}

@@ -264,6 +264,7 @@ impl Gillespie {
     /// The forward reaction rate is `rate`, while `reactants` and `products` are lists of
     /// respectively reactant names and product names.  Add the reverse reaction with the rate
     /// `reverse_rate` if it is not `None`.
+    #[pyo3(signature = (rate, reactants, products, reverse_rate=None))]
     fn add_reaction(
         &mut self,
         rate: f64,
@@ -300,6 +301,7 @@ impl Gillespie {
     /// Returns `times, vars` where `times` is an array of `nb_steps + 1` uniformly spaced time
     /// points between `0` and `tmax`, and `vars` is a dictionary of species name to array of
     /// values at the given time points.  One can specify a random `seed` for reproducibility.
+    #[pyo3(signature = (init, tmax, nb_steps, seed=None))]
     fn run(
         &self,
         init: HashMap<String, usize>,

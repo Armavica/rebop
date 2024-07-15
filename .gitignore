@@ -1,4 +1,4 @@
 target
 .*.swp
 __pycache__
-*.abi3.so
+*.so

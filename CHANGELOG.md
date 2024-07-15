@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+* Upgrade PyO3 to v0.22.1.
+
 ## [0.7.0] -- 2024-06-10
 
 ### Added

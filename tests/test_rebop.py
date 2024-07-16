@@ -21,7 +21,7 @@ def test_sir(seed: int):
     assert all(ds.S >= 0)
     assert all(ds.I >= 0)
     assert all(ds.R >= 0)
-    assert all(ds.S <= 1000)
+    assert all(ds.S <= 999)
     assert all(ds.I <= 1000)
     assert all(ds.R <= 1000)
     npt.assert_array_equal(ds.S + ds.I + ds.R, [1000] * 251)

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] -- 2024-07-16
+
+Patch release to fix distribution to PyPI.
+
 ## [0.8.0] -- 2024-07-16
 
 ### Added

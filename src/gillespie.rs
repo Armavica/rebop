@@ -216,6 +216,36 @@ impl Gillespie {
         assert_eq!(species.as_ref().len(), self.species.len());
         self.species = species.as_ref().to_vec();
     }
+    /// Simulates the problem until the next discrete reaction.
+    pub fn advance_one_reaction(&mut self) {
+        let mut rates = vec![f64::NAN; self.nb_reactions()];
+        self._advance_one_reaction(&mut rates);
+    }
+
+    #[inline]
+    pub fn _advance_one_reaction(&mut self, rates: &mut [f64]) {
+        // let total_rate = make_rates(&self.reactions, &self.species, rates);
+        let total_rate = make_cumrates(&self.reactions, &self.species, rates);
+
+        // we don't want to use partial_cmp, for performance
+        #[allow(clippy::neg_cmp_op_on_partial_ord)]
+        if !(0. < total_rate) {
+            self.t = f64::INFINITY;
+            return;
+        }
+        self.t += self.rng.sample::<f64, _>(Exp1) / total_rate;
+        let chosen_rate = total_rate * self.rng.gen::<f64>();
+
+        // let ireaction = choose_rate_sum(chosen_rate, &rates);
+        // let ireaction = choose_rate_for(chosen_rate, &rates);
+        let ireaction = choose_cumrate_sum(chosen_rate, &rates);
+        // let ireaction = choose_cumrate_for(chosen_rate, &rates);
+        // let ireaction = choose_cumrate_takewhile(chosen_rate, &rates);
+        // here we have ireaction < self.reactions.len() because chosen_rate < total_rate
+        let reaction = unsafe { self.reactions.get_unchecked(ireaction) };
+
+        reaction.1.affect(&mut self.species);
+    }
     /// Simulates the problem until `tmax`.
     ///
     /// ```

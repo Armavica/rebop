@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] -- 2024-07-16
+
 ### Added
 
 * Added a `advance_one_reaction` to the API, that allows calling the Python API

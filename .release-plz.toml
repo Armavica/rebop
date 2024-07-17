@@ -1,0 +1,12 @@
+[changelog]
+commit_parsers = [
+  { message = "^feat", group = "added" },
+  { message = "^changed", group = "changed" },
+  { message = "^deprecated", group = "deprecated" },
+  { message = "^removed", group = "removed" },
+  { message = "^fix", group = "fixed" },
+  { message = "^deps", group = "dependencies" },
+  { message = "^perf", group = "performance" },
+  { message = "^chore", group = "miscellaneous" },
+  { message = "^doc", group = "documentation" },
+]

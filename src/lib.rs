@@ -86,7 +86,7 @@
 //!
 //! which can produce an output similar to this one:
 //!
-//! ![Typical SIR output](https://github.com/Armavica/rebop/blob/master/sir.png)
+//! ![Typical SIR output](https://github.com/Armavica/rebop/blob/main/sir.png?raw=true)
 //!
 //! # Python bindings
 //!
@@ -161,7 +161,7 @@
 //! simulate this model from `t=0` to `t=200`, reporting the state at
 //! time intervals of `1` time unit.
 //!
-//! ![Vilar oscillator benchmark](https://github.com/Armavica/rebop/blob/master/benches/vilar/vilar.png)
+//! ![Vilar oscillator benchmark](https://github.com/Armavica/rebop/blob/main/benches/vilar/vilar.png?raw=true)
 //!
 //! We can see that rebop's macro DSL is the fastest of all, both in
 //! time per simulation, and with compilation time included.  The second

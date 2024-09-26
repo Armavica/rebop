@@ -37,3 +37,6 @@ repos:
     rev: v1.11.2
     hooks:
       - id: mypy
+
+ci:
+  autoupdate_commit_msg: "chore: update pre-commit hooks"

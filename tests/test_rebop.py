@@ -13,7 +13,7 @@ def sir_model(transmission: float = 1e-4, recovery: float = 0.01) -> rebop.Gille
 
 
 @pytest.mark.parametrize("seed", [None, *range(10)])
-def test_sir(seed: int):
+def test_sir(seed: int | None) -> None:
     sir = sir_model()
     ds = sir.run({"S": 999, "I": 1}, tmax=250, nb_steps=250, seed=seed)
     assert isinstance(ds, xr.Dataset)
@@ -27,7 +27,7 @@ def test_sir(seed: int):
     npt.assert_array_equal(ds.S + ds.I + ds.R, [1000] * 251)
 
 
-def test_fixed_seed():
+def test_fixed_seed() -> None:
     sir = sir_model()
     ds = sir.run({"S": 999, "I": 1}, tmax=250, nb_steps=250, seed=42)
 
@@ -37,7 +37,7 @@ def test_fixed_seed():
 
 
 @pytest.mark.parametrize("seed", range(10))
-def test_all_reactions(seed: int):
+def test_all_reactions(seed: int) -> None:
     tmax = 250
     sir = sir_model()
     ds = sir.run({"S": 999, "I": 1}, tmax=tmax, nb_steps=0, seed=seed)

@@ -48,3 +48,9 @@ log_cli_level = "INFO"
 xfail_strict = true
 addopts = ["-ra", "--strict-config", "--strict-markers"]
 filterwarnings = ["error"]
+
+[tool.mypy]
+strict = true
+warn_unreachable = true
+disallow_untyped_decorators = false
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]

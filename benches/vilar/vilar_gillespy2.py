@@ -2,8 +2,8 @@ import gillespy2
 import numpy as np
 import matplotlib.pyplot as plt
 
-class VilarOscillator(gillespy2.Model):
-    def __init__(self, parameter_values=None):
+class VilarOscillator(gillespy2.Model):  # type: ignore[misc]
+    def __init__(self, parameter_values: None = None) -> None:
         gillespy2.Model.__init__(self, name="VilarOscillator")
         self.volume = 1
 

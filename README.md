@@ -11,13 +11,13 @@ Performance and ergonomics are taken very seriously.  For this reason,
 two independent APIs are provided to describe and simulate reaction
 networks:
 
-* a macro-based DSL implemented by [`define_system`], usually the
-most efficient, but that requires to compile a rust program;
-* a function-based API implemented by the module [`gillespie`], also
-available through Python bindings.  This one does not require a rust
-compilation and allows the system to be defined at run time.  It is
-typically 2 or 3 times slower than the macro DSL, but still faster
-than all other software tried.
+- a macro-based DSL implemented by \[`define_system`\], usually the
+  most efficient, but that requires to compile a rust program;
+- a function-based API implemented by the module \[`gillespie`\], also
+  available through Python bindings.  This one does not require a rust
+  compilation and allows the system to be defined at run time.  It is
+  typically 2 or 3 times slower than the macro DSL, but still faster
+  than all other software tried.
 
 ## The macro DSL
 
@@ -102,8 +102,7 @@ ds = sir.run({'S': 999, 'I': 1}, tmax=250, nb_steps=250)
 
 You can test this code by installing `rebop` from PyPI with
 `pip install rebop`. To build the Python bindings from source,
-the simplest is to clone this git repository and use `maturin
-develop`.
+the simplest is to clone this git repository and use `maturin develop`.
 
 ## The traditional API
 
@@ -166,64 +165,64 @@ the Python bindings.
 
 ## Features to come
 
-* compartment volumes
-* arbitrary reaction rates
-* other SSA algorithms
-* tau-leaping
-* adaptive tau-leaping
-* hybrid models (continuous and discrete)
-* SBML
-* CLI interface
-* parameter estimation
-* local sensitivity analysis
-* parallelization
+- compartment volumes
+- arbitrary reaction rates
+- other SSA algorithms
+- tau-leaping
+- adaptive tau-leaping
+- hybrid models (continuous and discrete)
+- SBML
+- CLI interface
+- parameter estimation
+- local sensitivity analysis
+- parallelization
 
 ## Features probably not to come
 
-* events
-* space (reaction-diffusion systems)
-* rule modelling
+- events
+- space (reaction-diffusion systems)
+- rule modelling
 
 ## Benchmark ideas
 
-* DSMTS
-* purely decoupled exponentials
-* ring
-* Toggle switch
-* LacZ, LacY/LacZ (from STOCKS)
-* Lotka Volterra, Michaelis--Menten, Network (from StochSim)
-* G protein (from SimBiology)
-* Brusselator / Oregonator (from Cellware)
-* GAL, repressilator (from Dizzy)
+- DSMTS
+- purely decoupled exponentials
+- ring
+- Toggle switch
+- LacZ, LacY/LacZ (from STOCKS)
+- Lotka Volterra, Michaelis--Menten, Network (from StochSim)
+- G protein (from SimBiology)
+- Brusselator / Oregonator (from Cellware)
+- GAL, repressilator (from Dizzy)
 
 ## Similar software
 
 ### Maintained
 
-* [GillesPy2](https://github.com/StochSS/GillesPy2)
-* [STEPS](https://github.com/CNS-OIST/STEPS)
-* [SimBiology](https://fr.mathworks.com/help/simbio/)
-* [Copasi](http://copasi.org/)
-* [BioNetGen](http://bionetgen.org/)
-* [VCell](http://vcell.org/)
-* [Smoldyn](http://www.smoldyn.org/)
-* [KaSim](https://kappalanguage.org/)
-* [StochPy](https://github.com/SystemsBioinformatics/stochpy)
-* [BioSimulator.jl](https://github.com/alanderos91/BioSimulator.jl)
-* [DiffEqJump.jl](https://github.com/SciML/DiffEqJump.jl)
-* [Gillespie.jl](https://github.com/sdwfrost/Gillespie.jl)
-* [GillespieSSA2](https://github.com/rcannood/GillespieSSA2)
-* [Cayenne](https://github.com/quantumbrake/cayenne)
+- [GillesPy2](https://github.com/StochSS/GillesPy2)
+- [STEPS](https://github.com/CNS-OIST/STEPS)
+- [SimBiology](https://fr.mathworks.com/help/simbio/)
+- [Copasi](http://copasi.org/)
+- [BioNetGen](http://bionetgen.org/)
+- [VCell](http://vcell.org/)
+- [Smoldyn](http://www.smoldyn.org/)
+- [KaSim](https://kappalanguage.org/)
+- [StochPy](https://github.com/SystemsBioinformatics/stochpy)
+- [BioSimulator.jl](https://github.com/alanderos91/BioSimulator.jl)
+- [DiffEqJump.jl](https://github.com/SciML/DiffEqJump.jl)
+- [Gillespie.jl](https://github.com/sdwfrost/Gillespie.jl)
+- [GillespieSSA2](https://github.com/rcannood/GillespieSSA2)
+- [Cayenne](https://github.com/quantumbrake/cayenne)
 
 ### Seem unmaintained
 
-* [Dizzy](http://magnet.systemsbiology.net/software/Dizzy/)
-* [Cellware](http://www.bii.a-star.edu.sg/achievements/applications/cellware/)
-* [STOCKS](https://doi.org/10.1093/bioinformatics/18.3.470)
-* [StochSim](http://lenoverelab.org/perso/lenov/stochsim.html)
-* [Systems biology toolbox](http://www.sbtoolbox.org/)
-* [StochKit](https://github.com/StochSS/StochKit) (successor: GillesPy2)
-* [SmartCell](http://software.crg.es/smartcell/)
-* [NFsim](http://michaelsneddon.net/nfsim/)
+- [Dizzy](http://magnet.systemsbiology.net/software/Dizzy/)
+- [Cellware](http://www.bii.a-star.edu.sg/achievements/applications/cellware/)
+- [STOCKS](https://doi.org/10.1093/bioinformatics/18.3.470)
+- [StochSim](http://lenoverelab.org/perso/lenov/stochsim.html)
+- [Systems biology toolbox](http://www.sbtoolbox.org/)
+- [StochKit](https://github.com/StochSS/StochKit) (successor: GillesPy2)
+- [SmartCell](http://software.crg.es/smartcell/)
+- [NFsim](http://michaelsneddon.net/nfsim/)
 
 License: MIT

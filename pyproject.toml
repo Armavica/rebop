@@ -21,6 +21,9 @@ features = ["pyo3/extension-module"]
 [tool.ruff]
 extend-exclude = ["benches/*"]
 
+[tool.ruff.format]
+docstring-code-format = true
+
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [

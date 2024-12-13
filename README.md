@@ -7,22 +7,22 @@
 rebop is a fast stochastic simulator for well-mixed chemical
 reaction networks.
 
-Performance and ergonomics are taken very seriously.  For this reason,
+Performance and ergonomics are taken very seriously. For this reason,
 two independent APIs are provided to describe and simulate reaction
 networks:
 
 - a macro-based DSL implemented by \[`define_system`\], usually the
   most efficient, but that requires to compile a rust program;
 - a function-based API implemented by the module \[`gillespie`\], also
-  available through Python bindings.  This one does not require a rust
-  compilation and allows the system to be defined at run time.  It is
+  available through Python bindings. This one does not require a rust
+  compilation and allows the system to be defined at run time. It is
   typically 2 or 3 times slower than the macro DSL, but still faster
   than all other software tried.
 
 ## The macro DSL
 
 It currently only supports reaction rates defined by the law of mass
-action.  The following macro defines a dimerization reaction network
+action. The following macro defines a dimerization reaction network
 naturally:
 
 ```rust
@@ -134,32 +134,32 @@ Performance is taken very seriously, and as a result, rebop
 outperforms every other package and programming language that we
 tried.
 
-*Disclaimer*: Most of this software currently contains much more
+_Disclaimer_: Most of this software currently contains much more
 features than rebop (e.g. spatial models, custom reaction rates,
-etc.).  Some of these features might have required them to make
-compromises on speed.  Moreover, as much as we tried to keep the
+etc.). Some of these features might have required them to make
+compromises on speed. Moreover, as much as we tried to keep the
 comparison fair, some return too much or too little data, or write
-them on disk.  The baseline that we tried to approach for all these
-programs is the following: *the model was just modified, we want
+them on disk. The baseline that we tried to approach for all these
+programs is the following: _the model was just modified, we want
 to simulate it `N` times and print regularly spaced measurement
-points*.  This means that we always include initialization or
-(re-)compilation time if applicable.  We think that it is the most
-typical use-case of a researcher who works on the model.  This
+points_. This means that we always include initialization or
+(re-)compilation time if applicable. We think that it is the most
+typical use-case of a researcher who works on the model. This
 benchmark methods allows to record both the initialization time
 (y-intercept) and the simulation time per simulation (slope).
 
 Many small benchmarks on toy examples are tracked to guide the
-development.  To compare the performance with other software,
+development. To compare the performance with other software,
 we used a real-world model of low-medium size (9 species and 16
-reactions): the Vilar oscillator (*Mechanisms of noise-resistance
-in genetic oscillators*, Vilar et al., PNAS 2002).  Here, we
+reactions): the Vilar oscillator (_Mechanisms of noise-resistance
+in genetic oscillators_, Vilar et al., PNAS 2002). Here, we
 simulate this model from `t=0` to `t=200`, reporting the state at
 time intervals of `1` time unit.
 
 ![Vilar oscillator benchmark](https://github.com/Armavica/rebop/blob/main/benches/vilar/vilar.png?raw=true)
 
 We can see that rebop's macro DSL is the fastest of all, both in
-time per simulation, and with compilation time included.  The second
+time per simulation, and with compilation time included. The second
 fastest is rebop's traditional API invoked by convenience through
 the Python bindings.
 

@@ -10,9 +10,9 @@ type: software
 authors:
   - given-names: Virgile
     family-names: Andreani
-    orcid: 'https://orcid.org/0000-0002-2383-1478'
-repository-code: 'https://github.com/Armavica/rebop'
-url: 'https://armavica.github.io/rebop/'
+    orcid: "https://orcid.org/0000-0002-2383-1478"
+repository-code: "https://github.com/Armavica/rebop"
+url: "https://armavica.github.io/rebop/"
 abstract: Fast stochastic simulator for chemical reaction networks
 license: MIT
 version: 0.8.3

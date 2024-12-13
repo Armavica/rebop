@@ -49,7 +49,7 @@ Patch release to fix distribution to PyPI.
 
 ## \[0.6.1\] -- 2023-10-05
 
-Patch release to fix distribution to PyPI.  The release is now happening
+Patch release to fix distribution to PyPI. The release is now happening
 automatically from GitHub CI.
 
 ## \[0.6.0\] -- 2023-10-05
@@ -84,7 +84,7 @@ API.
 ## \[0.5.0\] -- 2022-02-10
 
 The major change of this release is a change in the macro DSL to write
-reactions even more naturally, with `+` instead of `,`.  Example:
+reactions even more naturally, with `+` instead of `,`. Example:
 `translation: mRNA => mRNA + GFP @ trans_rate`.
 
 It comes also with some performance improvements, mostly on the API side (~5%).
@@ -93,7 +93,7 @@ It comes also with some performance improvements, mostly on the API side (~5%).
 
 - The Rngs can now be seeded.
 - `SRate::LMA2` was reintroduced, along with `SRate::LMAn`, implementing
-  2nd and nth-order LMA.  They cannot be implemented in terms of
+  2nd and nth-order LMA. They cannot be implemented in terms of
   `SRate::LMA`.
 - Added nth-order reactants and products to the macro DSL.
 - The libraries `rand` and `rand_distr` are now reexported to be more
@@ -115,7 +115,7 @@ as more performance improvements for the function-based API (20-35%).
 
 ### Changed
 
-- `Gillespie` no longer has a const parameter.  This breaking change
+- `Gillespie` no longer has a const parameter. This breaking change
   was necessary for the definition of a system at run-time (for
   Python bindings).
 
@@ -163,6 +163,6 @@ First release.
     time, and with several possible rate functions (Law of Mass Action
     but also Hill functions or Michaelis--Menten dynamics);
   - `define_system!` which requires that the system is defined at
-    compilation.  It only supports rate functions based on the Law
-    of Mass Action.  It runs typically three times as fast as the
+    compilation. It only supports rate functions based on the Law
+    of Mass Action. It runs typically three times as fast as the
     programmatic API.

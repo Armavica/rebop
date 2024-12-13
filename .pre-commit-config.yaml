@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-ast
       - id: check-merge-conflict
@@ -18,12 +18,12 @@ repos:
     rev: 054bda51dbe278b3e86f27c890e3f3ac877d616c
     hooks:
       - id: validate-cff
-  - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.17
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: "v3.4.2"
     hooks:
-      - id: mdformat
+      - id: prettier
   - repo: https://github.com/crate-ci/typos
-    rev: v1.24.6
+    rev: v1.28.3
     hooks:
       - id: typos
   - repo: https://github.com/doublify/pre-commit-rust
@@ -32,13 +32,13 @@ repos:
       - id: fmt
       - id: cargo-check
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.8
+    rev: v0.8.3
     hooks:
       - id: ruff-format
       - id: ruff
-        args: [ --fix, --show-fixes ]
+        args: [--fix, --show-fixes]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
+    rev: v1.13.0
     hooks:
       - id: mypy
 

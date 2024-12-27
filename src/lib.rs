@@ -119,7 +119,7 @@
 //! ```rust
 //! use rebop::gillespie::{Gillespie, Rate};
 //!
-//! let mut sir = Gillespie::new([999, 1, 0]);
+//! let mut sir = Gillespie::new([999, 1, 0], false);
 //! //                           [  S, I, R]
 //! // S + I => 2 I with rate 1e-4
 //! sir.add_reaction(Rate::lma(1e-4, [1, 1, 0]), [-1, 1, 0]);
@@ -303,13 +303,14 @@ impl Gillespie {
     /// values at the given time points.  One can specify a random `seed` for reproducibility.
     /// If `nb_steps` is `0`, then returns all reactions, ending with the first that happens at
     /// or after `tmax`.
-    #[pyo3(signature = (init, tmax, nb_steps, seed=None))]
+    #[pyo3(signature = (init, tmax, nb_steps, seed=None, sparse=false))]
     fn run(
         &self,
         init: HashMap<String, usize>,
         tmax: f64,
         nb_steps: usize,
         seed: Option<u64>,
+        sparse: bool,
     ) -> PyResult<(Vec<f64>, HashMap<String, Vec<isize>>)> {
         let mut x0 = vec![0; self.species.len()];
         for (name, &value) in &init {
@@ -318,8 +319,8 @@ impl Gillespie {
             }
         }
         let mut g = match seed {
-            Some(seed) => gillespie::Gillespie::new_with_seed(x0, seed),
-            None => gillespie::Gillespie::new(x0),
+            Some(seed) => gillespie::Gillespie::new_with_seed(x0, sparse, seed),
+            None => gillespie::Gillespie::new(x0, sparse),
         };
 
         for (rate, reactants, products) in self.reactions.iter() {

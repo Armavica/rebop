@@ -129,25 +129,28 @@ pub struct Gillespie {
     t: f64,
     reactions: Vec<(Rate, Jump)>,
     rng: SmallRng,
+    sparse: bool,
 }
 
 impl Gillespie {
     /// Creates a new problem instance, with `N` different species of
     /// specified initial conditions.
-    pub fn new<V: AsRef<[isize]>>(species: V) -> Self {
+    pub fn new<V: AsRef<[isize]>>(species: V, sparse: bool) -> Self {
         Gillespie {
             species: species.as_ref().to_vec(),
             t: 0.,
             reactions: Vec::new(),
             rng: SmallRng::from_entropy(),
+            sparse: sparse,
         }
     }
-    pub fn new_with_seed<V: AsRef<[isize]>>(species: V, seed: u64) -> Self {
+    pub fn new_with_seed<V: AsRef<[isize]>>(species: V, sparse: bool, seed: u64) -> Self {
         Gillespie {
             species: species.as_ref().to_vec(),
             t: 0.,
             reactions: Vec::new(),
             rng: SmallRng::seed_from_u64(seed),
+            sparse: sparse,
         }
     }
     /// Seeds the random number generator.
@@ -158,7 +161,7 @@ impl Gillespie {
     ///
     /// ```
     /// use rebop::gillespie::Gillespie;
-    /// let mut p: Gillespie = Gillespie::new([0, 1, 10, 100]);
+    /// let mut p: Gillespie = Gillespie::new([0, 1, 10, 100], false);
     /// assert_eq!(p.nb_species(), 4);
     /// ```
     pub fn nb_species(&self) -> usize {
@@ -168,7 +171,7 @@ impl Gillespie {
     ///
     /// ```
     /// use rebop::gillespie::Gillespie;
-    /// let mut p: Gillespie = Gillespie::new([0, 1, 10, 100]);
+    /// let mut p: Gillespie = Gillespie::new([0, 1, 10, 100], false);
     /// assert_eq!(p.nb_reactions(), 0);
     /// ```
     pub fn nb_reactions(&self) -> usize {
@@ -180,7 +183,7 @@ impl Gillespie {
     /// describing the state change as a result of the reaction.
     /// ```
     /// use rebop::gillespie::{Gillespie, Rate};
-    /// let mut sir = Gillespie::new([9999, 1, 0]);
+    /// let mut sir = Gillespie::new([9999, 1, 0], false);
     /// //                           [   S, I, R]
     /// // S + I -> I + I with rate 1e-5
     /// sir.add_reaction(Rate::lma(1e-5, [1, 1, 0]), [-1, 1, 0]);
@@ -191,7 +194,11 @@ impl Gillespie {
         // This assert ensures that the jump does not go out of bounds of the species
         assert_eq!(differences.as_ref().len(), self.species.len());
         let jump = Jump::new(differences);
-        self.reactions.push((rate.sparse(), jump));
+        if self.sparse {
+            self.reactions.push((rate.sparse(), jump.sparse()));
+        } else {
+            self.reactions.push((rate, jump));
+        }
     }
     /// Returns the current time in the model.
     pub fn get_time(&self) -> f64 {
@@ -205,7 +212,7 @@ impl Gillespie {
     ///
     /// ```
     /// use rebop::gillespie::Gillespie;
-    /// let p: Gillespie = Gillespie::new([0, 1, 10, 100]);
+    /// let p: Gillespie = Gillespie::new([0, 1, 10, 100], false);
     /// assert_eq!(p.get_species(2), 10);
     /// ```
     pub fn get_species(&self, s: usize) -> isize {
@@ -250,7 +257,7 @@ impl Gillespie {
     ///
     /// ```
     /// use rebop::gillespie::{Gillespie, Rate};
-    /// let mut dimers = Gillespie::new([1, 0, 0, 0]);
+    /// let mut dimers = Gillespie::new([1, 0, 0, 0], false);
     /// //                              [G, M, P, D]
     /// dimers.add_reaction(Rate::lma(25., [1, 0, 0, 0]), [0, 1, 0, 0]);
     /// dimers.add_reaction(Rate::lma(1000., [0, 1, 0, 0]), [0, 0, 1, 0]);
@@ -365,7 +372,7 @@ mod tests {
     use crate::gillespie::{Gillespie, Rate};
     #[test]
     fn sir() {
-        let mut sir = Gillespie::new([9999, 1, 0]);
+        let mut sir = Gillespie::new([9999, 1, 0], false);
         sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);
         sir.add_reaction(Rate::lma(0.01, [0, 1, 0]), [0, -1, 1]);
         sir.advance_until(250.);
@@ -376,7 +383,7 @@ mod tests {
     }
     #[test]
     fn dimers() {
-        let mut dimers = Gillespie::new([1, 0, 0, 0]);
+        let mut dimers = Gillespie::new([1, 0, 0, 0], false);
         dimers.add_reaction(Rate::lma(25., [1, 0, 0, 0]), [0, 1, 0, 0]);
         dimers.add_reaction(Rate::lma(1000., [0, 1, 0, 0]), [0, 0, 1, 0]);
         dimers.add_reaction(Rate::lma(0.001, [0, 0, 2, 0]), [0, 0, -2, 1]);

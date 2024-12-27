@@ -50,3 +50,12 @@ def test_all_reactions(seed: int) -> None:
     assert set(dds.S.to_numpy()) <= {-1, 0}
     assert set(dds.I.to_numpy()) <= {-1, 1}
     assert set(dds.R.to_numpy()) <= {0, 1}
+
+
+def test_dense_vs_sparse() -> None:
+    sir = sir_model()
+    init = {"S": 999, "I": 1}
+    kwargs = {"tmax": 250, "nb_steps": 250, "seed": 42}
+    ds_dense = sir.run(init, **kwargs, sparse=False)
+    ds_sparse = sir.run(init, **kwargs, sparse=True)
+    assert (ds_dense == ds_sparse).all()

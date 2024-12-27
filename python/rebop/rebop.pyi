@@ -30,6 +30,8 @@ class Gillespie:
         tmax: float,
         nb_steps: int,
         seed: int | None = None,
+        *,
+        sparse: bool = False,
     ) -> xarray.Dataset:
         """Run the system until `tmax` with `nb_steps` steps.
 

@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 import xarray
 
 class Gillespie:
@@ -32,6 +34,7 @@ class Gillespie:
         seed: int | None = None,
         *,
         sparse: bool = False,
+        var_names: Sequence[str] | None = None,
     ) -> xarray.Dataset:
         """Run the system until `tmax` with `nb_steps` steps.
 

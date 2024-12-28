@@ -303,7 +303,7 @@ impl Gillespie {
     /// values at the given time points.  One can specify a random `seed` for reproducibility.
     /// If `nb_steps` is `0`, then returns all reactions, ending with the first that happens at
     /// or after `tmax`.
-    #[pyo3(signature = (init, tmax, nb_steps, seed=None, sparse=false))]
+    #[pyo3(signature = (init, tmax, nb_steps, seed=None, sparse=false, var_names=None))]
     fn run(
         &self,
         init: HashMap<String, usize>,
@@ -311,6 +311,7 @@ impl Gillespie {
         nb_steps: usize,
         seed: Option<u64>,
         sparse: bool,
+        var_names: Option<Vec<String>>,
     ) -> PyResult<(Vec<f64>, HashMap<String, Vec<isize>>)> {
         let mut x0 = vec![0; self.species.len()];
         for (name, &value) in &init {
@@ -321,6 +322,13 @@ impl Gillespie {
         let mut g = match seed {
             Some(seed) => gillespie::Gillespie::new_with_seed(x0, sparse, seed),
             None => gillespie::Gillespie::new(x0, sparse),
+        };
+        let save_indices: Vec<_> = match &var_names {
+            Some(x) => x
+                .iter()
+                .map(|key| self.species.get(key).unwrap().clone())
+                .collect(),
+            None => (0..self.species.len()).collect(),
         };
 
         for (rate, reactants, products) in self.reactions.iter() {
@@ -340,34 +348,43 @@ impl Gillespie {
         }
         let mut times = Vec::new();
         // species.shape = (species, nb_steps)
-        let mut species = vec![Vec::new(); self.species.len()];
+        let mut species = vec![Vec::new(); save_indices.len()];
         if nb_steps > 0 {
             for i in 0..=nb_steps {
                 let t = tmax * i as f64 / nb_steps as f64;
                 times.push(t);
                 g.advance_until(t);
-                for s in 0..self.species.len() {
-                    species[s].push(g.get_species(s));
+                for (i, s) in save_indices.iter().enumerate() {
+                    species[i].push(g.get_species(*s));
                 }
             }
         } else {
             // nb_steps = 0: we return every step
             let mut rates = vec![f64::NAN; g.nb_reactions()];
             times.push(g.get_time());
-            for s in 0..self.species.len() {
-                species[s].push(g.get_species(s));
+            for (i, s) in save_indices.iter().enumerate() {
+                species[i].push(g.get_species(*s));
             }
             while g.get_time() < tmax {
                 g._advance_one_reaction(&mut rates);
                 times.push(g.get_time());
-                for s in 0..self.species.len() {
-                    species[s].push(g.get_species(s));
+                for (i, s) in save_indices.iter().enumerate() {
+                    species[i].push(g.get_species(*s));
                 }
             }
         }
         let mut result = HashMap::new();
-        for (name, &id) in &self.species {
-            result.insert(name.clone(), species[id].clone());
+        match var_names {
+            Some(x) => {
+                for (id, name) in x.iter().enumerate() {
+                    result.insert(name.clone(), species[id].clone());
+                }
+            }
+            None => {
+                for (name, &id) in &self.species {
+                    result.insert(name.clone(), species[id].clone());
+                }
+            }
         }
         Ok((times, result))
     }

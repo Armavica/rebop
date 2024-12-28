@@ -59,3 +59,24 @@ def test_dense_vs_sparse() -> None:
     ds_dense = sir.run(init, **kwargs, sparse=False)
     ds_sparse = sir.run(init, **kwargs, sparse=True)
     assert (ds_dense == ds_sparse).all()
+
+
+@pytest.mark.parametrize("nb_steps", [0, 250])
+def test_var_names(nb_steps: int) -> None:
+    all_variables = {"S", "I", "R"}
+    subset_to_save = ["S", "I"]
+    remaining = all_variables.difference(subset_to_save)
+
+    sir = sir_model()
+    init = {"S": 999, "I": 1}
+    kwargs = {"tmax": 250, "nb_steps": nb_steps, "seed": 0}
+
+    ds_all = sir.run(init, **kwargs, var_names=None)
+    ds_subset = sir.run(init, **kwargs, var_names=subset_to_save)
+
+    for s in subset_to_save:
+        assert s in ds_subset
+    for s in remaining:
+        assert s not in ds_subset
+
+    assert ds_all[subset_to_save] == ds_subset

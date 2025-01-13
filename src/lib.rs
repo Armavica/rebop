@@ -304,7 +304,7 @@ impl Gillespie {
     /// If `nb_steps` is `0`, then returns all reactions, ending with the first that happens at
     /// or after `tmax`.
     #[pyo3(signature = (init, tmax, nb_steps, seed=None, sparse=false, var_names=None))]
-    fn run(
+    fn _run(
         &self,
         init: HashMap<String, usize>,
         tmax: f64,

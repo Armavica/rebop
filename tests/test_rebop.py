@@ -55,9 +55,11 @@ def test_all_reactions(seed: int) -> None:
 def test_dense_vs_sparse() -> None:
     sir = sir_model()
     init = {"S": 999, "I": 1}
-    kwargs = {"tmax": 250, "nb_steps": 250, "seed": 42}
-    ds_dense = sir.run(init, **kwargs, sparse=False)
-    ds_sparse = sir.run(init, **kwargs, sparse=True)
+    tmax = 250
+    nb_steps = 250
+    seed = 42
+    ds_dense = sir.run(init, tmax=tmax, nb_steps=nb_steps, seed=seed, sparse=False)
+    ds_sparse = sir.run(init, tmax=tmax, nb_steps=nb_steps, seed=seed, sparse=True)
     assert (ds_dense == ds_sparse).all()
 
 
@@ -69,10 +71,13 @@ def test_var_names(nb_steps: int) -> None:
 
     sir = sir_model()
     init = {"S": 999, "I": 1}
-    kwargs = {"tmax": 250, "nb_steps": nb_steps, "seed": 0}
+    tmax = 250
+    seed = 0
 
-    ds_all = sir.run(init, **kwargs, var_names=None)
-    ds_subset = sir.run(init, **kwargs, var_names=subset_to_save)
+    ds_all = sir.run(init, tmax=tmax, nb_steps=nb_steps, seed=seed, var_names=None)
+    ds_subset = sir.run(
+        init, tmax=tmax, nb_steps=nb_steps, seed=seed, var_names=subset_to_save
+    )
 
     for s in subset_to_save:
         assert s in ds_subset

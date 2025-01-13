@@ -260,10 +260,6 @@ impl Gillespie {
         Ok(self.species.len())
     }
     /// Add a Law of Mass Action reaction to the system.
-    ///
-    /// The forward reaction rate is `rate`, while `reactants` and `products` are lists of
-    /// respectively reactant names and product names.  Add the reverse reaction with the rate
-    /// `reverse_rate` if it is not `None`.
     #[pyo3(signature = (rate, reactants, products, reverse_rate=None))]
     fn add_reaction(
         &mut self,
@@ -304,7 +300,7 @@ impl Gillespie {
     /// If `nb_steps` is `0`, then returns all reactions, ending with the first that happens at
     /// or after `tmax`.
     #[pyo3(signature = (init, tmax, nb_steps, seed=None, sparse=false, var_names=None))]
-    fn _run(
+    fn run(
         &self,
         init: HashMap<String, usize>,
         tmax: f64,
@@ -405,7 +401,7 @@ impl Gillespie {
 }
 
 #[pymodule]
-fn rebop(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn _lib(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     m.add_class::<Gillespie>()?;
     Ok(())

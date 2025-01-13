@@ -23,7 +23,7 @@ dev = [
 
 [tool.maturin]
 python-source = "python"
-module-name = "rebop.rebop"
+module-name = "rebop._lib"
 features = ["pyo3/extension-module"]
 
 [tool.ruff]

@@ -1,6 +1,11 @@
 from collections.abc import Sequence
+from typing import TypeAlias
 
+import numpy as np
 import xarray
+
+SeedLike: TypeAlias = int | np.integer | Sequence[int] | np.random.SeedSequence
+RNGLike: TypeAlias = np.random.Generator | np.random.BitGenerator
 
 class Gillespie:
     """Reaction system composed of species and reactions."""
@@ -26,13 +31,29 @@ class Gillespie:
     def nb_species(self, /) -> int:
         """Number of species currently in the system."""
 
+    def _run(
+        self,
+        init: dict[str, int],
+        tmax: float,
+        nb_steps: int,
+        *,
+        seed: int | None = None,
+        sparse: bool = False,
+        var_names: Sequence[str] | None = None,
+    ) -> tuple[np.ndarray, dict[str, np.ndarray]]:
+        """Run the system until `tmax` with `nb_steps` steps.
+
+        The initial configuration is specified in the dictionary `init`.
+        Returns numpy arrays.
+        """
+
     def run(
         self,
         init: dict[str, int],
         tmax: float,
         nb_steps: int,
-        seed: int | None = None,
         *,
+        rng: RNGLike | SeedLike | None = None,
         sparse: bool = False,
         var_names: Sequence[str] | None = None,
     ) -> xarray.Dataset:

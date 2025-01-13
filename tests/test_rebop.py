@@ -15,7 +15,7 @@ def sir_model(transmission: float = 1e-4, recovery: float = 0.01) -> rebop.Gille
 @pytest.mark.parametrize("seed", [None, *range(10)])
 def test_sir(seed: int | None) -> None:
     sir = sir_model()
-    ds = sir.run({"S": 999, "I": 1}, tmax=250, nb_steps=250, seed=seed)
+    ds = sir.run({"S": 999, "I": 1}, tmax=250, nb_steps=250, rng=seed)
     assert isinstance(ds, xr.Dataset)
     npt.assert_array_equal(ds.time, np.arange(251))
     assert all(ds.S >= 0)
@@ -29,18 +29,18 @@ def test_sir(seed: int | None) -> None:
 
 def test_fixed_seed() -> None:
     sir = sir_model()
-    ds = sir.run({"S": 999, "I": 1}, tmax=250, nb_steps=250, seed=42)
+    ds = sir.run({"S": 999, "I": 1}, tmax=250, nb_steps=250, rng=42)
 
     assert ds.S[-1] == 0
-    assert ds.I[-1] == 166
-    assert ds.R[-1] == 834
+    assert ds.I[-1] == 182
+    assert ds.R[-1] == 818
 
 
 @pytest.mark.parametrize("seed", range(10))
 def test_all_reactions(seed: int) -> None:
     tmax = 250
     sir = sir_model()
-    ds = sir.run({"S": 999, "I": 1}, tmax=tmax, nb_steps=0, seed=seed)
+    ds = sir.run({"S": 999, "I": 1}, tmax=tmax, nb_steps=0, rng=seed)
     assert ds.time[0] == 0
     assert ds.time[-1] > tmax
     assert all(ds.time.diff(dim="time") > 0)
@@ -58,8 +58,8 @@ def test_dense_vs_sparse() -> None:
     tmax = 250
     nb_steps = 250
     seed = 42
-    ds_dense = sir.run(init, tmax=tmax, nb_steps=nb_steps, seed=seed, sparse=False)
-    ds_sparse = sir.run(init, tmax=tmax, nb_steps=nb_steps, seed=seed, sparse=True)
+    ds_dense = sir.run(init, tmax=tmax, nb_steps=nb_steps, rng=seed, sparse=False)
+    ds_sparse = sir.run(init, tmax=tmax, nb_steps=nb_steps, rng=seed, sparse=True)
     assert (ds_dense == ds_sparse).all()
 
 
@@ -74,9 +74,9 @@ def test_var_names(nb_steps: int) -> None:
     tmax = 250
     seed = 0
 
-    ds_all = sir.run(init, tmax=tmax, nb_steps=nb_steps, seed=seed, var_names=None)
+    ds_all = sir.run(init, tmax=tmax, nb_steps=nb_steps, rng=seed, var_names=None)
     ds_subset = sir.run(
-        init, tmax=tmax, nb_steps=nb_steps, seed=seed, var_names=subset_to_save
+        init, tmax=tmax, nb_steps=nb_steps, rng=seed, var_names=subset_to_save
     )
 
     for s in subset_to_save:

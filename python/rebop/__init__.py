@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import Sequence
+from typing import TypeAlias
 
+import numpy as np
 import xarray as xr
 
 from .rebop import Gillespie, __version__  # type: ignore[attr-defined]
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
+SeedLike: TypeAlias = int | np.integer | Sequence[int] | np.random.SeedSequence
+RNGLike: TypeAlias = np.random.Generator | np.random.BitGenerator
+
 
 __all__ = ("Gillespie", "__version__")
-
-og_run = Gillespie.run
 
 
 def run_xarray(  # noqa: PLR0913 too many parameters in function definition
@@ -19,8 +20,8 @@ def run_xarray(  # noqa: PLR0913 too many parameters in function definition
     init: dict[str, int],
     tmax: float,
     nb_steps: int,
-    seed: int | None = None,
     *,
+    rng: RNGLike | SeedLike | None = None,
     sparse: bool = False,
     var_names: Sequence[str] | None = None,
 ) -> xr.Dataset:
@@ -29,12 +30,13 @@ def run_xarray(  # noqa: PLR0913 too many parameters in function definition
     The initial configuration is specified in the dictionary `init`.
     Returns an xarray Dataset.
     """
-    times, result = og_run(
-        self,
+    rng_ = np.random.default_rng(rng)
+    seed = rng_.integers(np.iinfo(np.uint64).max, dtype=np.uint64)
+    times, result = self._run(
         init,
         tmax,
         nb_steps,
-        seed,
+        seed=seed,
         sparse=sparse,
         var_names=var_names,
     )

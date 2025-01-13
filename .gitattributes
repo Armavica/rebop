@@ -1,2 +1,4 @@
 # Exclude the benchmarks from github language stats
 benches/** linguist-documentation
+# SCM syntax highlighting
+pixi.lock linguist-language=YAML linguist-generated=true

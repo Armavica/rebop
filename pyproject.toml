@@ -13,6 +13,14 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.4,<9",
+  "maturin>=1.8.1,<2",
+  "pip>=24.3.1,<25",
+  "pre-commit>=4.0.1,<5",
+]
+
 [tool.maturin]
 python-source = "python"
 module-name = "rebop.rebop"
@@ -55,3 +63,16 @@ strict = true
 warn_unreachable = true
 disallow_untyped_decorators = false
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.pypi-dependencies]
+rebop = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+build = "maturin develop"
+
+[tool.pixi.environments]
+dev = { features = ["dev"] }

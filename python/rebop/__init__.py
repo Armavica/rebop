@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from .rebop import Gillespie, __version__
+from .rebop import Gillespie, __version__  # type: ignore[attr-defined]
 
 __all__ = ("Gillespie", "__version__")
 
@@ -33,4 +33,4 @@ def run_xarray(  # noqa: PLR0913 too many parameters in function definition
     return ds
 
 
-Gillespie.run = run_xarray
+Gillespie.run = run_xarray  # type: ignore[method-assign]

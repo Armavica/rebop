@@ -2,3 +2,7 @@ target
 .*.swp
 __pycache__
 *.so
+
+# pixi environments
+.pixi
+*.egg-info

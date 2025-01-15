@@ -7,7 +7,7 @@ use rand_distr::Exp1;
 
 use crate::expr::Expr;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Rate {
     LMA(f64, Vec<u32>),
     LMASparse(f64, Vec<(u32, u32)>),
@@ -15,16 +15,36 @@ pub enum Rate {
 }
 
 impl Rate {
-    pub fn lma<V: AsRef<[u32]>>(rate: f64, reactants: V) -> Self {
-        Rate::LMA(rate, reactants.as_ref().to_vec())
+    pub fn lma<V: AsRef<[u32]>>(rate: f64, stoechiometries: V) -> Self {
+        Rate::LMA(rate, stoechiometries.as_ref().to_vec())
+    }
+    pub fn lma_sparse<V: AsRef<[(u32, u32)]>>(rate: f64, stoechiometries: V) -> Self {
+        Rate::LMASparse(rate, stoechiometries.as_ref().to_vec())
     }
     pub fn expr(expr: Expr) -> Self {
         Rate::Expr(expr)
     }
+    pub fn dense(self) -> Self {
+        match self {
+            Rate::LMASparse(rate, stoechiometries) => {
+                let n = stoechiometries
+                    .iter()
+                    .map(|(i, _)| i + 1)
+                    .max()
+                    .unwrap_or(0);
+                let mut dense = vec![0; n as usize];
+                for (index, exponent) in stoechiometries {
+                    dense[index as usize] += exponent;
+                }
+                Rate::LMA(rate, dense)
+            }
+            Rate::LMA(_, _) | Rate::Expr(_) => self,
+        }
+    }
     pub fn sparse(self) -> Self {
         match self {
-            Rate::LMA(rate, reactants) => {
-                let sparse = reactants
+            Rate::LMA(rate, stoechiometries) => {
+                let sparse = stoechiometries
                     .iter()
                     .enumerate()
                     .filter_map(|(index, &exponent)| {
@@ -346,24 +366,58 @@ fn choose_cumrate_takewhile(chosen_rate: f64, cumrates: &[f64]) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use crate::gillespie::{Gillespie, Rate};
+    use crate::gillespie::{Expr, Gillespie, Rate};
+    #[test]
+    fn rate_conversion() {
+        let rate = Rate::lma(2.0, [3]);
+        assert_eq!(rate.clone().dense(), rate);
+        assert_eq!(rate.clone().sparse(), Rate::lma_sparse(2.0, [(0, 3)]));
+        assert_eq!(rate.clone().sparse().dense(), rate);
+        let rate = Rate::lma_sparse(2.0, [(0, 1), (3, 2)]);
+        assert_eq!(rate.clone().sparse(), rate);
+        assert_eq!(rate.clone().dense(), Rate::lma(2.0, [1, 0, 0, 2]));
+        assert_eq!(rate.clone().dense().sparse(), rate);
+        let rate = Rate::expr(Expr::Constant(4.1));
+        assert_eq!(rate.clone().dense(), rate);
+        assert_eq!(rate.clone().sparse(), rate);
+    }
+
+    #[test]
+    fn rate_sparse() {
+        let rate = Rate::lma(2.0, [3]);
+        assert_eq!(rate.sparse(), Rate::LMASparse(2.0, vec![(0, 3)]));
+        let rate = Rate::lma(2.0, [0, 3]);
+        assert_eq!(rate.sparse(), Rate::LMASparse(2.0, vec![(1, 3)]));
+        let rate = Rate::lma(2.0, [0, 3, 0]);
+        assert_eq!(rate.sparse(), Rate::LMASparse(2.0, vec![(1, 3)]));
+        let rate = Rate::lma(2.0, [0, 3, 0, 1, 0, 0]);
+        assert_eq!(rate.sparse(), Rate::LMASparse(2.0, vec![(1, 3), (3, 1)]));
+    }
+
     #[test]
     fn rate_lma() {
+        fn check_rate(rate: &Rate, species: &[isize], expected: f64) {
+            assert_eq!(rate.clone().dense().rate(species), expected);
+            assert_eq!(rate.clone().sparse().rate(species), expected);
+        }
+
         let species = [5, 3];
-        let rate = Rate::lma(2.0, [1, 0]);
-        assert_eq!(rate.rate(&species), 10.0);
-        let rate = Rate::lma(2.0, [2, 0]);
-        assert_eq!(rate.rate(&species), 40.0);
-        let rate = Rate::lma(2.0, [0, 1]);
-        assert_eq!(rate.rate(&species), 6.0);
-        let rate = Rate::lma(2.0, [0, 2]);
-        assert_eq!(rate.rate(&species), 12.0);
-        let rate = Rate::lma(2.0, [0, 3]);
-        assert_eq!(rate.rate(&species), 12.0);
-        let rate = Rate::lma(2.0, [0, 4]);
-        assert_eq!(rate.rate(&species), 0.0);
-        let rate = Rate::lma(2.0, [1, 1]);
-        assert_eq!(rate.rate(&species), 30.0);
+        check_rate(&Rate::lma(2.0, [1, 0]), &species, 10.0);
+        check_rate(&Rate::lma(2.0, [2, 0]), &species, 40.0);
+        check_rate(&Rate::lma(2.0, [3, 0]), &species, 120.0);
+        check_rate(&Rate::lma(2.0, [4, 0]), &species, 240.0);
+        check_rate(&Rate::lma(2.0, [5, 0]), &species, 240.0);
+        check_rate(&Rate::lma(2.0, [6, 0]), &species, 0.0);
+        check_rate(&Rate::lma(2.0, [7, 0]), &species, 0.0);
+        check_rate(&Rate::lma(2.0, [0, 1]), &species, 6.0);
+        check_rate(&Rate::lma(2.0, [0, 2]), &species, 12.0);
+        check_rate(&Rate::lma(2.0, [0, 3]), &species, 12.0);
+        check_rate(&Rate::lma(2.0, [0, 4]), &species, 0.0);
+        check_rate(&Rate::lma(2.0, [0, 5]), &species, 0.0);
+        check_rate(&Rate::lma(2.0, [1, 1]), &species, 30.0);
+        check_rate(&Rate::lma(2.0, [1, 2]), &species, 60.0);
+        check_rate(&Rate::lma(2.0, [2, 1]), &species, 120.0);
+        check_rate(&Rate::lma(2.0, [1, 20]), &species, 0.0);
     }
 
     #[test]

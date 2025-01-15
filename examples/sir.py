@@ -1,4 +1,4 @@
-"""This example implements the classical SIR model.
+"""The classical SIR model.
 
 There are three categories of people:
 * S: Susceptible

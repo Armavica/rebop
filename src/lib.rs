@@ -299,16 +299,17 @@ impl Gillespie {
     /// values at the given time points.  One can specify a random `seed` for reproducibility.
     /// If `nb_steps` is `0`, then returns all reactions, ending with the first that happens at
     /// or after `tmax`.
-    #[pyo3(signature = (init, tmax, nb_steps, seed=None, sparse=false, var_names=None))]
+    #[pyo3(signature = (init, tmax, nb_steps, seed=None, sparse=None, var_names=None))]
     fn run(
         &self,
         init: HashMap<String, usize>,
         tmax: f64,
         nb_steps: usize,
         seed: Option<u64>,
-        sparse: bool,
+        sparse: Option<bool>,
         var_names: Option<Vec<String>>,
     ) -> PyResult<(Vec<f64>, HashMap<String, Vec<isize>>)> {
+        let sparse = sparse.unwrap_or(false);
         let mut x0 = vec![0; self.species.len()];
         for (name, &value) in &init {
             if let Some(&id) = self.species.get(name) {

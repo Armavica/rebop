@@ -141,7 +141,7 @@ impl Gillespie {
             t: 0.,
             reactions: Vec::new(),
             rng: SmallRng::from_entropy(),
-            sparse: sparse,
+            sparse,
         }
     }
     pub fn new_with_seed<V: AsRef<[isize]>>(species: V, sparse: bool, seed: u64) -> Self {
@@ -150,7 +150,7 @@ impl Gillespie {
             t: 0.,
             reactions: Vec::new(),
             rng: SmallRng::seed_from_u64(seed),
-            sparse: sparse,
+            sparse,
         }
     }
     /// Seeds the random number generator.

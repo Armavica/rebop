@@ -58,8 +58,10 @@ def test_dense_vs_sparse() -> None:
     tmax = 250
     nb_steps = 250
     seed = 42
+    ds_auto = sir.run(init, tmax=tmax, nb_steps=nb_steps, rng=seed, sparse=None)
     ds_dense = sir.run(init, tmax=tmax, nb_steps=nb_steps, rng=seed, sparse=False)
     ds_sparse = sir.run(init, tmax=tmax, nb_steps=nb_steps, rng=seed, sparse=True)
+    assert (ds_dense == ds_auto).all()
     assert (ds_dense == ds_sparse).all()
 
 

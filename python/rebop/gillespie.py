@@ -53,7 +53,7 @@ class Gillespie:
         nb_steps: int,
         *,
         rng: RNGLike | SeedLike | None = None,
-        sparse: bool = False,
+        sparse: bool | None = None,
         var_names: Sequence[str] | None = None,
     ) -> xr.Dataset:
         """Run the system until `tmax` with `nb_steps` steps.

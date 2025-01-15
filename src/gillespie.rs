@@ -371,6 +371,25 @@ fn choose_cumrate_takewhile(chosen_rate: f64, cumrates: &[f64]) -> usize {
 mod tests {
     use crate::gillespie::{Gillespie, Rate};
     #[test]
+    fn rate_lma() {
+        let species = [5, 3];
+        let rate = Rate::lma(2.0, [1, 0]);
+        assert_eq!(rate.rate(&species), 10.0);
+        let rate = Rate::lma(2.0, [2, 0]);
+        assert_eq!(rate.rate(&species), 40.0);
+        let rate = Rate::lma(2.0, [0, 1]);
+        assert_eq!(rate.rate(&species), 6.0);
+        let rate = Rate::lma(2.0, [0, 2]);
+        assert_eq!(rate.rate(&species), 12.0);
+        let rate = Rate::lma(2.0, [0, 3]);
+        assert_eq!(rate.rate(&species), 12.0);
+        let rate = Rate::lma(2.0, [0, 4]);
+        assert_eq!(rate.rate(&species), 0.0);
+        let rate = Rate::lma(2.0, [1, 1]);
+        assert_eq!(rate.rate(&species), 30.0);
+    }
+
+    #[test]
     fn sir() {
         let mut sir = Gillespie::new([9999, 1, 0], false);
         sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);

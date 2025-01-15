@@ -14,7 +14,7 @@ fn bench_sir(c: &mut Criterion) {
     for n in &[10_000, 100_000, 1_000_000] {
         group.bench_with_input(BenchmarkId::new("api", n), n, |b, n| {
             b.iter(|| {
-                let mut sir = Gillespie::new_with_seed([n - 1, 1, 0], 0);
+                let mut sir = Gillespie::new_with_seed([n - 1, 1, 0], false, 0);
                 sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);
                 sir.add_reaction(Rate::lma(0.05, [0, 1, 0]), [0, -1, 1]);
                 sir.advance_until(1000.);
@@ -61,7 +61,7 @@ fn bench_dimers(c: &mut Criterion) {
     });
     group.bench_function("api", |b| {
         b.iter(|| {
-            let mut dimers = Gillespie::new_with_seed([1, 0, 0, 0], 0);
+            let mut dimers = Gillespie::new_with_seed([1, 0, 0, 0], false, 0);
             dimers.add_reaction(Rate::lma(25., [1, 0, 0, 0]), [0, 1, 0, 0]);
             dimers.add_reaction(Rate::lma(1000., [0, 1, 0, 0]), [0, 0, 1, 0]);
             dimers.add_reaction(Rate::lma(0.001, [0, 0, 2, 0]), [0, 0, -2, 1]);
@@ -97,7 +97,7 @@ fn bench_dimers2(c: &mut Criterion) {
     });
     group.bench_function("api", |b| {
         b.iter(|| {
-            let mut dimers = Gillespie::new_with_seed([100000, 0, 0], 0);
+            let mut dimers = Gillespie::new_with_seed([100000, 0, 0], false, 0);
             dimers.add_reaction(Rate::lma(1., [1, 0, 0]), [-1, 0, 0]);
             dimers.add_reaction(Rate::lma(1. / 500., [2, 0, 0]), [-2, 1, 0]);
             dimers.add_reaction(Rate::lma(0.5, [0, 1, 0]), [2, -1, 0]);
@@ -122,7 +122,7 @@ fn api_erk() {
     let km3 = 0.1;
     let hm1 = 0.02;
     let hm3 = 0.02;
-    let mut erk = Gillespie::new_with_seed([201, 100, 10, 20, 2, 23, 10, 10, 10], 0);
+    let mut erk = Gillespie::new_with_seed([201, 100, 10, 20, 2, 23, 10, 10, 10], false, 0);
     // M    MKK     M_MKK   Mp_MKK  MKP     Mpp     Mp  Mpp_MKP     Mp_MKP
     // 1     2        3        4     5       6      7      8          9
     erk.add_reaction(Rate::lma(k1,  [1, 1, 0, 0, 0, 0, 0, 0, 0]), [-1, -1, 1, 0, 0, 0, 0, 0, 0]);
@@ -223,7 +223,7 @@ fn bench_mm(c: &mut Criterion) {
             let r_fwd = 0.0017;
             let r_bwd = 0.5;
             let r_cat = 0.1;
-            let mut mm = Gillespie::new_with_seed([301, 120, 0, 0], 0);
+            let mut mm = Gillespie::new_with_seed([301, 120, 0, 0], false, 0);
             mm.add_reaction(Rate::lma(r_fwd, [1, 1, 0, 0]), [-1, -1, 1, 0]);
             mm.add_reaction(Rate::lma(r_bwd, [0, 0, 1, 0]), [1, 1, -1, 0]);
             mm.add_reaction(Rate::lma(r_cat, [0, 0, 1, 0]), [0, 0, -1, 1]);
@@ -252,7 +252,7 @@ fn api_vilar() {
     let gammaC = 2.;
     let thetaA = 50.;
     let thetaR = 100.;
-    let mut vilar = Gillespie::new_with_seed([1, 1, 0, 0, 0, 0, 0, 0, 0], 0);
+    let mut vilar = Gillespie::new_with_seed([1, 1, 0, 0, 0, 0, 0, 0, 0], false, 0);
     vilar.add_reaction(Rate::lma(gammaA,  [1, 0, 0, 0, 0, 0, 1, 0, 0]), [-1, 0, 1, 0, 0, 0, -1, 0, 0]);
     vilar.add_reaction(Rate::lma(gammaR,  [0, 1, 0, 0, 0, 0, 1, 0, 0]), [0, -1, 0, 1, 0, 0, -1, 0, 0]);
     vilar.add_reaction(Rate::lma(thetaA,  [0, 0, 1, 0, 0, 0, 0, 0, 0]), [1, 0, -1, 0, 0, 0, 1, 0, 0]);
@@ -602,7 +602,7 @@ fn macro_ring_50() {
 fn api_ring(n: usize, k: f64) -> Gillespie {
     let mut x0 = vec![0; n];
     x0[0] = 1000;
-    let mut ring = Gillespie::new_with_seed(x0, 0);
+    let mut ring = Gillespie::new_with_seed(x0, false, 0);
     for i in 0..n {
         let mut actions = vec![0; n];
         actions[i] -= 1;
@@ -684,7 +684,7 @@ fn macro_flocculation_10(x0: isize) {
 fn api_flocculation(n: usize, k: f64, n0: isize) -> Gillespie {
     let mut x0 = vec![0; n];
     x0[0] = n0;
-    let mut flocculation = Gillespie::new_with_seed(x0, 0);
+    let mut flocculation = Gillespie::new_with_seed(x0, false, 0);
     for i in 1..=n / 2 {
         for j in i..=n - i {
             let mut reactants = vec![0; n];

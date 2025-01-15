@@ -23,7 +23,7 @@ fn sir_macro(n: isize) -> isize {
 }
 
 fn sir_api(n: isize) -> isize {
-    let mut sir = Gillespie::new_with_seed([n - 1, 1, 0], 0);
+    let mut sir = Gillespie::new_with_seed([n - 1, 1, 0], false, 0);
     sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);
     sir.add_reaction(Rate::lma(0.05, [0, 1, 0]), [0, -1, 1]);
     sir.advance_until(1000.);
@@ -61,7 +61,7 @@ fn vilar_api(tmax: f64) {
     let gammaC = 2.;
     let thetaA = 50.;
     let thetaR = 100.;
-    let mut vilar = Gillespie::new_with_seed([1, 1, 0, 0, 0, 0, 0, 0, 0], 0);
+    let mut vilar = Gillespie::new_with_seed([1, 1, 0, 0, 0, 0, 0, 0, 0], false, 0);
     vilar.add_reaction(Rate::lma(gammaA,  [1, 0, 0, 0, 0, 0, 1, 0, 0]), [-1, 0, 1, 0, 0, 0, -1, 0, 0]);
     vilar.add_reaction(Rate::lma(gammaR,  [0, 1, 0, 0, 0, 0, 1, 0, 0]), [0, -1, 0, 1, 0, 0, -1, 0, 0]);
     vilar.add_reaction(Rate::lma(thetaA,  [0, 0, 1, 0, 0, 0, 0, 0, 0]), [1, 0, -1, 0, 0, 0, 1, 0, 0]);

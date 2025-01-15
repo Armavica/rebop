@@ -78,7 +78,7 @@ impl Rate {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Jump {
     Flat(Vec<isize>),
     Sparse(Vec<(usize, isize)>),
@@ -90,6 +90,19 @@ impl Jump {
     }
     pub fn new_sparse<V: AsRef<[(usize, isize)]>>(sparse: V) -> Self {
         Jump::Sparse(sparse.as_ref().to_vec())
+    }
+    pub fn dense(self) -> Self {
+        match self {
+            Jump::Sparse(sparse) => {
+                let n = sparse.iter().map(|(i, _)| i + 1).max().unwrap_or(0);
+                let mut dense = vec![0; n];
+                for (index, diff) in sparse {
+                    dense[index] += diff;
+                }
+                Jump::Flat(dense)
+            }
+            Jump::Flat(_) => self,
+        }
     }
     pub fn sparse(self) -> Self {
         match self {
@@ -366,7 +379,8 @@ fn choose_cumrate_takewhile(chosen_rate: f64, cumrates: &[f64]) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use crate::gillespie::{Expr, Gillespie, Rate};
+    use crate::gillespie::{Expr, Gillespie, Jump, Rate};
+
     #[test]
     fn rate_conversion() {
         let rate = Rate::lma(2.0, [3]);
@@ -418,6 +432,28 @@ mod tests {
         check_rate(&Rate::lma(2.0, [1, 2]), &species, 60.0);
         check_rate(&Rate::lma(2.0, [2, 1]), &species, 120.0);
         check_rate(&Rate::lma(2.0, [1, 20]), &species, 0.0);
+    }
+
+    #[test]
+    fn jump_conversion() {
+        let djump = Jump::new([-1, 0, 3, -2]);
+        let sjump = Jump::new_sparse([(0, -1), (2, 3), (3, -2)]);
+        assert_eq!(djump.clone().dense(), djump);
+        assert_eq!(djump.clone().sparse(), sjump);
+        assert_eq!(sjump.clone().sparse(), sjump);
+        assert_eq!(sjump.clone().dense(), djump);
+    }
+
+    #[test]
+    fn jump_affect() {
+        let djump = Jump::new([-1, 0, 3, -2]);
+        let mut species = vec![10; 4];
+        djump.affect(&mut species);
+        assert_eq!(species, vec![9, 10, 13, 8]);
+        let sjump = Jump::new_sparse([(0, -1), (2, 3), (3, -2)]);
+        let mut species = vec![10; 4];
+        sjump.affect(&mut species);
+        assert_eq!(species, vec![9, 10, 13, 8]);
     }
 
     #[test]

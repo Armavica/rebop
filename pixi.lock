@@ -561,7 +561,7 @@ packages:
 - pypi: .
   name: rebop
   version: 0.8.3
-  sha256: 7cb212f5f191e381f42ccb7547893bf37b925c5b8007146a58883f6d58c6b2bc
+  sha256: f51d5c9427515a6211f225b6ae399a92cc240f703bcd37c7ab6463b52f3eff86
   requires_dist:
   - xarray>=2023.1
   - pytest>=8.3.4,<9 ; extra == 'dev'

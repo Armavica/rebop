@@ -106,3 +106,14 @@ def test_arbitrary_rates() -> None:
     assert ds_init_b.A[-1] >= 1
     assert (ds_init_b.B == 1).all()
     assert ds_with_b.A[-1] >= 1
+
+
+def test_arbitrary_rates_2() -> None:
+    s = rebop.Gillespie()
+    s.add_reaction(14, [], ["A"])
+    s.add_reaction(0.1, ["A", "B"], ["C"], 0.01)
+    s.add_reaction("0.2 * B * C / (5 + C)", ["B"], ["D"])
+    ds = s.run({"B": 1000}, tmax=100, nb_steps=100)
+
+    assert (ds.B + ds.C + ds.D == 1000).all()
+    assert ds.D[-1] >= 1

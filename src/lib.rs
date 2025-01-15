@@ -298,7 +298,9 @@ impl Gillespie {
         match expr {
             PExpr::Constant(_) => {}
             PExpr::Concentration(s) => {
-                self.species.insert(s.clone(), self.species.len());
+                if !self.species.contains_key(s) {
+                    self.species.insert(s.clone(), self.species.len());
+                }
             }
             PExpr::Add(a, b)
             | PExpr::Sub(a, b)

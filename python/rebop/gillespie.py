@@ -35,10 +35,32 @@ class Gillespie:
     ) -> None:
         """Add a Law of Mass Action reaction to the system.
 
-        The forward reaction rate is `rate`, while `reactants` and `products`
-        are lists of respectively reactant names and product names.
-        Add the reverse reaction with the rate `reverse_rate` if it is not
-        `None`.
+        Example
+        -------
+        ```python
+        s = Gillespie()
+        # Add the birth equation ø -> A at rate 14
+        s.add_reaction(14, [], ["A"])
+        # Add the reversible reaction A + B -> C
+        # with forward rate 0.1 and reverse rate 0.01
+        s.add_reaction(0.1, ["A", "B"], ["C"], 0.01)
+        # Add the transformation B -> C with a non-LMA rate
+        s.add_reaction("2.1 * B * C / (5 + C)", ["B"], ["C"])
+        ```
+
+        Parameters
+        ----------
+        rate : float | str
+            If numeric, this is the rate constant of a Law of Mass Action.
+            If string, this is the mathematical expression of the reaction rate.
+        reactants : list[str]
+            List of the species that are on the left-hand-side of the reaction.
+        products : list[str]
+            List of the species that are on the right-hand-side of the reaction.
+        reverse_rate : float | str | None
+            Rate of the reverse reaction, if this reaction is reversible.
+            This is just a convenience to avoid to use `add_reaction` a second
+            time.
         """
         self.gillespie.add_reaction(rate, reactants, products, reverse_rate)
 
@@ -58,8 +80,28 @@ class Gillespie:
     ) -> xr.Dataset:
         """Run the system until `tmax` with `nb_steps` steps.
 
-        The initial configuration is specified in the dictionary `init`.
-        Returns an xarray Dataset.
+        Parameters
+        ----------
+        init : dict[str, int]
+            Dictionary that indicates the initial condition. It can omit
+            species, their initial number will be 0.
+        tmax : float
+            Simulation end time.
+        nb_steps : int
+            Number of steps to return, equally distributed between 0 and `tmax`.
+        rng : RNGLike | SeedLike | None (default: None)
+            Numpy `Generator`, `BitGenerator` or seed.
+        sparse : bool | None (default: None)
+            Whether to internally represent reactions as dense or sparse.
+            Sparse reactions will tend to be faster for systems with many
+            species. If `None`, rebop will choose a heuristic.
+        var_names : Sequence[str] | None (default: None)
+            List of variable names to return, if one does not want to save
+            all variables. If `None`, all variables will be saved.
+
+        Returns
+        -------
+        xr.Dataset
         """
         rng_ = np.random.default_rng(rng)
         seed = rng_.integers(np.iinfo(np.uint64).max, dtype=np.uint64)

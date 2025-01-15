@@ -457,18 +457,21 @@ mod tests {
     }
 
     #[test]
-    fn sir() {
+    fn gillespie_sir() {
         let mut sir = Gillespie::new([9999, 1, 0], false);
         sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);
         sir.add_reaction(Rate::lma(0.01, [0, 1, 0]), [0, -1, 1]);
-        sir.advance_until(250.);
-        assert_eq!(
-            sir.get_species(0) + sir.get_species(1) + sir.get_species(2),
-            10000
-        );
+        for i in 1..=250 {
+            sir.advance_until(i as f64);
+            assert_eq!(
+                sir.get_species(0) + sir.get_species(1) + sir.get_species(2),
+                10000
+            );
+        }
     }
+
     #[test]
-    fn dimers() {
+    fn gillespie_dimers() {
         let mut dimers = Gillespie::new([1, 0, 0, 0], false);
         dimers.add_reaction(Rate::lma(25., [1, 0, 0, 0]), [0, 1, 0, 0]);
         dimers.add_reaction(Rate::lma(1000., [0, 1, 0, 0]), [0, 0, 1, 0]);

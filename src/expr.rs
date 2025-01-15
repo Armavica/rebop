@@ -180,89 +180,151 @@ mod parsing {
         expr.parse_next(s)
     }
 
+    #[cfg(test)]
+    mod tests {
+        use crate::expr::PExpr;
+
+        #[test]
+        fn test_constant() {
+            let e: PExpr = "3".parse().unwrap();
+            assert_eq!(format!("{e}"), "3");
+            let e: PExpr = ".23".parse().unwrap();
+            assert_eq!(format!("{e}"), "0.23");
+            let e: PExpr = "1.23".parse().unwrap();
+            assert_eq!(format!("{e}"), "1.23");
+            let e: PExpr = "2e-3".parse().unwrap();
+            assert_eq!(format!("{e}"), "0.002");
+            let e: PExpr = "2.04e3".parse().unwrap();
+            assert_eq!(format!("{e}"), "2040");
+            let e: PExpr = "-2.04e3".parse().unwrap();
+            assert_eq!(format!("{e}"), "-2040");
+        }
+
+        #[test]
+        fn test_concentration() {
+            let e: PExpr = "a".parse().unwrap();
+            assert_eq!(format!("{e}"), "a");
+            let e: PExpr = "_".parse().unwrap();
+            assert_eq!(format!("{e}"), "_");
+            let e: PExpr = "exp".parse().unwrap();
+            assert_eq!(format!("{e}"), "exp");
+            let e: PExpr = "PhoP3".parse().unwrap();
+            assert_eq!(format!("{e}"), "PhoP3");
+            let e: PExpr = "Mono1_Mono2_".parse().unwrap();
+            assert_eq!(format!("{e}"), "Mono1_Mono2_");
+        }
+
+        #[test]
+        fn test_exp() {
+            let e: PExpr = "exp(3)".parse().unwrap();
+            assert_eq!(format!("{e}"), "exp(3)");
+        }
+
+        #[test]
+        fn test_pow() {
+            let e: PExpr = "3^4".parse().unwrap();
+            assert_eq!(format!("{e}"), "(3 ^ 4)");
+            let e: PExpr = "3 ^4".parse().unwrap();
+            assert_eq!(format!("{e}"), "(3 ^ 4)");
+            let e: PExpr = "3^ 4".parse().unwrap();
+            assert_eq!(format!("{e}"), "(3 ^ 4)");
+            let e: PExpr = "3 ^ 4".parse().unwrap();
+            assert_eq!(format!("{e}"), "(3 ^ 4)");
+        }
+
+        #[test]
+        fn test_mul_div() {
+            let e: PExpr = "3*4".parse().unwrap();
+            assert_eq!(format!("{e}"), "(3 * 4)");
+            let e: PExpr = "3 *4".parse().unwrap();
+            assert_eq!(format!("{e}"), "(3 * 4)");
+            let e: PExpr = "3* 4".parse().unwrap();
+            assert_eq!(format!("{e}"), "(3 * 4)");
+            let e: PExpr = "3 * 4".parse().unwrap();
+            assert_eq!(format!("{e}"), "(3 * 4)");
+            let e: PExpr = "3*4/2".parse().unwrap();
+            assert_eq!(format!("{e}"), "((3 * 4) / 2)");
+            let e: PExpr = "3*4 /2".parse().unwrap();
+            assert_eq!(format!("{e}"), "((3 * 4) / 2)");
+            let e: PExpr = "3*4/ 2".parse().unwrap();
+            assert_eq!(format!("{e}"), "((3 * 4) / 2)");
+            let e: PExpr = "3*4 / 2".parse().unwrap();
+            assert_eq!(format!("{e}"), "((3 * 4) / 2)");
+        }
+
+        #[test]
+        fn test_add_sub() {
+            let e: PExpr = "3+4".parse().unwrap();
+            assert_eq!(format!("{e}"), "(3 + 4)");
+            let e: PExpr = "3-4+1".parse().unwrap();
+            assert_eq!(format!("{e}"), "((3 - 4) + 1)");
+            let e: PExpr = "3-4-1".parse().unwrap();
+            assert_eq!(format!("{e}"), "((3 - 4) - 1)");
+        }
+
+        #[test]
+        fn test_expr() {
+            let e: PExpr = "1.20 * A*B".parse().unwrap();
+            assert_eq!(format!("{e}"), "((1.2 * A) * B)");
+            let e: PExpr = "1.20*Sugar / (3.5+Sugar)".parse().unwrap();
+            assert_eq!(format!("{e}"), "((1.2 * Sugar) / (3.5 + Sugar))");
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::expr::{Expr, PExpr};
+    use std::collections::HashMap;
+
     #[test]
-    fn test_constant() {
-        let e: PExpr = "3".parse().unwrap();
-        assert_eq!(format!("{e}"), "3");
-        let e: PExpr = ".23".parse().unwrap();
-        assert_eq!(format!("{e}"), "0.23");
-        let e: PExpr = "1.23".parse().unwrap();
-        assert_eq!(format!("{e}"), "1.23");
-        let e: PExpr = "2e-3".parse().unwrap();
-        assert_eq!(format!("{e}"), "0.002");
-        let e: PExpr = "2.04e3".parse().unwrap();
-        assert_eq!(format!("{e}"), "2040");
-        let e: PExpr = "-2.04e3".parse().unwrap();
-        assert_eq!(format!("{e}"), "-2040");
+    fn test_conversion() {
+        let pe: PExpr = "1.21 * C + B - A / D ^ E * (F + exp(D))".parse().unwrap();
+        // fmt: off
+        let e = Expr::Sub(
+            Box::new(Expr::Add(
+                Box::new(Expr::Mul(
+                    Box::new(Expr::Constant(1.21)),
+                    Box::new(Expr::Concentration(2)),
+                )),
+                Box::new(Expr::Concentration(1)),
+            )),
+            Box::new(Expr::Mul(
+                Box::new(Expr::Div(
+                    Box::new(Expr::Concentration(0)),
+                    Box::new(Expr::Pow(
+                        Box::new(Expr::Concentration(3)),
+                        Box::new(Expr::Concentration(4)),
+                    )),
+                )),
+                Box::new(Expr::Add(
+                    Box::new(Expr::Concentration(5)),
+                    Box::new(Expr::Exp(Box::new(Expr::Concentration(3)))),
+                )),
+            )),
+        );
+        // fmt: on
+        let mut h = HashMap::new();
+        h.insert("A".to_string(), 0);
+        h.insert("B".to_string(), 1);
+        h.insert("C".to_string(), 2);
+        h.insert("D".to_string(), 3);
+        h.insert("E".to_string(), 4);
+        h.insert("F".to_string(), 5);
+        assert_eq!(pe.to_expr(&h), e);
     }
 
     #[test]
-    fn test_concentration() {
-        let e: PExpr = "a".parse().unwrap();
-        assert_eq!(format!("{e}"), "a");
-        let e: PExpr = "_".parse().unwrap();
-        assert_eq!(format!("{e}"), "_");
-        let e: PExpr = "exp".parse().unwrap();
-        assert_eq!(format!("{e}"), "exp");
-        let e: PExpr = "PhoP3".parse().unwrap();
-        assert_eq!(format!("{e}"), "PhoP3");
-        let e: PExpr = "Mono1_Mono2_".parse().unwrap();
-        assert_eq!(format!("{e}"), "Mono1_Mono2_");
-    }
-
-    #[test]
-    fn test_exp() {
-        let e: PExpr = "exp(3)".parse().unwrap();
-        assert_eq!(format!("{e}"), "exp(3)");
-    }
-
-    #[test]
-    fn test_pow() {
-        let e: PExpr = "3^4".parse().unwrap();
-        assert_eq!(format!("{e}"), "(3 ^ 4)");
-        let e: PExpr = "3 ^4".parse().unwrap();
-        assert_eq!(format!("{e}"), "(3 ^ 4)");
-        let e: PExpr = "3^ 4".parse().unwrap();
-        assert_eq!(format!("{e}"), "(3 ^ 4)");
-        let e: PExpr = "3 ^ 4".parse().unwrap();
-        assert_eq!(format!("{e}"), "(3 ^ 4)");
-    }
-
-    #[test]
-    fn test_mul_div() {
-        let e: PExpr = "3*4".parse().unwrap();
-        assert_eq!(format!("{e}"), "(3 * 4)");
-        let e: PExpr = "3 *4".parse().unwrap();
-        assert_eq!(format!("{e}"), "(3 * 4)");
-        let e: PExpr = "3* 4".parse().unwrap();
-        assert_eq!(format!("{e}"), "(3 * 4)");
-        let e: PExpr = "3 * 4".parse().unwrap();
-        assert_eq!(format!("{e}"), "(3 * 4)");
-        let e: PExpr = "3*4/2".parse().unwrap();
-        assert_eq!(format!("{e}"), "((3 * 4) / 2)");
-        let e: PExpr = "3*4 /2".parse().unwrap();
-        assert_eq!(format!("{e}"), "((3 * 4) / 2)");
-        let e: PExpr = "3*4/ 2".parse().unwrap();
-        assert_eq!(format!("{e}"), "((3 * 4) / 2)");
-        let e: PExpr = "3*4 / 2".parse().unwrap();
-        assert_eq!(format!("{e}"), "((3 * 4) / 2)");
-    }
-
-    #[test]
-    fn test_add_sub() {
-        let e: PExpr = "3+4".parse().unwrap();
-        assert_eq!(format!("{e}"), "(3 + 4)");
-        let e: PExpr = "3-4+1".parse().unwrap();
-        assert_eq!(format!("{e}"), "((3 - 4) + 1)");
-        let e: PExpr = "3-4-1".parse().unwrap();
-        assert_eq!(format!("{e}"), "((3 - 4) - 1)");
-    }
-
-    #[test]
-    fn test_expr() {
-        let e: PExpr = "1.20 * A*B".parse().unwrap();
-        assert_eq!(format!("{e}"), "((1.2 * A) * B)");
-        let e: PExpr = "1.20*Sugar / (3.5+Sugar)".parse().unwrap();
-        assert_eq!(format!("{e}"), "((1.2 * Sugar) / (3.5 + Sugar))");
+    fn test_eval() {
+        let pe: PExpr = "1.21 * C + B - A / D ^ E * (F + exp(D))".parse().unwrap();
+        let mut h = HashMap::new();
+        h.insert("A".to_string(), 0);
+        h.insert("B".to_string(), 1);
+        h.insert("C".to_string(), 2);
+        h.insert("D".to_string(), 3);
+        h.insert("E".to_string(), 4);
+        h.insert("F".to_string(), 5);
+        let mut species = vec![2, 3, 5, 7, 11, 13];
+        assert_eq!(pe.to_expr(&h).eval(&species), 9.049998877643098);
     }
 }

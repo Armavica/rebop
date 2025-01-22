@@ -5,7 +5,61 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## \[Unreleased\]
+## [0.9.0](https://github.com/Armavica/rebop/compare/v0.8.3...v0.9.0) - 2025-01-22
+
+### Added
+
+- Reaction rates can now be arbitrary formulas, instead of just LMA (Python
+  API).
+- Reaction rates can be internally sparse, leading to drastic speedups for
+  models with many species (thank you @maurosilber!) (Python API).
+- One can specify to not export all variables, with the `var_names` argument
+  (thank you @maurosilber!) (Python API).
+
+### Changed
+
+- The `seed` argument was renamed to `rng` to conform to SPEC-7 (Python API).
+
+### Dependencies
+
+- upgrade pyo3 to 0.23
+
+### Documentation
+
+- organize badges on README
+- add badges for the PyPI version and RTD docs
+- fix name of optional dependencies in rtd config
+- add rust tooling to the readthedocs environment
+- fix readthedocs install
+- add a readthedocs page
+- document the Python interface
+
+### Fixed
+
+- fix arbitrary rates overwriting previous definitions
+- fix benches with a sparsity argument
+
+### Miscellaneous
+
+- check all targets in pre-commit
+- add tests for exprs
+- robustify Gillespie tests
+- Add tests for gillespie::Jump
+- add tests for gillespie::Rate
+- add tests for gillespie::Rate
+- fix pixi build task
+- update CI
+- update pre-commit hooks
+- upgrade dependencies
+- cancel CI on repeated PRs
+- enable dependabot update grouping
+- use a markdown formatter
+- add custom pre-commit CI message
+- enable mypy
+- update pre-commit hooks
+- make ruff show fixes
+- enable docstring format by ruff
+- add pytest config options
 
 ## [0.8.3](https://github.com/Armavica/rebop/compare/v0.8.2...v0.8.3) - 2024-07-18
 

@@ -33,7 +33,7 @@ class Gillespie:
         products: list[str],
         reverse_rate: float | str | None = None,
     ) -> None:
-        """Add a Law of Mass Action reaction to the system.
+        """Add a reaction to the system.
 
         Example
         -------
@@ -59,8 +59,8 @@ class Gillespie:
             List of the species that are on the right-hand-side of the reaction.
         reverse_rate : float | str | None
             Rate of the reverse reaction, if this reaction is reversible.
-            This is just a convenience to avoid to use `add_reaction` a second
-            time.
+            This is just a convenience to avoid using `add_reaction` a second
+            time for the reverse reaction.
         """
         self.gillespie.add_reaction(rate, reactants, products, reverse_rate)
 
@@ -89,19 +89,23 @@ class Gillespie:
             Simulation end time.
         nb_steps : int
             Number of steps to return, equally distributed between 0 and `tmax`.
-        rng : RNGLike | SeedLike | None (default: None)
+            If 0, then all reactions are returned.
+        rng : RNGLike | SeedLike | None
             Numpy `Generator`, `BitGenerator` or seed.
-        sparse : bool | None (default: None)
+        sparse : bool | None
             Whether to internally represent reactions as dense or sparse.
             Sparse reactions will tend to be faster for systems with many
-            species. If `None`, rebop will choose a heuristic.
-        var_names : Sequence[str] | None (default: None)
+            species. If `None`, rebop will choose depending on heuristics.
+        var_names : Sequence[str] | None
             List of variable names to return, if one does not want to save
             all variables. If `None`, all variables will be saved.
 
         Returns
         -------
         xr.Dataset
+            `xarray.Dataset` object with a `time` dimension and variables
+            being chemical species (all of them, or just the subset defined
+            by `var_names`).
         """
         rng_ = np.random.default_rng(rng)
         seed = rng_.integers(np.iinfo(np.uint64).max, dtype=np.uint64)

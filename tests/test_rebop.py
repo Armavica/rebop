@@ -117,3 +117,10 @@ def test_arbitrary_rates_2() -> None:
 
     assert (ds.B + ds.C + ds.D == 1000).all()
     assert ds.D[-1] >= 1
+
+
+def test_run_empty() -> None:
+    s = rebop.Gillespie()
+    ds = s.run({}, tmax=10, nb_steps=10)
+    expected = xr.Dataset(coords={"time": np.linspace(0, 10, 11)})
+    xr.testing.assert_identical(ds, expected)

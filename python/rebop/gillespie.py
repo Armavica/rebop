@@ -122,5 +122,6 @@ class Gillespie:
                 name: xr.DataArray(values, dims="time", coords={"time": times})
                 for name, values in result.items()
             },
+            coords={"time": times},
         )
         return ds

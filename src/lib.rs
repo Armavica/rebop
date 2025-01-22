@@ -230,7 +230,7 @@
 //! * [SmartCell](http://software.crg.es/smartcell/)
 //! * [NFsim](http://michaelsneddon.net/nfsim/)
 
-use pyo3::exceptions::PyValueError;
+use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 use std::collections::HashMap;
 use std::fmt::{self, Display, Formatter};
@@ -279,8 +279,11 @@ impl Rate {
             PyRate::Expr(rate) => rate.parse().map(Rate::Expr),
         }
     }
-    fn to_gillespie_rate(&self, species: &HashMap<String, usize>) -> gillespie::Rate {
-        match self {
+    fn to_gillespie_rate(
+        &self,
+        species: &HashMap<String, usize>,
+    ) -> Result<gillespie::Rate, String> {
+        let rate = match self {
             Rate::Lma(rate, reactants) => {
                 let mut rate_reactants = vec![0; species.len()];
                 for reactant in reactants {
@@ -288,30 +291,27 @@ impl Rate {
                 }
                 gillespie::Rate::lma(*rate, rate_reactants)
             }
-            Rate::Expr(nomexpr) => gillespie::Rate::expr(nomexpr.to_expr(species)),
-        }
+            Rate::Expr(nomexpr) => gillespie::Rate::expr(nomexpr.to_expr(species)?),
+        };
+        Ok(rate)
     }
 }
 
 impl Gillespie {
-    fn register_species_from_expr(&mut self, expr: &PExpr) {
+    fn add_species_from_expr(&mut self, expr: &PExpr) {
         match expr {
             PExpr::Constant(_) => {}
-            PExpr::Concentration(s) => {
-                if !self.species.contains_key(s) {
-                    self.species.insert(s.clone(), self.species.len());
-                }
-            }
+            PExpr::Concentration(s) => self.add_species(s),
             PExpr::Add(a, b)
             | PExpr::Sub(a, b)
             | PExpr::Mul(a, b)
             | PExpr::Div(a, b)
             | PExpr::Pow(a, b) => {
-                self.register_species_from_expr(a);
-                self.register_species_from_expr(b);
+                self.add_species_from_expr(a);
+                self.add_species_from_expr(b);
             }
             PExpr::Exp(a) => {
-                self.register_species_from_expr(a);
+                self.add_species_from_expr(a);
             }
         }
     }
@@ -324,6 +324,12 @@ impl Gillespie {
         Gillespie {
             species: HashMap::new(),
             reactions: Vec::new(),
+        }
+    }
+    /// Register a species to the model
+    fn add_species(&mut self, species: &str) {
+        if !self.species.contains_key(species) {
+            self.species.insert(species.to_string(), self.species.len());
         }
     }
     /// Number of species currently in the system
@@ -344,21 +350,13 @@ impl Gillespie {
             Ok(rate) => rate,
             Err(_) => return Err(PyValueError::new_err("Rate expression not understood")),
         };
-        // Insert unknown species in the rate expression in known species
-        if let Rate::Expr(expr) = &rate {
-            self.register_species_from_expr(expr);
-        }
         // Insert unknown reactants in known species
         for reactant in &reactants {
-            if !self.species.contains_key(reactant) {
-                self.species.insert(reactant.clone(), self.species.len());
-            }
+            self.add_species(reactant);
         }
         // Insert unknown products in known species
         for product in &products {
-            if !self.species.contains_key(product) {
-                self.species.insert(product.clone(), self.species.len());
-            }
+            self.add_species(product);
         }
         self.reactions
             .push((rate, reactants.clone(), products.clone()));
@@ -420,8 +418,10 @@ impl Gillespie {
             for product in products {
                 actions[self.species[product]] += 1;
             }
-            let rate = rate.to_gillespie_rate(&self.species);
-            g.add_reaction(rate, actions);
+            match rate.to_gillespie_rate(&self.species) {
+                Ok(rate) => g.add_reaction(rate, actions),
+                Err(e) => return Err(PyKeyError::new_err(e)),
+            }
         }
         let mut times = Vec::new();
         // species.shape = (species, nb_steps)
@@ -461,6 +461,13 @@ impl Gillespie {
                 for (name, &id) in &self.species {
                     result.insert(name.clone(), species[id].clone());
                 }
+            }
+        }
+        // Add the species that have been given in the initial condition
+        // but are not involved in the reactions
+        for (species, value) in init.iter() {
+            if !self.species.contains_key(species) {
+                result.insert(species.clone(), vec![*value as isize; nb_steps + 1]);
             }
         }
         Ok((times, result))

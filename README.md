@@ -1,8 +1,8 @@
-[![Build status](https://github.com/Armavica/rebop/actions/workflows/rust.yml/badge.svg)](https://github.com/Armavica/rebop/actions/)
-[![Crates.io](https://img.shields.io/crates/v/rebop)](https://crates.io/crates/rebop/)
-[![Docs.rs](https://docs.rs/rebop/badge.svg)](https://docs.rs/rebop/)
-[![PyPI - Version](https://img.shields.io/pypi/v/rebop)](https://pypi.org/project/rebop)
-[![readthedocs.org](https://readthedocs.org/projects/rebop/badge/?version=latest)](https://rebop.readthedocs.io/en/latest/?badge=latest)
+| Rust                                                                                                                                                    | Python                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [![Build status](https://github.com/Armavica/rebop/actions/workflows/rust.yml/badge.svg)](https://github.com/Armavica/rebop/actions/workflows/rust.yml) | [![Build status](https://github.com/Armavica/rebop/actions/workflows/CI.yml/badge.svg)](https://github.com/Armavica/rebop/actions/workflows/CI.yml) |
+| [![Crates.io](https://img.shields.io/crates/v/rebop)](https://crates.io/crates/rebop/)                                                                  | [![PyPI - Version](https://img.shields.io/pypi/v/rebop)](https://pypi.org/project/rebop/)                                                           |
+| [![Docs.rs](https://docs.rs/rebop/badge.svg)](https://docs.rs/rebop/)                                                                                   | [![readthedocs.org](https://readthedocs.org/projects/rebop/badge/?version=latest)](https://rebop.readthedocs.io/en/latest/)                         |
 
 # rebop
 

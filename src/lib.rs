@@ -248,7 +248,7 @@ use expr::PExpr;
 #[pyclass]
 struct Gillespie {
     species: HashMap<String, usize>,
-    reactions: Vec<(Rate, Vec<String>, Vec<String>)>,
+    reactions: Vec<(PRate, Vec<String>, Vec<String>)>,
 }
 
 #[derive(Clone, Debug, FromPyObject)]
@@ -258,25 +258,25 @@ enum PyRate {
 }
 
 #[derive(Clone, Debug)]
-enum Rate {
+enum PRate {
     Lma(f64, Vec<String>),
     Expr(PExpr),
 }
 
-impl Display for Rate {
+impl Display for PRate {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            Rate::Lma(rate, _) => write!(f, "LMA({rate})"),
-            Rate::Expr(expr) => write!(f, "{expr}"),
+            PRate::Lma(rate, _) => write!(f, "LMA({rate})"),
+            PRate::Expr(expr) => write!(f, "{expr}"),
         }
     }
 }
 
-impl Rate {
+impl PRate {
     fn new(rate: PyRate, reactants: &[String]) -> Result<Self, expr::RateParseError> {
         match rate {
-            PyRate::Lma(c) => Ok(Rate::Lma(c, reactants.to_vec())),
-            PyRate::Expr(rate) => rate.parse().map(Rate::Expr),
+            PyRate::Lma(c) => Ok(PRate::Lma(c, reactants.to_vec())),
+            PyRate::Expr(rate) => rate.parse().map(PRate::Expr),
         }
     }
     fn to_gillespie_rate(
@@ -284,14 +284,14 @@ impl Rate {
         species: &HashMap<String, usize>,
     ) -> Result<gillespie::Rate, String> {
         let rate = match self {
-            Rate::Lma(rate, reactants) => {
+            PRate::Lma(rate, reactants) => {
                 let mut rate_reactants = vec![0; species.len()];
                 for reactant in reactants {
                     rate_reactants[species[reactant]] += 1;
                 }
                 gillespie::Rate::lma(*rate, rate_reactants)
             }
-            Rate::Expr(nomexpr) => gillespie::Rate::expr(nomexpr.to_expr(species)?),
+            PRate::Expr(nomexpr) => gillespie::Rate::expr(nomexpr.to_expr(species)?),
         };
         Ok(rate)
     }
@@ -345,8 +345,8 @@ impl Gillespie {
         products: Vec<String>,
         reverse_rate: Option<PyRate>,
     ) -> PyResult<()> {
-        // Convert PyRate into Rate (and possibly fail with rate parse error)
-        let rate = match Rate::new(rate, &reactants) {
+        // Convert PyRate into PRate (and possibly fail with rate parse error)
+        let rate = match PRate::new(rate, &reactants) {
             Ok(rate) => rate,
             Err(_) => return Err(PyValueError::new_err("Rate expression not understood")),
         };

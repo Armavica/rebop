@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import warnings
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from typing import TypeAlias
 
 import numpy as np
@@ -30,8 +30,8 @@ class Gillespie:
     def add_reaction(
         self,
         rate: float | str,
-        reactants: list[str],
-        products: list[str],
+        reactants: Sequence[str],
+        products: Sequence[str],
         reverse_rate: float | str | None = None,
     ) -> None:
         """Add a reaction to the system.
@@ -79,9 +79,9 @@ class Gillespie:
         rate : float | str
             If numeric, this is the rate constant of a Law of Mass Action.
             If string, this is the mathematical expression of the reaction rate.
-        reactants : list[str]
+        reactants : Sequence[str]
             List of the species that are on the left-hand-side of the reaction.
-        products : list[str]
+        products : Sequence[str]
             List of the species that are on the right-hand-side of the reaction.
         reverse_rate : float | str | None
             Rate of the reverse reaction, if this reaction is reversible.
@@ -96,11 +96,11 @@ class Gillespie:
 
     def run(  # noqa: PLR0913 too many parameters in function definition
         self,
-        init: dict[str, int],
+        init: Mapping[str, int],
         tmax: float,
         nb_steps: int,
         *,
-        params: dict[str, float] | None = None,
+        params: Mapping[str, float] | None = None,
         rng: RNGLike | SeedLike | None = None,
         sparse: bool | None = None,
         var_names: Sequence[str] | None = None,
@@ -109,7 +109,7 @@ class Gillespie:
 
         Parameters
         ----------
-        init : dict[str, int]
+        init : Mapping[str, int]
             Dictionary that indicates the initial condition. It can omit
             species, their initial number will be 0.
         tmax : float
@@ -117,7 +117,7 @@ class Gillespie:
         nb_steps : int
             Number of steps to return, equally distributed between 0 and `tmax`.
             If 0, then all reactions are returned.
-        params : dict[str, float] | None
+        params : Mapping[str, float] | None
             Dictionary of values for the parameters that appear in the rates.
         rng : RNGLike | SeedLike | None
             Numpy `Generator`, `BitGenerator` or seed.

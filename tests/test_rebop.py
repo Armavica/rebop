@@ -91,6 +91,12 @@ def test_var_names(nb_steps: int) -> None:
 
 def test_arbitrary_rates() -> None:
     s = rebop.Gillespie()
+    with pytest.raises(ValueError, match="Rate expression not understood"):
+        s.add_reaction("+", [], ["A"])
+    with pytest.raises(ValueError, match="Rate expression not understood"):
+        s.add_reaction("1+", [], ["A"])
+
+    s = rebop.Gillespie()
     s.add_reaction("B", [], ["A"])
     with pytest.raises(
         KeyError, match="species `B` is in a rate but is not involved in any reaction"

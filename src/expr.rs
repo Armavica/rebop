@@ -29,7 +29,7 @@ impl Expr {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub(crate) enum PExpr {
     Constant(f64),
     Variable(String),
@@ -87,7 +87,7 @@ impl Display for PExpr {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub(crate) struct RateParseError;
 
 impl FromStr for PExpr {
@@ -99,9 +99,10 @@ impl FromStr for PExpr {
 }
 
 mod parsing {
-    use super::PExpr;
+    use crate::expr::PExpr;
     use winnow::ascii::{float, space0};
     use winnow::combinator::{alt, delimited, preceded, separated_foldl1, separated_pair};
+    use winnow::error::{ContextError, ParseError};
     use winnow::prelude::*;
     use winnow::stream::AsChar;
     use winnow::token::{one_of, take_while};
@@ -182,13 +183,13 @@ mod parsing {
             .parse_next(s)
     }
 
-    pub(crate) fn nomexpr(s: &mut &str) -> PResult<PExpr> {
-        expr.parse_next(s)
+    pub(crate) fn nomexpr<'a>(s: &mut &'a str) -> Result<PExpr, ParseError<&'a str, ContextError>> {
+        expr.parse(s)
     }
 
     #[cfg(test)]
     mod tests {
-        use crate::expr::PExpr;
+        use crate::expr::{PExpr, RateParseError};
 
         #[test]
         fn test_constant() {
@@ -204,6 +205,8 @@ mod parsing {
             assert_eq!(format!("{e}"), "2040");
             let e: PExpr = "-2.04e3".parse().unwrap();
             assert_eq!(format!("{e}"), "-2040");
+            let e: PExpr = "+2.04e3".parse().unwrap();
+            assert_eq!(format!("{e}"), "2040");
         }
 
         #[test]
@@ -274,6 +277,14 @@ mod parsing {
             assert_eq!(format!("{e}"), "((1.2 * A) * B)");
             let e: PExpr = "1.20*Sugar / (3.5+Sugar)".parse().unwrap();
             assert_eq!(format!("{e}"), "((1.2 * Sugar) / (3.5 + Sugar))");
+        }
+
+        #[test]
+        fn test_fail() {
+            let e: Result<PExpr, _> = "+".parse();
+            assert_eq!(e, Result::Err(RateParseError));
+            let e: Result<PExpr, _> = "1+".parse();
+            assert_eq!(e, Result::Err(RateParseError));
         }
     }
 }

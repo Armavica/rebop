@@ -118,6 +118,26 @@ def test_arbitrary_rates() -> None:
     assert ds_with_b.A[-1] >= 1
 
 
+def test_arbitrary_rates_crossed() -> None:
+    s = rebop.Gillespie()
+    s.add_reaction("B", [], ["A"])
+    s.add_reaction("A", [], ["B"])
+    ds = s.run({}, tmax=10, nb_steps=10)
+    expected = xr.Dataset(
+        {"A": ("time", [0] * 11), "B": ("time", [0] * 11)},
+        coords={"time": np.linspace(0, 10, 11)},
+    )
+    xr.testing.assert_identical(ds, expected)
+
+    ds = s.run({"A": 1}, tmax=10, nb_steps=10)
+    assert ds.A[-1] > 1
+    assert ds.B[-1] > 0
+
+    ds = s.run({"B": 1}, tmax=10, nb_steps=10)
+    assert ds.A[-1] > 0
+    assert ds.B[-1] > 1
+
+
 def test_arbitrary_rates_2() -> None:
     s = rebop.Gillespie()
     s.add_reaction(14, [], ["A"])

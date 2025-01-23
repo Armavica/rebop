@@ -100,7 +100,7 @@ def test_arbitrary_rates() -> None:
     s.add_reaction("B", [], ["A"])
     with pytest.warns(
         UserWarning,
-        match="species specified at initialization are not involved in any reaction",
+        match="species are not involved in any reaction",
     ):
         ds = s.run({"B": 1}, tmax=10, nb_steps=100)
     assert ds.A[-1] >= 1

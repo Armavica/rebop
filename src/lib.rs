@@ -230,7 +230,7 @@
 //! * [SmartCell](http://software.crg.es/smartcell/)
 //! * [NFsim](http://michaelsneddon.net/nfsim/)
 
-use pyo3::exceptions::{PyKeyError, PyUserWarning, PyValueError};
+use pyo3::exceptions::{PyUserWarning, PyValueError};
 use pyo3::prelude::*;
 use std::collections::HashMap;
 use std::fmt::{self, Display, Formatter};
@@ -283,6 +283,7 @@ impl PRate {
     fn to_gillespie_rate(
         &self,
         species: &HashMap<String, usize>,
+        params: &HashMap<String, f64>,
     ) -> Result<gillespie::Rate, String> {
         let rate = match self {
             PRate::Lma(rate, reactants) => {
@@ -292,7 +293,7 @@ impl PRate {
                 }
                 gillespie::Rate::lma(*rate, rate_reactants)
             }
-            PRate::Expr(nomexpr) => gillespie::Rate::expr(nomexpr.to_expr(species)?),
+            PRate::Expr(pexpr) => gillespie::Rate::expr(pexpr.to_expr(species, params)?),
         };
         Ok(rate)
     }
@@ -397,15 +398,23 @@ impl Gillespie {
     /// values at the given time points.  One can specify a random `seed` for reproducibility.
     /// If `nb_steps` is `0`, then returns all reactions, ending with the first that happens at
     /// or after `tmax`.
-    #[pyo3(signature = (tmax, nb_steps, seed=None, sparse=None, var_names=None))]
+    #[pyo3(signature = (tmax, nb_steps, params, seed=None, sparse=None, var_names=None))]
     fn run(
         &self,
         tmax: f64,
         nb_steps: usize,
+        params: HashMap<String, f64>,
         seed: Option<u64>,
         sparse: Option<bool>,
         var_names: Option<Vec<String>>,
     ) -> PyResult<(Vec<f64>, HashMap<String, Vec<isize>>)> {
+        for p in params.keys() {
+            if self.species.contains_key(p) {
+                return Err(PyValueError::new_err(format!(
+                    "Species {p} cannot also be a parameter."
+                )));
+            }
+        }
         let sparse = sparse.unwrap_or(false);
         let mut x0 = vec![0; self.species.len()];
         for (name, &value) in &self.init {
@@ -437,9 +446,9 @@ impl Gillespie {
             for product in products {
                 actions[self.species[product]] += 1;
             }
-            match rate.to_gillespie_rate(&self.species) {
+            match rate.to_gillespie_rate(&self.species, &params) {
                 Ok(rate) => g.add_reaction(rate, actions),
-                Err(e) => return Err(PyKeyError::new_err(e)),
+                Err(e) => return Err(PyValueError::new_err(e)),
             }
         }
         let mut times = Vec::new();

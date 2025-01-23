@@ -98,13 +98,6 @@ def test_arbitrary_rates() -> None:
 
     s = rebop.Gillespie()
     s.add_reaction("B", [], ["A"])
-    with pytest.raises(
-        KeyError, match="species `B` is in a rate but is not involved in any reaction"
-    ):
-        s.run({}, tmax=10, nb_steps=100)
-
-    s = rebop.Gillespie()
-    s.add_reaction("B", [], ["A"])
     with pytest.warns(
         UserWarning,
         match="species specified at initialization are not involved in any reaction",
@@ -157,3 +150,17 @@ def test_run_empty() -> None:
     ds = s.run({}, tmax=10, nb_steps=10)
     expected = xr.Dataset(coords={"time": np.linspace(0, 10, 11)})
     xr.testing.assert_identical(ds, expected)
+
+
+def test_parameters() -> None:
+    s = rebop.Gillespie()
+    s.add_reaction(4, ["A"], ["B"])
+    with pytest.raises(ValueError, match="Species B cannot also be a parameter"):
+        s.run({}, 10, 10, params={"B": 4.2})
+
+    s = rebop.Gillespie()
+    s.add_reaction("k", [], ["A"])
+    with pytest.raises(ValueError, match="Parameter k should have a value"):
+        s.run({}, 10, 10)
+    ds = s.run({}, 10, 10, params={"k": 0.4})
+    assert ds.A[-1] > 0

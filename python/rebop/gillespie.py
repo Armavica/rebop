@@ -75,6 +75,7 @@ class Gillespie:
         tmax: float,
         nb_steps: int,
         *,
+        params: dict[str, float] | None = None,
         rng: RNGLike | SeedLike | None = None,
         sparse: bool | None = None,
         var_names: Sequence[str] | None = None,
@@ -91,6 +92,8 @@ class Gillespie:
         nb_steps : int
             Number of steps to return, equally distributed between 0 and `tmax`.
             If 0, then all reactions are returned.
+        params : dict[str, float] | None
+            Dictionary of values for the parameters that appear in the rates.
         rng : RNGLike | SeedLike | None
             Numpy `Generator`, `BitGenerator` or seed.
         sparse : bool | None
@@ -108,6 +111,7 @@ class Gillespie:
             being chemical species (all of them, or just the subset defined
             by `var_names`).
         """
+        params = {} if params is None else params
         rng_ = np.random.default_rng(rng)
         seed = rng_.integers(np.iinfo(np.uint64).max, dtype=np.uint64)
         try:
@@ -117,6 +121,7 @@ class Gillespie:
         times, result = self.gillespie.run(
             tmax,
             nb_steps,
+            params=params,
             seed=seed,
             sparse=sparse,
             var_names=var_names,

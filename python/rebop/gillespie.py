@@ -36,6 +36,27 @@ class Gillespie:
     ) -> None:
         """Add a reaction to the system.
 
+        Reaction rates can be specified with a number (for a reaction obeying
+        the Law of Mass Action) or a string (for an arbitrary reaction rate).
+        The string can involve any species involved in reactions, and also
+        parameters defined with the `params` argument of the `run` method.
+
+        If you can, use the law of mass action, which is probably going to be
+        more efficient and can be more correct. For example, for a dimerisation
+        equation:
+
+        ```python
+        s = Gillespie()
+        # Correct, and recommended
+        s.add_reaction(4.2, ["A", "A"], ["AA"])
+        # Correct, but not recommended
+        s.add_reaction("4.2 * A * (A-1)", ["A", "A"], ["AA"])
+        # Incorrect (this would be a constant propensity)
+        s.add_reaction("4.2", ["A", "A"], ["AA"])
+        # Incorrect (incorrect expression)
+        s.add_reaction("4.2 * A^2", ["A", "A"], ["AA"])
+        ```
+
         Example
         -------
         ```python
@@ -46,7 +67,11 @@ class Gillespie:
         # with forward rate 0.1 and reverse rate 0.01
         s.add_reaction(0.1, ["A", "B"], ["C"], 0.01)
         # Add the transformation B -> C with a non-LMA rate
-        s.add_reaction("2.1 * B * C / (5 + C)", ["B"], ["C"])
+        s.add_reaction("2.1 * B * A / (5 + A)", ["B"], ["C"])
+        # Add the transformation B -> C with a non-LMA rate and parameters
+        # that need to be defined by passing `params={"k": 2.1, "K_A": 5}` to
+        # the method `run`
+        s.add_reaction("k * B * A / (K_A + A)", ["B"], ["C"])
         ```
 
         Parameters

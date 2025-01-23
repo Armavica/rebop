@@ -29,3 +29,21 @@ The output is an
 object which can be plotted:
 
 ![Plot of the evolution of S, I and R over time.](sir.png)
+
+It can also be used to model more complex systems, with non [law of mass
+action](https://en.wikipedia.org/wiki/Law_of_mass_action) rates:
+
+```python
+import rebop
+
+mm = rebop.Gillespie()
+# Enzymatic reaction with a Michaelis-Menten rate
+#         A → P         at rate V * A / (Km + A)
+mm.add_reaction("V * A / (Km + A)", ["A"], ["P"])
+
+params = {"V": 1, "Km": 10}
+
+ds = mm.run({"A": 100}, tmax=100, nb_steps=100, params=params)
+```
+
+![Plot of the evolution of P over time.](mm.png)

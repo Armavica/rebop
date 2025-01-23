@@ -301,7 +301,7 @@ impl Gillespie {
     fn add_species_from_expr(&mut self, expr: &PExpr) {
         match expr {
             PExpr::Constant(_) => {}
-            PExpr::Concentration(s) => self.add_species(s),
+            PExpr::Variable(s) => self.add_species(s),
             PExpr::Add(a, b)
             | PExpr::Sub(a, b)
             | PExpr::Mul(a, b)

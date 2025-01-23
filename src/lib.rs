@@ -230,7 +230,7 @@
 //! * [SmartCell](http://software.crg.es/smartcell/)
 //! * [NFsim](http://michaelsneddon.net/nfsim/)
 
-use pyo3::exceptions::{PyKeyError, PyValueError};
+use pyo3::exceptions::{PyKeyError, PyUserWarning, PyValueError};
 use pyo3::prelude::*;
 use std::collections::HashMap;
 use std::fmt::{self, Display, Formatter};
@@ -248,6 +248,7 @@ use expr::PExpr;
 #[pyclass]
 struct Gillespie {
     species: HashMap<String, usize>,
+    init: HashMap<String, usize>,
     reactions: Vec<(PRate, Vec<String>, Vec<String>)>,
 }
 
@@ -323,6 +324,7 @@ impl Gillespie {
     fn new() -> Self {
         Gillespie {
             species: HashMap::new(),
+            init: HashMap::new(),
             reactions: Vec::new(),
         }
     }
@@ -369,6 +371,24 @@ impl Gillespie {
     fn nb_reactions(&self) -> PyResult<usize> {
         Ok(self.reactions.len())
     }
+    /// Set the initial count of species
+    fn set_init(&mut self, init: HashMap<String, usize>) -> PyResult<()> {
+        let mut warning = false;
+        for species in init.keys() {
+            if !self.species.contains_key(species) {
+                warning = true;
+                self.add_species(species);
+            }
+        }
+        self.init = init;
+        if warning {
+            let message =
+                "Some species specified at initialization are not involved in any reactions.";
+            Err(PyUserWarning::new_err(message))
+        } else {
+            Ok(())
+        }
+    }
     /// Run the system until `tmax` with `nb_steps` steps.
     ///
     /// The initial configuration is specified in the dictionary `init`.
@@ -377,10 +397,9 @@ impl Gillespie {
     /// values at the given time points.  One can specify a random `seed` for reproducibility.
     /// If `nb_steps` is `0`, then returns all reactions, ending with the first that happens at
     /// or after `tmax`.
-    #[pyo3(signature = (init, tmax, nb_steps, seed=None, sparse=None, var_names=None))]
+    #[pyo3(signature = (tmax, nb_steps, seed=None, sparse=None, var_names=None))]
     fn run(
         &self,
-        init: HashMap<String, usize>,
         tmax: f64,
         nb_steps: usize,
         seed: Option<u64>,
@@ -389,7 +408,7 @@ impl Gillespie {
     ) -> PyResult<(Vec<f64>, HashMap<String, Vec<isize>>)> {
         let sparse = sparse.unwrap_or(false);
         let mut x0 = vec![0; self.species.len()];
-        for (name, &value) in &init {
+        for (name, &value) in &self.init {
             if let Some(&id) = self.species.get(name) {
                 x0[id] = value as isize;
             }
@@ -461,13 +480,6 @@ impl Gillespie {
                 for (name, &id) in &self.species {
                     result.insert(name.clone(), species[id].clone());
                 }
-            }
-        }
-        // Add the species that have been given in the initial condition
-        // but are not involved in the reactions
-        for (species, value) in init.iter() {
-            if !self.species.contains_key(species) {
-                result.insert(species.clone(), vec![*value as isize; nb_steps + 1]);
             }
         }
         Ok((times, result))

@@ -105,10 +105,13 @@ def test_arbitrary_rates() -> None:
 
     s = rebop.Gillespie()
     s.add_reaction("B", [], ["A"])
-    with pytest.raises(
-        KeyError, match="species `B` is in a rate but is not involved in any reaction"
+    with pytest.warns(
+        UserWarning,
+        match="species specified at initialization are not involved in any reaction",
     ):
-        s.run({"B": 1}, tmax=10, nb_steps=100)
+        ds = s.run({"B": 1}, tmax=10, nb_steps=100)
+    assert ds.A[-1] >= 1
+    np.testing.assert_equal(ds.B.values, [1] * 101)
 
     s = rebop.Gillespie()
     s.add_reaction("B", [], ["A"])

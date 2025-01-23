@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Sequence
 from typing import TypeAlias
 
@@ -109,8 +110,11 @@ class Gillespie:
         """
         rng_ = np.random.default_rng(rng)
         seed = rng_.integers(np.iinfo(np.uint64).max, dtype=np.uint64)
+        try:
+            self.gillespie.set_init(init)
+        except UserWarning as e:
+            warnings.warn(e, stacklevel=2)
         times, result = self.gillespie.run(
-            init,
             tmax,
             nb_steps,
             seed=seed,

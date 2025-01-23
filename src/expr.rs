@@ -42,31 +42,44 @@ pub(crate) enum PExpr {
 }
 
 impl PExpr {
-    pub fn to_expr(&self, species: &HashMap<String, usize>) -> Result<Expr, String> {
+    pub fn to_expr(
+        &self,
+        species: &HashMap<String, usize>,
+        params: &HashMap<String, f64>,
+    ) -> Result<Expr, String> {
         let expr = match self {
             PExpr::Constant(c) => Expr::Constant(*c),
-            PExpr::Variable(s) => Expr::Concentration(
-                *species.get(s).ok_or(
-                    format!("species `{s}` is in a rate but is not involved in any reaction")
-                        .to_string(),
-                )?,
+            PExpr::Variable(s) => {
+                if let Some(i) = species.get(s) {
+                    Expr::Concentration(*i)
+                } else {
+                    let v = params
+                        .get(s)
+                        .ok_or(format!("Parameter {s} should have a value").to_string())?;
+                    Expr::Constant(*v)
+                }
+            }
+            PExpr::Add(a, b) => Expr::Add(
+                Box::new(a.to_expr(species, params)?),
+                Box::new(b.to_expr(species, params)?),
             ),
-            PExpr::Add(a, b) => {
-                Expr::Add(Box::new(a.to_expr(species)?), Box::new(b.to_expr(species)?))
-            }
-            PExpr::Sub(a, b) => {
-                Expr::Sub(Box::new(a.to_expr(species)?), Box::new(b.to_expr(species)?))
-            }
-            PExpr::Mul(a, b) => {
-                Expr::Mul(Box::new(a.to_expr(species)?), Box::new(b.to_expr(species)?))
-            }
-            PExpr::Div(a, b) => {
-                Expr::Div(Box::new(a.to_expr(species)?), Box::new(b.to_expr(species)?))
-            }
-            PExpr::Pow(a, b) => {
-                Expr::Pow(Box::new(a.to_expr(species)?), Box::new(b.to_expr(species)?))
-            }
-            PExpr::Exp(a) => Expr::Exp(Box::new(a.to_expr(species)?)),
+            PExpr::Sub(a, b) => Expr::Sub(
+                Box::new(a.to_expr(species, params)?),
+                Box::new(b.to_expr(species, params)?),
+            ),
+            PExpr::Mul(a, b) => Expr::Mul(
+                Box::new(a.to_expr(species, params)?),
+                Box::new(b.to_expr(species, params)?),
+            ),
+            PExpr::Div(a, b) => Expr::Div(
+                Box::new(a.to_expr(species, params)?),
+                Box::new(b.to_expr(species, params)?),
+            ),
+            PExpr::Pow(a, b) => Expr::Pow(
+                Box::new(a.to_expr(species, params)?),
+                Box::new(b.to_expr(species, params)?),
+            ),
+            PExpr::Exp(a) => Expr::Exp(Box::new(a.to_expr(species, params)?)),
         };
         Ok(expr)
     }
@@ -321,27 +334,32 @@ mod tests {
             )),
         );
         // fmt: on
-        let mut h = HashMap::new();
-        h.insert("A".to_string(), 0);
-        h.insert("B".to_string(), 1);
-        h.insert("C".to_string(), 2);
-        h.insert("D".to_string(), 3);
-        h.insert("E".to_string(), 4);
-        h.insert("F".to_string(), 5);
-        assert_eq!(pe.to_expr(&h), Ok(e));
+        let mut init = HashMap::new();
+        let mut params = HashMap::new();
+        init.insert("A".to_string(), 0);
+        init.insert("B".to_string(), 1);
+        init.insert("C".to_string(), 2);
+        init.insert("D".to_string(), 3);
+        init.insert("E".to_string(), 4);
+        init.insert("F".to_string(), 5);
+        assert_eq!(pe.to_expr(&init, &params), Ok(e));
     }
 
     #[test]
     fn test_eval() {
         let pe: PExpr = "1.21 * C + B - A / D ^ E * (F + exp(D))".parse().unwrap();
-        let mut h = HashMap::new();
-        h.insert("A".to_string(), 0);
-        h.insert("B".to_string(), 1);
-        h.insert("C".to_string(), 2);
-        h.insert("D".to_string(), 3);
-        h.insert("E".to_string(), 4);
-        h.insert("F".to_string(), 5);
+        let mut init = HashMap::new();
+        let mut params = HashMap::new();
+        init.insert("A".to_string(), 0);
+        init.insert("B".to_string(), 1);
+        init.insert("C".to_string(), 2);
+        init.insert("D".to_string(), 3);
+        init.insert("E".to_string(), 4);
+        init.insert("F".to_string(), 5);
         let mut species = vec![2, 3, 5, 7, 11, 13];
-        assert_eq!(pe.to_expr(&h).unwrap().eval(&species), 9.049998877643098);
+        assert_eq!(
+            pe.to_expr(&init, &params).unwrap().eval(&species),
+            9.049998877643098
+        );
     }
 }

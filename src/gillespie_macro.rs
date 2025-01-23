@@ -68,7 +68,7 @@ macro_rules! define_system {
         impl $name {
             /// Constructs an object representing the problem.
             fn new() -> Self {
-                use $crate::rand::{Rng, SeedableRng};
+                use $crate::rand::SeedableRng;
                 $name {
                     $($species: 0,)*
                     $($param: f64::NAN,)*
@@ -78,14 +78,14 @@ macro_rules! define_system {
             }
             /// Seeds the random number generator.
             fn seed(&mut self, seed: u64) {
-                use $crate::rand::{Rng, SeedableRng};
+                use $crate::rand::SeedableRng;
                 self.rng = $crate::rand::rngs::SmallRng::seed_from_u64(seed);
             }
             /// Constructs an object representing the problem,
             /// specifying parameter values.
             #[allow(non_snake_case)]
             fn with_parameters($($param: f64),*) -> Self {
-                use $crate::rand::{Rng, SeedableRng};
+                use $crate::rand::SeedableRng;
                 $name {
                     $($species: 0,)*
                     $($param,)*

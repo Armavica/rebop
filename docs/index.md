@@ -41,9 +41,9 @@ mm = rebop.Gillespie()
 #         A → P         at rate V * A / (Km + A)
 mm.add_reaction("V * A / (Km + A)", ["A"], ["P"])
 
-params = {"V": 1, "Km": 10}
+params = {"V": 1, "Km": 20}
 
-ds = mm.run({"A": 100}, tmax=100, nb_steps=100, params=params)
+ds = mm.run({"A": 100}, tmax=250, nb_steps=100, params=params)
 ```
 
 ![Plot of the evolution of P over time.](mm.png)

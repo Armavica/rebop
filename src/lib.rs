@@ -401,7 +401,7 @@ impl Gillespie {
         let save_indices: Vec<_> = match &var_names {
             Some(x) => x
                 .iter()
-                .map(|key| self.species.get(key).unwrap().clone())
+                .map(|key| *self.species.get(key).unwrap())
                 .collect(),
             None => (0..self.species.len()).collect(),
         };

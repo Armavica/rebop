@@ -384,7 +384,7 @@ impl Gillespie {
         self.init = init;
         if warning {
             let message =
-                "Some species specified at initialization are not involved in any reactions.";
+                "Some species are not involved in any reactions. You should probably instead use parameters.";
             Err(PyUserWarning::new_err(message))
         } else {
             Ok(())

@@ -32,7 +32,7 @@ impl Expr {
 #[derive(Clone, Debug)]
 pub(crate) enum PExpr {
     Constant(f64),
-    Concentration(String),
+    Variable(String),
     Add(Box<PExpr>, Box<PExpr>),
     Sub(Box<PExpr>, Box<PExpr>),
     Mul(Box<PExpr>, Box<PExpr>),
@@ -45,7 +45,7 @@ impl PExpr {
     pub fn to_expr(&self, species: &HashMap<String, usize>) -> Result<Expr, String> {
         let expr = match self {
             PExpr::Constant(c) => Expr::Constant(*c),
-            PExpr::Concentration(s) => Expr::Concentration(
+            PExpr::Variable(s) => Expr::Concentration(
                 *species.get(s).ok_or(
                     format!("species `{s}` is in a rate but is not involved in any reaction")
                         .to_string(),
@@ -76,7 +76,7 @@ impl Display for PExpr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             PExpr::Constant(c) => write!(f, "{c}"),
-            PExpr::Concentration(c) => write!(f, "{c}"),
+            PExpr::Variable(c) => write!(f, "{c}"),
             PExpr::Add(a, b) => write!(f, "({a} + {b})"),
             PExpr::Sub(a, b) => write!(f, "({a} - {b})"),
             PExpr::Mul(a, b) => write!(f, "({a} * {b})"),
@@ -110,7 +110,7 @@ mod parsing {
         float.map(PExpr::Constant).parse_next(s)
     }
 
-    fn concentration(s: &mut &str) -> PResult<PExpr> {
+    fn variable(s: &mut &str) -> PResult<PExpr> {
         // from winnow recipes
         // https://docs.rs/winnow/latest/winnow/_topic/language/index.html
         (
@@ -119,7 +119,7 @@ mod parsing {
         )
             .take()
             .map(str::to_string)
-            .map(PExpr::Concentration)
+            .map(PExpr::Variable)
             .parse_next(s)
     }
 
@@ -140,7 +140,7 @@ mod parsing {
     }
 
     fn atom(s: &mut &str) -> PResult<PExpr> {
-        alt((constant, exp, concentration, parentheses)).parse_next(s)
+        alt((constant, exp, variable, parentheses)).parse_next(s)
     }
 
     fn add_sub(s: &mut &str) -> PResult<PExpr> {

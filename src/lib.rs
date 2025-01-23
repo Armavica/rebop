@@ -326,17 +326,17 @@ impl Gillespie {
             reactions: Vec::new(),
         }
     }
-    /// Register a species to the model
+    /// Register a species to the model.
     fn add_species(&mut self, species: &str) {
         if !self.species.contains_key(species) {
             self.species.insert(species.to_string(), self.species.len());
         }
     }
-    /// Number of species currently in the system
+    /// Number of species currently in the system.
     fn nb_species(&self) -> PyResult<usize> {
         Ok(self.species.len())
     }
-    /// Add a Law of Mass Action reaction to the system.
+    /// Add a reaction to the system.
     #[pyo3(signature = (rate, reactants, products, reverse_rate=None))]
     fn add_reaction(
         &mut self,

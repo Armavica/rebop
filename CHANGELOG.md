@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1](https://github.com/Armavica/rebop/compare/v0.9.0...v0.9.1) - 2025-01-23
+
+### Added
+
+- Allow parameters to be used in rate expressions.
+
+### Changed
+
+- change error message for species not involved in reactions
+- allow species not in reactions to be init but with warning
+- rename lib::Rate into lib::PRate
+- rename PExpr::Concentration into PExpr::Variable
+
+### Documentation
+
+- fix parameters in docs index page
+- add example with Michaelis-Menten rate
+- improve docstrings to explain reaction rates
+- fix some docstrings of the rust API
+
+### Fixed
+
+- use Mapping and Sequence instead of dict and list in type hints
+- raise error on erroneous rate expressions
+- make the rates more strict
+- ensure that the dataset returned has a time coordinate
+
+### Miscellaneous
+
+- update pixi.lock with new version
+- add test with crossed rates
+- remove useless clone
+- remove unused imports
+
 ## [0.9.0](https://github.com/Armavica/rebop/compare/v0.8.3...v0.9.0) - 2025-01-22
 
 ### Added

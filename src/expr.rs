@@ -154,7 +154,9 @@ mod parsing {
     }
 
     fn atom(s: &mut &str) -> PResult<PExpr> {
-        alt((constant, exp, variable, parentheses)).parse_next(s)
+        // variable must be before constant
+        // otherwise it matches variables starting with inf or nan as a float
+        alt((exp, variable, constant, parentheses)).parse_next(s)
     }
 
     fn add_sub(s: &mut &str) -> PResult<PExpr> {
@@ -298,6 +300,12 @@ mod parsing {
             assert_eq!(e, Result::Err(RateParseError));
             let e: Result<PExpr, _> = "1+".parse();
             assert_eq!(e, Result::Err(RateParseError));
+        }
+
+        #[test]
+        fn test_float_names() {
+            let _: PExpr = "infect".parse().unwrap(); // starts with inf
+            let _: PExpr = "nanny".parse().unwrap(); // starts with nan
         }
     }
 }

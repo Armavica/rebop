@@ -150,7 +150,7 @@ impl Gillespie {
             species: species.as_ref().to_vec(),
             t: 0.,
             reactions: Vec::new(),
-            rng: SmallRng::from_entropy(),
+            rng: SmallRng::from_os_rng(),
             sparse,
         }
     }
@@ -251,7 +251,7 @@ impl Gillespie {
             return;
         }
         self.t += self.rng.sample::<f64, _>(Exp1) / total_rate;
-        let chosen_rate = total_rate * self.rng.gen::<f64>();
+        let chosen_rate = total_rate * self.rng.random::<f64>();
 
         // let ireaction = choose_rate_sum(chosen_rate, &rates);
         // let ireaction = choose_rate_for(chosen_rate, &rates);
@@ -297,7 +297,7 @@ impl Gillespie {
                 self.t = tmax;
                 return;
             }
-            let chosen_rate = total_rate * self.rng.gen::<f64>();
+            let chosen_rate = total_rate * self.rng.random::<f64>();
 
             //let ireaction = choose_rate_sum(chosen_rate, &rates);
             //let ireaction = choose_rate_for(chosen_rate, &rates);

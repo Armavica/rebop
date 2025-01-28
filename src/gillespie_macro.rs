@@ -73,7 +73,7 @@ macro_rules! define_system {
                     $($species: 0,)*
                     $($param: f64::NAN,)*
                     t: 0.,
-                    rng: $crate::rand::rngs::SmallRng::from_entropy()
+                    rng: $crate::rand::rngs::SmallRng::from_os_rng()
                 }
             }
             /// Seeds the random number generator.
@@ -90,7 +90,7 @@ macro_rules! define_system {
                     $($species: 0,)*
                     $($param,)*
                     t: 0.,
-                    rng: $crate::rand::rngs::SmallRng::from_entropy()
+                    rng: $crate::rand::rngs::SmallRng::from_os_rng()
                 }
             }
             /// Simulates the problem until `t = tmax`.
@@ -113,7 +113,7 @@ macro_rules! define_system {
                         self.t = tmax;
                         return
                     }
-                    let reaction_choice = total_rate * self.rng.gen::<f64>();
+                    let reaction_choice = total_rate * self.rng.random::<f64>();
                     $crate::_choice!(self reaction_choice 0.;
                         $($rname:
                             $($($nr)? $r)? $(+ $($tnr)? $tr)* =>

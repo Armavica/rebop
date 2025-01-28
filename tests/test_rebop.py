@@ -32,8 +32,8 @@ def test_fixed_seed() -> None:
     ds = sir.run({"S": 999, "I": 1}, tmax=250, nb_steps=250, rng=42)
 
     assert ds.S[-1] == 0
-    assert ds.I[-1] == 182
-    assert ds.R[-1] == 818
+    assert ds.I[-1] == 227
+    assert ds.R[-1] == 773
 
 
 @pytest.mark.parametrize("seed", range(10))

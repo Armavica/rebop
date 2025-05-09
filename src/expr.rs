@@ -304,8 +304,30 @@ mod parsing {
 
         #[test]
         fn test_float_names() {
-            let _: PExpr = "infect".parse().unwrap(); // starts with inf
-            let _: PExpr = "nanny".parse().unwrap(); // starts with nan
+            // inf
+            let e: PExpr = "inf".parse().unwrap();
+            assert_eq!(PExpr::Variable("inf".to_string()), e);
+            // starts with inf
+            let e: PExpr = "infect".parse().unwrap();
+            assert_eq!(PExpr::Variable("infect".to_string()), e);
+            // nan
+            let e: PExpr = "nan".parse().unwrap();
+            assert_eq!(PExpr::Variable("nan".to_string()), e);
+            // starts with nan
+            let e: PExpr = "nanny".parse().unwrap();
+            assert_eq!(PExpr::Variable("nanny".to_string()), e);
+            // E
+            let e: PExpr = "E".parse().unwrap();
+            assert_eq!(PExpr::Variable("E".to_string()), e);
+            // e
+            let e: PExpr = "e".parse().unwrap();
+            assert_eq!(PExpr::Variable("e".to_string()), e);
+            // exp
+            let e: PExpr = "exp".parse().unwrap();
+            assert_eq!(PExpr::Variable("exp".to_string()), e);
+            // starts with exp
+            let e: PExpr = "explicit".parse().unwrap();
+            assert_eq!(PExpr::Variable("explicit".to_string()), e);
         }
     }
 }

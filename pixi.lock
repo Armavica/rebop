@@ -72,7 +72,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b9/f8/feced7779d755758a52d1f6635d990b8d98dc0a29fa568bbe0625f18fdf3/filelock-3.16.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ec/fa/dce098f4cdf7621aa8f7b4f919ce545891f489482f0bfa5102f3eca8608b/identify-2.6.5-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/f0/64/879418a8a0196013ec1fb19eada0781c04a30e8d6d9227e80f91275a4f5b/maturin-1.8.1-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/5e/25/079a85e4a8adccdcc1292973f79f297a1f1bba0c3574ccf36d0f646348d1/maturin-1.8.4-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/d2/1d/1b658dbd2b9fa9c4c9f32accbfc0205d532c8c6194dc0f2a4c0428e7128a/nodeenv-1.9.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f1/5a/e572284c86a59dec0871a49cd4e5351e20b9c751399d5f1d79628c0542cb/numpy-2.2.1-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/88/ef/eb23f262cca3c0c4eb7ab1933c3b1f03d021f2c48f54763065b6f0e321be/packaging-24.2-py3-none-any.whl
@@ -228,7 +228,7 @@ packages:
   version: 8.1.8
   sha256: 63c132bbbed01578a06712a2d1f497bb62d9c1c0d329b7903a866228027263b2
   requires_dist:
-  - colorama ; platform_system == 'Windows'
+  - colorama ; sys_platform == 'win32'
   - importlib-metadata ; python_full_version < '3.8'
   requires_python: '>=3.7'
 - pypi: https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl
@@ -452,10 +452,10 @@ packages:
   version: 3.0.2
   sha256: 15ab75ef81add55874e7ab7055e9c397312385bd9ced94920f2802310c930396
   requires_python: '>=3.9'
-- pypi: https://files.pythonhosted.org/packages/f0/64/879418a8a0196013ec1fb19eada0781c04a30e8d6d9227e80f91275a4f5b/maturin-1.8.1-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl
+- pypi: https://files.pythonhosted.org/packages/5e/25/079a85e4a8adccdcc1292973f79f297a1f1bba0c3574ccf36d0f646348d1/maturin-1.8.4-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl
   name: maturin
-  version: 1.8.1
-  sha256: 98f638739a5132962347871b85c91f525c9246ef4d99796ae98a2031e3df029f
+  version: 1.8.4
+  sha256: 5e785979409bd54d8baf10cabcde71168b6be172f701e3e37459b445dccdaf3d
   requires_dist:
   - tomli>=1.1.0 ; python_full_version < '3.11'
   - ziglang>=0.10.0,<0.13.0 ; extra == 'zig'
@@ -472,7 +472,7 @@ packages:
   sha256: db91759624d1647f3f34aa0c3f327dd2601beae39a366d6e064c03468d35c20e
   requires_dist:
   - click>=7.0
-  - colorama>=0.4 ; platform_system == 'Windows'
+  - colorama>=0.4 ; sys_platform == 'win32'
   - ghp-import>=1.0
   - importlib-metadata>=4.4 ; python_full_version < '3.10'
   - jinja2>=2.11.1
@@ -488,7 +488,7 @@ packages:
   - babel>=2.9.0 ; extra == 'i18n'
   - babel==2.9.0 ; extra == 'min-versions'
   - click==7.0 ; extra == 'min-versions'
-  - colorama==0.4 ; platform_system == 'Windows' and extra == 'min-versions'
+  - colorama==0.4 ; sys_platform == 'win32' and extra == 'min-versions'
   - ghp-import==1.0 ; extra == 'min-versions'
   - importlib-metadata==4.4 ; python_full_version < '3.10' and extra == 'min-versions'
   - jinja2==2.11.1 ; extra == 'min-versions'
@@ -871,18 +871,18 @@ packages:
   timestamp: 1679532220005
 - pypi: .
   name: rebop
-  version: 0.9.0
-  sha256: 109c14cbfa0306bd2026dd48be73d282e6d46756c1bbbc2b2396ee983a86951f
+  version: 0.9.1
+  sha256: b20efdb5324fdcf62c10687badeb0599024488dfc0aa3e87f3a44e25c2fe4f14
   requires_dist:
-  - xarray>=2023.1
+  - xarray>=2023.5
   - pytest>=8.3.4,<9 ; extra == 'dev'
-  - maturin>=1.8.1,<2 ; extra == 'dev'
+  - maturin>=1.8.4,<2 ; extra == 'dev'
   - pip>=24.3.1,<25 ; extra == 'dev'
   - pre-commit>=4.0.1,<5 ; extra == 'dev'
   - mkdocs>=1.6.1,<2 ; extra == 'doc'
   - mkdocs-material>=9.5.49,<10 ; extra == 'doc'
   - mkdocstrings[python]>=0.27.0,<0.28 ; extra == 'doc'
-  requires_python: '>=3.10'
+  requires_python: '>=3.11'
   editable: true
 - pypi: https://files.pythonhosted.org/packages/db/60/1eeca2074f5b87df394fccaa432ae3fc06c9c9bfa97c5051aed70e6e00c2/regex-2024.11.6-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
   name: regex

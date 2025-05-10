@@ -1,22 +1,29 @@
 [build-system]
-requires = ["maturin>=1.7,<2.0"]
+requires = ["maturin>=1.8.4,<2.0"]
 build-backend = "maturin"
 
 [project]
 name = "rebop"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dynamic = ["version"]
-dependencies = ["xarray >= 2023.01"]
+dependencies = ["xarray >= 2023.05"]
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8.3.4,<9",
-  "maturin>=1.8.1,<2",
+  "maturin>=1.8.4,<2",
   "pip>=24.3.1,<25",
   "pre-commit>=4.0.1,<5",
 ]

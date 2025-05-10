@@ -120,11 +120,11 @@ mod parsing {
     use winnow::stream::AsChar;
     use winnow::token::{one_of, take_while};
 
-    fn constant(s: &mut &str) -> PResult<PExpr> {
+    fn constant(s: &mut &str) -> ModalResult<PExpr> {
         float.map(PExpr::Constant).parse_next(s)
     }
 
-    fn variable(s: &mut &str) -> PResult<PExpr> {
+    fn variable(s: &mut &str) -> ModalResult<PExpr> {
         // from winnow recipes
         // https://docs.rs/winnow/latest/winnow/_topic/language/index.html
         (
@@ -137,29 +137,29 @@ mod parsing {
             .parse_next(s)
     }
 
-    fn parentheses(s: &mut &str) -> PResult<PExpr> {
+    fn parentheses(s: &mut &str) -> ModalResult<PExpr> {
         delimited("(", delimited(space0, expr, space0), ")").parse_next(s)
     }
 
-    fn expr(s: &mut &str) -> PResult<PExpr> {
+    fn expr(s: &mut &str) -> ModalResult<PExpr> {
         alt((add_sub, term)).parse_next(s)
     }
 
-    fn term(s: &mut &str) -> PResult<PExpr> {
+    fn term(s: &mut &str) -> ModalResult<PExpr> {
         alt((mul_div, factor)).parse_next(s)
     }
 
-    fn factor(s: &mut &str) -> PResult<PExpr> {
+    fn factor(s: &mut &str) -> ModalResult<PExpr> {
         alt((pow, atom)).parse_next(s)
     }
 
-    fn atom(s: &mut &str) -> PResult<PExpr> {
+    fn atom(s: &mut &str) -> ModalResult<PExpr> {
         // variable must be before constant
         // otherwise it matches variables starting with inf or nan as a float
         alt((exp, variable, constant, parentheses)).parse_next(s)
     }
 
-    fn add_sub(s: &mut &str) -> PResult<PExpr> {
+    fn add_sub(s: &mut &str) -> ModalResult<PExpr> {
         separated_foldl1(
             term,
             delimited(space0, one_of(['+', '-']), space0),
@@ -172,7 +172,7 @@ mod parsing {
         .parse_next(s)
     }
 
-    fn mul_div(s: &mut &str) -> PResult<PExpr> {
+    fn mul_div(s: &mut &str) -> ModalResult<PExpr> {
         separated_foldl1(
             factor,
             delimited(space0, one_of(['*', '/']), space0),
@@ -185,13 +185,13 @@ mod parsing {
         .parse_next(s)
     }
 
-    fn pow(s: &mut &str) -> PResult<PExpr> {
+    fn pow(s: &mut &str) -> ModalResult<PExpr> {
         separated_pair(atom, (space0, '^', space0), atom)
             .map(|(a, b)| PExpr::Pow(Box::new(a), Box::new(b)))
             .parse_next(s)
     }
 
-    fn exp(s: &mut &str) -> PResult<PExpr> {
+    fn exp(s: &mut &str) -> ModalResult<PExpr> {
         preceded("exp", parentheses)
             .map(Box::new)
             .map(PExpr::Exp)

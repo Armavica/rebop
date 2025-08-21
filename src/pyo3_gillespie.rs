@@ -8,10 +8,10 @@ pub use rand;
 pub use rand_distr;
 
 use crate::expr::{PExpr, RateParseError};
-use crate::gillespie::Rate;
+use crate::gillespie;
 
 /// Reaction system composed of species and reactions.
-#[cfg_attr(feature = "pyo3", pyclass)]
+#[pyclass]
 struct Gillespie {
     species: HashMap<String, usize>,
     init: HashMap<String, usize>,
@@ -50,16 +50,16 @@ impl PRate {
         &self,
         species: &HashMap<String, usize>,
         params: &HashMap<String, f64>,
-    ) -> Result<crate::gillespie::Rate, String> {
+    ) -> Result<gillespie::Rate, String> {
         let rate = match self {
             PRate::Lma(rate, reactants) => {
                 let mut rate_reactants = vec![0; species.len()];
                 for reactant in reactants {
                     rate_reactants[species[reactant]] += 1;
                 }
-                crate::gillespie::Rate::lma(*rate, rate_reactants)
+                gillespie::Rate::lma(*rate, rate_reactants)
             }
-            PRate::Expr(pexpr) => crate::gillespie::Rate::expr(pexpr.to_expr(species, params)?),
+            PRate::Expr(pexpr) => gillespie::Rate::expr(pexpr.to_expr(species, params)?),
         };
         Ok(rate)
     }
@@ -189,8 +189,8 @@ impl Gillespie {
             }
         }
         let mut g = match seed {
-            Some(seed) => crate::gillespie::Gillespie::new_with_seed(x0, sparse, seed),
-            None => crate::gillespie::Gillespie::new(x0, sparse),
+            Some(seed) => gillespie::Gillespie::new_with_seed(x0, sparse, seed),
+            None => gillespie::Gillespie::new(x0, sparse),
         };
         let save_indices: Vec<_> = match &var_names {
             Some(x) => x

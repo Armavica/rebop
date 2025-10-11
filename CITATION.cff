@@ -18,5 +18,5 @@ repository-code: "https://github.com/Armavica/rebop"
 url: "https://armavica.github.io/rebop/"
 abstract: Fast stochastic simulator for chemical reaction networks
 license: MIT
-version: 0.9.3
+version: 0.9.4
 date-released: "2025-10-11"

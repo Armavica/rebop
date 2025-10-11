@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import warnings
 from collections.abc import Mapping, Sequence
-from typing import TypeAlias
 
 import numpy as np
 import xarray as xr
@@ -16,8 +15,8 @@ __all__ = ("Gillespie", "__version__")
 
 __version__: str = _lib.__version__
 
-SeedLike: TypeAlias = int | np.integer | Sequence[int] | np.random.SeedSequence
-RNGLike: TypeAlias = np.random.Generator | np.random.BitGenerator
+type SeedLike = int | np.integer | Sequence[int] | np.random.SeedSequence
+type RNGLike = np.random.Generator | np.random.BitGenerator
 
 
 class Gillespie:

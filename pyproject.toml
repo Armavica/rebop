@@ -4,9 +4,15 @@ build-backend = "maturin"
 
 [project]
 name = "rebop"
+authors = [
+  { name = "Virgile Andreani", email = "virgile.andreani@proton.me" },
+]
 requires-python = ">=3.12"
 dynamic = ["version"]
 dependencies = ["xarray >= 2023.10"]
+description = "A fast stochastic simulator for chemical reaction networks"
+readme = "README.md"
+keywords = ["gillespie-algorithm", "systems-biology", "stochastic", "scientific-computing"]
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",

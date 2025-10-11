@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.4](https://github.com/Armavica/rebop/compare/v0.9.3...v0.9.4) - 2025-10-11
+
+Technical release to fix the PyPI metadata.
+
 ## [0.9.3](https://github.com/Armavica/rebop/compare/v0.9.2...v0.9.3) - 2025-10-11
 
 ### Changed

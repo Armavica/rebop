@@ -2,7 +2,7 @@
 name = "rebop"
 version = "0.9.2"
 authors = ["Virgile Andreani <armavica@ulminfo.fr>"]
-edition = "2021"
+edition = "2024"
 license = "MIT"
 categories = ["algorithms", "mathematics", "science", "simulation"]
 homepage = "https://armavica.github.io/rebop/"

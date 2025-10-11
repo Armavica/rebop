@@ -58,13 +58,13 @@ impl Rate {
     }
     fn rate(&self, species: &[isize]) -> f64 {
         match self {
-            Rate::LMA(rate, ref reactants) => species
+            Rate::LMA(rate, reactants) => species
                 .iter()
                 .zip(reactants.iter())
                 .fold(*rate, |acc, (&n, &e)| {
                     (n + 1 - e as isize..=n).fold(acc, |acc, x| acc * x as f64)
                 }),
-            Rate::LMASparse(mut rate, sparse) => {
+            &Rate::LMASparse(mut rate, ref sparse) => {
                 for &(index, exponent) in sparse.iter() {
                     let n = *unsafe { species.get_unchecked(index as usize) };
                     for i in (n + 1 - exponent as isize)..=n {
@@ -253,11 +253,11 @@ impl Gillespie {
         self.t += self.rng.sample::<f64, _>(Exp1) / total_rate;
         let chosen_rate = total_rate * self.rng.random::<f64>();
 
-        // let ireaction = choose_rate_sum(chosen_rate, &rates);
-        // let ireaction = choose_rate_for(chosen_rate, &rates);
-        let ireaction = choose_cumrate_sum(chosen_rate, &rates);
-        // let ireaction = choose_cumrate_for(chosen_rate, &rates);
-        // let ireaction = choose_cumrate_takewhile(chosen_rate, &rates);
+        // let ireaction = choose_rate_sum(chosen_rate, rates);
+        // let ireaction = choose_rate_for(chosen_rate, rates);
+        let ireaction = choose_cumrate_sum(chosen_rate, rates);
+        // let ireaction = choose_cumrate_for(chosen_rate, rates);
+        // let ireaction = choose_cumrate_takewhile(chosen_rate, rates);
         // here we have ireaction < self.reactions.len() because chosen_rate < total_rate
         let reaction = unsafe { self.reactions.get_unchecked(ireaction) };
 

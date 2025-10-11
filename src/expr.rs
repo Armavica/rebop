@@ -113,12 +113,12 @@ impl FromStr for PExpr {
 
 mod parsing {
     use crate::expr::PExpr;
+    use winnow::Result;
     use winnow::ascii::{float, space0};
     use winnow::combinator::{alt, delimited, preceded, separated_foldl1, separated_pair};
     use winnow::error::{ContextError, ParseError};
     use winnow::prelude::*;
     use winnow::token::{one_of, take_while};
-    use winnow::Result;
 
     fn constant(s: &mut &str) -> Result<PExpr> {
         float.map(PExpr::Constant).parse_next(s)

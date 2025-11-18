@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.5](https://github.com/Armavica/rebop/compare/v0.9.4...v0.9.5) - 2025-11-18
+
+### Added
+
+- Allow Ctrl-C to interrupt a calculation
+
+### Miscellaneous
+
+- _(deps)_ bump the actions group with 2 updates
+- update pixi manifest format
+
 ## [0.9.4](https://github.com/Armavica/rebop/compare/v0.9.3...v0.9.4) - 2025-10-11
 
 Technical release to fix the PyPI metadata.

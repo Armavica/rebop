@@ -278,5 +278,16 @@ impl Gillespie {
 fn _lib(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     m.add_class::<Gillespie>()?;
+    // Allow Ctrl-C to interrupt a Rust calculation, by allowing Python
+    // to handle signals the default way.
+    // See https://pyo3.rs/v0.27.1/python-from-rust/calling-existing-code.html?highlight=signal#handling-system-signalsinterrupts-ctrl-c
+    Python::attach(|py| -> PyResult<()> {
+        let signal = py.import("signal")?;
+        // Set SIGINT to have the default action
+        signal
+            .getattr("signal")?
+            .call1((signal.getattr("SIGINT")?, signal.getattr("SIG_DFL")?))?;
+        Ok(())
+    })?;
     Ok(())
 }

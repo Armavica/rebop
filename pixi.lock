@@ -871,8 +871,8 @@ packages:
   timestamp: 1679532220005
 - pypi: ./
   name: rebop
-  version: 0.9.2
-  sha256: 1b9db9c4fcea5313bbeffa404531c0e4bf3a1a090ddab4a540594e97a8f8fc6e
+  version: 0.9.4
+  sha256: ac0cb3c204bf5941ca5444640537e2486ee5a9d40758b1e54c16a74fb65f985b
   requires_dist:
   - xarray>=2023.10
   - pytest>=8.3.4,<9 ; extra == 'dev'

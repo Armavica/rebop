@@ -1,6 +1,6 @@
 [package]
 name = "rebop"
-version = "0.9.5"
+version = "0.9.6"
 authors = ["Virgile Andreani <armavica@ulminfo.fr>"]
 edition = "2024"
 license = "MIT"

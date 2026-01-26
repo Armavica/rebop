@@ -201,6 +201,16 @@ impl Gillespie {
     /// sir.add_reaction(Rate::lma(0.01, [0, 1, 0]), [0, -1, 1]);
     /// ```
     pub fn add_reaction<V: AsRef<[isize]>>(&mut self, rate: Rate, differences: V) {
+        // This assert ensures that the rate operates on existing species
+        match &rate {
+            Rate::LMA(_, stoechiometries) => assert_eq!(stoechiometries.len(), self.species.len()),
+            Rate::LMASparse(_, stoechiometries) => assert!(
+                stoechiometries
+                    .iter()
+                    .all(|(i, _)| (*i as usize) < self.species.len())
+            ),
+            Rate::Expr(_) => (),
+        }
         // This assert ensures that the jump does not go out of bounds of the species
         assert_eq!(differences.as_ref().len(), self.species.len());
         let jump = Jump::new(differences);
@@ -454,6 +464,14 @@ mod tests {
         let mut species = vec![10; 4];
         sjump.affect(&mut species);
         assert_eq!(species, vec![9, 10, 13, 8]);
+    }
+
+    #[test]
+    #[should_panic(expected = "assertion failed")]
+    fn issue85_oob() {
+        let mut sim = Gillespie::new([1], true);
+        let rate = Rate::lma_sparse(1.0, [(10, 1)]);
+        sim.add_reaction(rate, [0]);
     }
 
     #[test]

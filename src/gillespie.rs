@@ -2,7 +2,7 @@
 //! simulate them.
 
 use rand::rngs::SmallRng;
-use rand::{Rng, SeedableRng};
+use rand::{RngExt, SeedableRng};
 use rand_distr::Exp1;
 
 use crate::expr::Expr;
@@ -150,7 +150,7 @@ impl Gillespie {
             species: species.as_ref().to_vec(),
             t: 0.,
             reactions: Vec::new(),
-            rng: SmallRng::from_os_rng(),
+            rng: rand::make_rng(),
             sparse,
         }
     }

@@ -68,12 +68,11 @@ macro_rules! define_system {
         impl $name {
             /// Constructs an object representing the problem.
             fn new() -> Self {
-                use $crate::rand::SeedableRng;
                 $name {
                     $($species: 0,)*
                     $($param: f64::NAN,)*
                     t: 0.,
-                    rng: $crate::rand::rngs::SmallRng::from_os_rng()
+                    rng: $crate::rand::make_rng()
                 }
             }
             /// Seeds the random number generator.
@@ -85,18 +84,17 @@ macro_rules! define_system {
             /// specifying parameter values.
             #[allow(non_snake_case)]
             fn with_parameters($($param: f64),*) -> Self {
-                use $crate::rand::SeedableRng;
                 $name {
                     $($species: 0,)*
                     $($param,)*
                     t: 0.,
-                    rng: $crate::rand::rngs::SmallRng::from_os_rng()
+                    rng: $crate::rand::make_rng()
                 }
             }
             /// Simulates the problem until `t = tmax`.
             #[allow(non_snake_case)]
             fn advance_until(&mut self, tmax: f64) {
-                use $crate::rand::Rng;
+                use $crate::rand::RngExt;
                 $(let $param = self.$param;)*
                 $(let $species = self.$species as f64;)*
                 loop {

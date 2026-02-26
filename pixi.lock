@@ -5,6 +5,8 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
+    options:
+      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
@@ -43,6 +45,8 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
+    options:
+      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
@@ -95,6 +99,8 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
+    options:
+      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
@@ -871,10 +877,10 @@ packages:
   timestamp: 1679532220005
 - pypi: ./
   name: rebop
-  version: 0.9.4
-  sha256: ac0cb3c204bf5941ca5444640537e2486ee5a9d40758b1e54c16a74fb65f985b
+  version: 0.9.6
+  sha256: 355af7ec9104a0a93996da77a614860a499b42f73b2841d54e27776652c55d6f
   requires_dist:
-  - xarray>=2023.10
+  - xarray>=2024.3
   - pytest>=8.3.4,<9 ; extra == 'dev'
   - maturin>=1.9.6,<2 ; extra == 'dev'
   - pip>=24.3.1,<25 ; extra == 'dev'
@@ -883,7 +889,6 @@ packages:
   - mkdocs-material>=9.5.49,<10 ; extra == 'doc'
   - mkdocstrings[python]>=0.27.0,<0.28 ; extra == 'doc'
   requires_python: '>=3.12'
-  editable: true
 - pypi: https://files.pythonhosted.org/packages/db/60/1eeca2074f5b87df394fccaa432ae3fc06c9c9bfa97c5051aed70e6e00c2/regex-2024.11.6-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
   name: regex
   version: 2024.11.6

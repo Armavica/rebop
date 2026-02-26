@@ -78,7 +78,7 @@ impl Gillespie {
                 self.add_species_from_expr(a);
                 self.add_species_from_expr(b);
             }
-            PExpr::Exp(a) => {
+            PExpr::Exp(a) | PExpr::Neg(a) => {
                 self.add_species_from_expr(a);
             }
         }

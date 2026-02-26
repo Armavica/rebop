@@ -6,6 +6,7 @@ use std::str::FromStr;
 pub enum Expr {
     Constant(f64),
     Concentration(usize),
+    Neg(Box<Expr>),
     Add(Box<Expr>, Box<Expr>),
     Sub(Box<Expr>, Box<Expr>),
     Mul(Box<Expr>, Box<Expr>),
@@ -19,6 +20,7 @@ impl Expr {
         match self {
             Expr::Constant(c) => *c,
             Expr::Concentration(i) => *unsafe { species.get_unchecked(*i) } as f64,
+            Expr::Neg(a) => -a.eval(species),
             Expr::Add(a, b) => a.eval(species) + b.eval(species),
             Expr::Sub(a, b) => a.eval(species) - b.eval(species),
             Expr::Mul(a, b) => a.eval(species) * b.eval(species),
@@ -33,6 +35,7 @@ impl Expr {
 pub(crate) enum PExpr {
     Constant(f64),
     Variable(String),
+    Neg(Box<PExpr>),
     Add(Box<PExpr>, Box<PExpr>),
     Sub(Box<PExpr>, Box<PExpr>),
     Mul(Box<PExpr>, Box<PExpr>),
@@ -59,6 +62,7 @@ impl PExpr {
                     Expr::Constant(*v)
                 }
             }
+            PExpr::Neg(a) => Expr::Neg(Box::new(a.to_expr(species, params)?)),
             PExpr::Add(a, b) => Expr::Add(
                 Box::new(a.to_expr(species, params)?),
                 Box::new(b.to_expr(species, params)?),
@@ -90,6 +94,7 @@ impl Display for PExpr {
         match self {
             PExpr::Constant(c) => write!(f, "{c}"),
             PExpr::Variable(c) => write!(f, "{c}"),
+            PExpr::Neg(a) => write!(f, "(-{a})"),
             PExpr::Add(a, b) => write!(f, "({a} + {b})"),
             PExpr::Sub(a, b) => write!(f, "({a} - {b})"),
             PExpr::Mul(a, b) => write!(f, "({a} * {b})"),
@@ -156,7 +161,13 @@ mod parsing {
     fn atom(s: &mut &str) -> Result<PExpr> {
         // variable must be before constant
         // otherwise it matches variables starting with inf or nan as a float
-        alt((exp, variable, constant, parentheses)).parse_next(s)
+        alt((exp, variable, constant, parentheses, neg)).parse_next(s)
+    }
+
+    fn neg(s: &mut &str) -> Result<PExpr> {
+        preceded(('-', space0), term)
+            .map(|a| PExpr::Neg(Box::new(a)))
+            .parse_next(s)
     }
 
     fn add_sub(s: &mut &str) -> Result<PExpr> {
@@ -277,6 +288,14 @@ mod parsing {
         }
 
         #[test]
+        fn test_neg() {
+            let e: PExpr = "-A".parse().unwrap();
+            assert_eq!(format!("{e}"), "(-A)");
+            let e: PExpr = "- A".parse().unwrap();
+            assert_eq!(format!("{e}"), "(-A)");
+        }
+
+        #[test]
         fn test_add_sub() {
             let e: PExpr = "3+4".parse().unwrap();
             assert_eq!(format!("{e}"), "(3 + 4)");
@@ -292,6 +311,16 @@ mod parsing {
             assert_eq!(format!("{e}"), "((1.2 * A) * B)");
             let e: PExpr = "1.20*Sugar / (3.5+Sugar)".parse().unwrap();
             assert_eq!(format!("{e}"), "((1.2 * Sugar) / (3.5 + Sugar))");
+            let e: PExpr = "-Sugar / (3.5+Sugar)".parse().unwrap();
+            assert_eq!(format!("{e}"), "(-(Sugar / (3.5 + Sugar)))");
+            let e: PExpr = "A + -Sugar".parse().unwrap();
+            assert_eq!(format!("{e}"), "(A + (-Sugar))");
+            let e: PExpr = "A * -Sugar".parse().unwrap();
+            assert_eq!(format!("{e}"), "(A * (-Sugar))");
+            let e: PExpr = "A + -Sugar / (Kd + Sugar)".parse().unwrap();
+            assert_eq!(format!("{e}"), "(A + (-(Sugar / (Kd + Sugar))))");
+            let e: PExpr = "A^-B".parse().unwrap();
+            assert_eq!(format!("{e}"), "(A ^ (-B))");
         }
 
         #[test]

@@ -12,6 +12,8 @@ pub enum Expr {
     Mul(Box<Expr>, Box<Expr>),
     Div(Box<Expr>, Box<Expr>),
     Pow(Box<Expr>, Box<Expr>),
+    Max(Box<Expr>, Box<Expr>),
+    Min(Box<Expr>, Box<Expr>),
     Exp(Box<Expr>),
 }
 
@@ -26,6 +28,8 @@ impl Expr {
             Expr::Mul(a, b) => a.eval(species) * b.eval(species),
             Expr::Div(a, b) => a.eval(species) / b.eval(species),
             Expr::Pow(a, b) => a.eval(species).powf(b.eval(species)),
+            Expr::Max(a, b) => a.eval(species).max(b.eval(species)),
+            Expr::Min(a, b) => a.eval(species).min(b.eval(species)),
             Expr::Exp(a) => a.eval(species).exp(),
         }
     }
@@ -41,6 +45,8 @@ pub(crate) enum PExpr {
     Mul(Box<PExpr>, Box<PExpr>),
     Div(Box<PExpr>, Box<PExpr>),
     Pow(Box<PExpr>, Box<PExpr>),
+    Max(Box<PExpr>, Box<PExpr>),
+    Min(Box<PExpr>, Box<PExpr>),
     Exp(Box<PExpr>),
 }
 
@@ -83,6 +89,14 @@ impl PExpr {
                 Box::new(a.to_expr(species, params)?),
                 Box::new(b.to_expr(species, params)?),
             ),
+            PExpr::Max(a, b) => Expr::Max(
+                Box::new(a.to_expr(species, params)?),
+                Box::new(b.to_expr(species, params)?),
+            ),
+            PExpr::Min(a, b) => Expr::Min(
+                Box::new(a.to_expr(species, params)?),
+                Box::new(b.to_expr(species, params)?),
+            ),
             PExpr::Exp(a) => Expr::Exp(Box::new(a.to_expr(species, params)?)),
         };
         Ok(expr)
@@ -100,6 +114,8 @@ impl Display for PExpr {
             PExpr::Mul(a, b) => write!(f, "({a} * {b})"),
             PExpr::Div(a, b) => write!(f, "({a} / {b})"),
             PExpr::Pow(a, b) => write!(f, "({a} ^ {b})"),
+            PExpr::Max(a, b) => write!(f, "max({a}, {b})"),
+            PExpr::Min(a, b) => write!(f, "min({a}, {b})"),
             PExpr::Exp(a) => write!(f, "exp({a})"),
         }
     }
@@ -161,7 +177,7 @@ mod parsing {
     fn atom(s: &mut &str) -> Result<PExpr> {
         // variable must be before constant
         // otherwise it matches variables starting with inf or nan as a float
-        alt((exp, variable, constant, parentheses, neg)).parse_next(s)
+        alt((exp, max, min, variable, constant, parentheses, neg)).parse_next(s)
     }
 
     fn neg(s: &mut &str) -> Result<PExpr> {
@@ -200,6 +216,40 @@ mod parsing {
         separated_pair(atom, (space0, '^', space0), atom)
             .map(|(a, b)| PExpr::Pow(Box::new(a), Box::new(b)))
             .parse_next(s)
+    }
+
+    fn max(s: &mut &str) -> Result<PExpr> {
+        preceded(
+            "max",
+            delimited(
+                "(",
+                delimited(
+                    space0,
+                    separated_pair(expr, (space0, ',', space0), expr),
+                    space0,
+                ),
+                ")",
+            ),
+        )
+        .map(|(a, b)| PExpr::Max(Box::new(a), Box::new(b)))
+        .parse_next(s)
+    }
+
+    fn min(s: &mut &str) -> Result<PExpr> {
+        preceded(
+            "min",
+            delimited(
+                "(",
+                delimited(
+                    space0,
+                    separated_pair(expr, (space0, ',', space0), expr),
+                    space0,
+                ),
+                ")",
+            ),
+        )
+        .map(|(a, b)| PExpr::Min(Box::new(a), Box::new(b)))
+        .parse_next(s)
     }
 
     fn exp(s: &mut &str) -> Result<PExpr> {
@@ -243,10 +293,26 @@ mod parsing {
             assert_eq!(format!("{e}"), "_");
             let e: PExpr = "exp".parse().unwrap();
             assert_eq!(format!("{e}"), "exp");
+            let e: PExpr = "max".parse().unwrap();
+            assert_eq!(format!("{e}"), "max");
+            let e: PExpr = "min".parse().unwrap();
+            assert_eq!(format!("{e}"), "min");
             let e: PExpr = "PhoP3".parse().unwrap();
             assert_eq!(format!("{e}"), "PhoP3");
             let e: PExpr = "Mono1_Mono2_".parse().unwrap();
             assert_eq!(format!("{e}"), "Mono1_Mono2_");
+        }
+
+        #[test]
+        fn test_max() {
+            let e: PExpr = "max(x,y)".parse().unwrap();
+            assert_eq!(format!("{e}"), "max(x, y)");
+        }
+
+        #[test]
+        fn test_min() {
+            let e: PExpr = "min(x,y)".parse().unwrap();
+            assert_eq!(format!("{e}"), "min(x, y)");
         }
 
         #[test]
@@ -357,6 +423,18 @@ mod parsing {
             // starts with exp
             let e: PExpr = "explicit".parse().unwrap();
             assert_eq!(PExpr::Variable("explicit".to_string()), e);
+            // max
+            let e: PExpr = "max".parse().unwrap();
+            assert_eq!(PExpr::Variable("max".to_string()), e);
+            // starts with max
+            let e: PExpr = "maximum".parse().unwrap();
+            assert_eq!(PExpr::Variable("maximum".to_string()), e);
+            // min
+            let e: PExpr = "min".parse().unwrap();
+            assert_eq!(PExpr::Variable("min".to_string()), e);
+            // starts with min
+            let e: PExpr = "minimum".parse().unwrap();
+            assert_eq!(PExpr::Variable("minimum".to_string()), e);
         }
     }
 }
@@ -420,5 +498,36 @@ mod tests {
             pe.to_expr(&init, &params).unwrap().eval(&species),
             9.049998877643098
         );
+    }
+
+    #[test]
+    fn test_eval_max() {
+        let pe: PExpr = "max(A, 0)".parse().unwrap();
+        let mut init = HashMap::new();
+        let mut params = HashMap::new();
+        init.insert("A".to_string(), 0);
+        let mut species = vec![3];
+        assert_eq!(pe.to_expr(&init, &params).unwrap().eval(&species), 3.0);
+
+        let pe: PExpr = "max(A - 0.5, 0)".parse().unwrap();
+        let mut init = HashMap::new();
+        let mut params = HashMap::new();
+        init.insert("A".to_string(), 0);
+        let mut species = vec![3];
+        assert_eq!(pe.to_expr(&init, &params).unwrap().eval(&species), 2.5);
+
+        let pe: PExpr = "max(A - 3, 0)".parse().unwrap();
+        let mut init = HashMap::new();
+        let mut params = HashMap::new();
+        init.insert("A".to_string(), 0);
+        let mut species = vec![3];
+        assert_eq!(pe.to_expr(&init, &params).unwrap().eval(&species), 0.0);
+
+        let pe: PExpr = "max(A - 3.5, 0)".parse().unwrap();
+        let mut init = HashMap::new();
+        let mut params = HashMap::new();
+        init.insert("A".to_string(), 0);
+        let mut species = vec![3];
+        assert_eq!(pe.to_expr(&init, &params).unwrap().eval(&species), 0.0);
     }
 }

@@ -74,7 +74,9 @@ impl Gillespie {
             | PExpr::Sub(a, b)
             | PExpr::Mul(a, b)
             | PExpr::Div(a, b)
-            | PExpr::Pow(a, b) => {
+            | PExpr::Pow(a, b)
+            | PExpr::Min(a, b)
+            | PExpr::Max(a, b) => {
                 self.add_species_from_expr(a);
                 self.add_species_from_expr(b);
             }

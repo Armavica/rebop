@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.7](https://github.com/Armavica/rebop/compare/v0.9.6...v0.9.7) - 2026-02-26
+
+### Added
+
+- add support for min and max in expressions
+- add support for negation in expressions
+
+### Fixed
+
+- fix possible OOB error from improper sparse rate
+
+### Miscellaneous
+
+- add pytest to the CI
+- update dependencies
+- _(deps)_ bump the actions group across 1 directory with 3 updates
+
 ## [0.9.6](https://github.com/Armavica/rebop/compare/v0.9.5...v0.9.6) - 2025-11-18
 
 ### Miscellaneous

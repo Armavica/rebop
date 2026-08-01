@@ -291,21 +291,122 @@ impl Gillespie {
     /// assert!(dimers.get_species(3) > 0);
     /// ```
     pub fn advance_until(&mut self, tmax: f64) {
+        self.reactions_until_time_or_reactions(Some(tmax), None);
+    }
+
+    /// Runs reactions until a simulated time is reached, or until a number of reactions have
+    /// fired, whichever limit is exceeded first. Both limits are optional and may be combined; at
+    /// least one must be given, since with neither the run would never terminate.
+    ///
+    /// `advance_until(tmax)` is exactly `reactions_until_time_or_reactions(Some(tmax), None)`.
+    ///
+    /// Supplying both is the useful case for a caller that alternates between this simulator and
+    /// another engine: it wants a block of about `max_reactions` reactions, but must not run past
+    /// the end of the trajectory it is simulating. Budgeting in reactions matters because
+    /// converting a reaction count into a duration requires assuming the total propensity stays
+    /// constant across the block, which overshoots the intended count whenever the propensity rises
+    /// and undershoots when it falls.
+    ///
+    /// Returns the number of reactions that fired, or `None` to report that a requested
+    /// `max_reactions` could not be reached because the configuration went silent -- no reaction
+    /// remained enabled. `None` therefore never occurs when `max_reactions` is `None`, since a
+    /// time-bounded run that runs out of enabled reactions has simply finished: nothing further
+    /// happens before `tmax`.
+    ///
+    /// The final time depends on which limit stopped the run:
+    ///
+    /// * `max_reactions` exhausted -- the time of the last reaction, so no simulated time is
+    ///   invented beyond what actually elapsed.
+    /// * `tmax` reached -- exactly `tmax`, matching `advance_until`.
+    /// * nothing left to react -- `tmax` if it was given, otherwise the time of the last reaction.
+    ///
+    /// ```
+    /// use rebop::gillespie::{Gillespie, Rate};
+    /// let mut dimers = Gillespie::new([1, 0, 0, 0], false);
+    /// //                              [G, M, P, D]
+    /// dimers.add_reaction(Rate::lma(25., [1, 0, 0, 0]), [0, 1, 0, 0]);
+    /// dimers.add_reaction(Rate::lma(1000., [0, 1, 0, 0]), [0, 0, 1, 0]);
+    /// dimers.add_reaction(Rate::lma(0.001, [0, 0, 2, 0]), [0, 0, -2, 1]);
+    /// dimers.add_reaction(Rate::lma(0.1, [0, 1, 0, 0]), [0, -1, 0, 0]);
+    /// dimers.add_reaction(Rate::lma(1., [0, 0, 1, 0]), [0, 0, -1, 0]);
+    /// // A reaction budget alone: stop after exactly 10 reactions.
+    /// assert_eq!(dimers.reactions_until_time_or_reactions(None, Some(10)), Some(10));
+    /// assert!(dimers.get_time() > 0. && dimers.get_time().is_finite());
+    /// // Both limits: a big budget cannot carry the run past tmax.
+    /// let fired = dimers
+    ///     .reactions_until_time_or_reactions(Some(1.), Some(u64::MAX))
+    ///     .unwrap();
+    /// assert_eq!(dimers.get_time(), 1.);
+    /// assert!(fired > 0);
+    /// // Both limits: a small budget stops well before tmax, leaving time short of it.
+    /// let fired = dimers
+    ///     .reactions_until_time_or_reactions(Some(f64::INFINITY), Some(3))
+    ///     .unwrap();
+    /// assert_eq!(fired, 3);
+    /// assert!(dimers.get_time().is_finite());
+    /// ```
+    ///
+    /// A silent configuration cannot satisfy a reaction budget, whether or not `tmax` is given:
+    ///
+    /// ```
+    /// use rebop::gillespie::{Gillespie, Rate};
+    /// let mut dead = Gillespie::new([0, 0], false);
+    /// dead.add_reaction(Rate::lma(1., [1, 0]), [-1, 1]);
+    /// assert_eq!(dead.reactions_until_time_or_reactions(None, Some(5)), None);
+    /// assert_eq!(dead.reactions_until_time_or_reactions(Some(1.), Some(5)), None);
+    /// // ...but the time limit is still honoured, exactly as `advance_until` would.
+    /// assert_eq!(dead.get_time(), 1.);
+    /// // With no budget to miss, a silent configuration is an ordinary finish.
+    /// assert_eq!(dead.reactions_until_time_or_reactions(Some(2.), None), Some(0));
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Panics if both `tmax` and `max_reactions` are `None`, which would never terminate.
+    pub fn reactions_until_time_or_reactions(
+        &mut self,
+        tmax: Option<f64>,
+        max_reactions: Option<u64>,
+    ) -> Option<u64> {
+        assert!(
+            tmax.is_some() || max_reactions.is_some(),
+            "at least one of tmax and max_reactions must be given, or the run would never terminate"
+        );
         let mut rates = vec![f64::NAN; self.reactions.len()];
+        let mut reactions_fired: u64 = 0;
         loop {
+            // The only stopping condition added relative to `advance_until`. It is checked before
+            // sampling so that an exhausted budget leaves the state exactly at the last reaction.
+            if let Some(limit) = max_reactions {
+                if reactions_fired >= limit {
+                    return Some(reactions_fired);
+                }
+            }
             //let total_rate = make_rates(&self.reactions, &self.species, &mut rates);
             let total_rate = make_cumrates(&self.reactions, &self.species, &mut rates);
 
             // we don't want to use partial_cmp, for performance
             #[allow(clippy::neg_cmp_op_on_partial_ord)]
             if !(0. < total_rate) {
-                self.t = tmax;
-                return;
+                // Nothing can react. Honour the time limit if one was given, exactly as
+                // `advance_until` does -- no further reaction occurs before `tmax`.
+                if let Some(tmax) = tmax {
+                    self.t = tmax;
+                }
+                // A requested reaction budget is now unreachable, and the caller must be able to
+                // tell that apart from having met it. The early return at the top of the loop means
+                // reaching here with a budget always leaves it unmet.
+                return match max_reactions {
+                    Some(_) => None,
+                    None => Some(reactions_fired),
+                };
             }
             self.t += self.rng.sample::<f64, _>(Exp1) / total_rate;
-            if self.t > tmax {
-                self.t = tmax;
-                return;
+            if let Some(tmax) = tmax {
+                if self.t > tmax {
+                    self.t = tmax;
+                    return Some(reactions_fired);
+                }
             }
             let chosen_rate = total_rate * self.rng.random::<f64>();
 
@@ -318,6 +419,7 @@ impl Gillespie {
             let reaction = unsafe { self.reactions.get_unchecked(ireaction) };
 
             reaction.1.affect(&mut self.species);
+            reactions_fired += 1;
         }
     }
 }

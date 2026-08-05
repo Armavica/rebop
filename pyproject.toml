@@ -1,5 +1,5 @@
 [build-system]
-requires = ["maturin>=1.9.6,<2.0"]
+requires = ["maturin>=1.14.1,<2.0"]
 build-backend = "maturin"
 
 [project]
@@ -9,7 +9,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dynamic = ["version"]
-dependencies = ["xarray >= 2024.03"]
+dependencies = ["xarray >= 2024.09"]
 description = "A fast stochastic simulator for chemical reaction networks"
 readme = "README.md"
 keywords = ["gillespie-algorithm", "systems-biology", "stochastic", "scientific-computing"]
@@ -29,9 +29,8 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
   "pytest>=8.3.4,<9",
-  "maturin>=1.9.6,<2",
+  "maturin>=1.14.1,<2",
   "pip>=24.3.1,<25",
-  "pre-commit>=4.0.1,<5",
 ]
 
 doc = [

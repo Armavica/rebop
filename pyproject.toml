@@ -44,6 +44,9 @@ python-source = "python"
 module-name = "rebop._lib"
 features = ["pyo3/extension-module"]
 
+[tool.maturin.generate-ci.github]
+pytest = true
+
 [tool.ruff]
 extend-exclude = ["benches/*"]
 

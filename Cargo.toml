@@ -11,10 +11,10 @@ description = "A fast stochastic simulator for chemical reaction networks"
 keywords = ["gillespie-algorithm", "systems-biology", "stochastic", "scientific-computing"]
 
 [dependencies]
-pyo3 = { version = "0.28.2", features = ["extension-module"], optional = true }
-rand = "0.10.0"
+pyo3 = { version = "0.29.1", features = ["extension-module"], optional = true }
+rand = "0.10.2"
 rand_distr = "0.6.0"
-winnow = "0.7.14"
+winnow = "1.0.4"
 
 [features]
 pyo3 = ["dep:pyo3"]

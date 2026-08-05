@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15381301.svg)](https://doi.org/10.5281/zenodo.15381301)
+
 | Rust                                                                                                                                                    | Python                                                                                                                                              |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [![Build status](https://github.com/Armavica/rebop/actions/workflows/rust.yml/badge.svg)](https://github.com/Armavica/rebop/actions/workflows/rust.yml) | [![Build status](https://github.com/Armavica/rebop/actions/workflows/CI.yml/badge.svg)](https://github.com/Armavica/rebop/actions/workflows/CI.yml) |

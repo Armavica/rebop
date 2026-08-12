@@ -275,6 +275,8 @@ impl Gillespie {
     }
     /// Simulates the problem until `tmax`.
     ///
+    /// If `tmax` is less than the current `t`, does nothing.
+    ///
     /// ```
     /// use rebop::gillespie::{Gillespie, Rate};
     /// let mut dimers = Gillespie::new([1, 0, 0, 0], false);
@@ -292,6 +294,9 @@ impl Gillespie {
     /// ```
     pub fn advance_until(&mut self, tmax: f64) {
         let mut rates = vec![f64::NAN; self.reactions.len()];
+        if tmax < self.t {
+            return;
+        }
         loop {
             //let total_rate = make_rates(&self.reactions, &self.species, &mut rates);
             let total_rate = make_cumrates(&self.reactions, &self.species, &mut rates);
@@ -464,6 +469,36 @@ mod tests {
         let mut species = vec![10; 4];
         sjump.affect(&mut species);
         assert_eq!(species, vec![9, 10, 13, 8]);
+    }
+
+    #[test]
+    fn advance_until() {
+        let mut sir = Gillespie::new([9999, 1, 0], false);
+        sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);
+        sir.add_reaction(Rate::lma(0.01, [0, 1, 0]), [0, -1, 1]);
+        sir.advance_until(1.0);
+        assert_eq!(sir.get_time(), 1.0);
+        sir.advance_until(2.0);
+        assert_eq!(sir.get_time(), 2.0);
+        sir.advance_until(1.5);
+        assert_eq!(sir.get_time(), 2.0);
+    }
+
+    #[test]
+    fn no_reactions() {
+        let mut sir = Gillespie::new([10000, 0, 0], false);
+        sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);
+        sir.add_reaction(Rate::lma(0.01, [0, 1, 0]), [0, -1, 1]);
+        sir.advance_until(1.0);
+        assert_eq!(sir.get_species(0), 10000);
+        assert_eq!(sir.get_species(1), 0);
+        assert_eq!(sir.get_species(2), 0);
+        assert_eq!(sir.get_time(), 1.0);
+        sir.advance_one_reaction();
+        assert_eq!(sir.get_species(0), 10000);
+        assert_eq!(sir.get_species(1), 0);
+        assert_eq!(sir.get_species(2), 0);
+        assert_eq!(sir.get_time(), f64::INFINITY);
     }
 
     #[test]

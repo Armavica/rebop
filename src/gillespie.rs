@@ -322,6 +322,7 @@ impl Gillespie {
     }
 }
 
+#[allow(dead_code)]
 fn make_rates(reactions: &[(Rate, Jump)], species: &[isize], rates: &mut [f64]) -> f64 {
     let mut total_rate = 0.0;
     for ((rate, _), num_rate) in reactions.iter().zip(rates.iter_mut()) {
@@ -340,6 +341,7 @@ fn make_cumrates(reactions: &[(Rate, Jump)], species: &[isize], cum_rates: &mut 
     total_rate
 }
 
+#[allow(dead_code)]
 fn choose_rate_for(mut chosen_rate: f64, rates: &[f64]) -> usize {
     let mut ireaction = rates.len() - 1;
     for (ir, &rate) in rates.iter().enumerate() {
@@ -352,6 +354,7 @@ fn choose_rate_for(mut chosen_rate: f64, rates: &[f64]) -> usize {
     ireaction
 }
 
+#[allow(dead_code)]
 fn choose_cumrate_for(chosen_rate: f64, cumrates: &[f64]) -> usize {
     let mut ireaction = cumrates.len() - 1;
     for (ir, &cumrate) in cumrates.iter().enumerate() {
@@ -363,6 +366,7 @@ fn choose_cumrate_for(chosen_rate: f64, cumrates: &[f64]) -> usize {
     ireaction
 }
 
+#[allow(dead_code)]
 fn choose_rate_sum(chosen_rate: f64, rates: &[f64]) -> usize {
     rates
         .iter()
@@ -380,6 +384,7 @@ fn choose_cumrate_sum(chosen_rate: f64, cumrates: &[f64]) -> usize {
         .sum()
 }
 
+#[allow(dead_code)]
 fn choose_cumrate_takewhile(chosen_rate: f64, cumrates: &[f64]) -> usize {
     cumrates
         .iter()

@@ -484,7 +484,7 @@ mod tests {
         );
         // fmt: on
         let mut init = HashMap::new();
-        let mut params = HashMap::new();
+        let params = HashMap::new();
         init.insert("A".to_string(), 0);
         init.insert("B".to_string(), 1);
         init.insert("C".to_string(), 2);
@@ -499,14 +499,14 @@ mod tests {
     fn test_eval() {
         let pe: PExpr = "1.21 * C + B - A / D ^ E * (F + exp(D))".parse().unwrap();
         let mut init = HashMap::new();
-        let mut params = HashMap::new();
+        let params = HashMap::new();
         init.insert("A".to_string(), 0);
         init.insert("B".to_string(), 1);
         init.insert("C".to_string(), 2);
         init.insert("D".to_string(), 3);
         init.insert("E".to_string(), 4);
         init.insert("F".to_string(), 5);
-        let mut species = vec![2, 3, 5, 7, 11, 13];
+        let species = vec![2, 3, 5, 7, 11, 13];
         assert_eq!(
             pe.to_expr(&init, &params).unwrap().eval(&species),
             9.049998877643098
@@ -518,30 +518,30 @@ mod tests {
     fn test_eval_max() {
         let pe: PExpr = "max(A, 0)".parse().unwrap();
         let mut init = HashMap::new();
-        let mut params = HashMap::new();
+        let params = HashMap::new();
         init.insert("A".to_string(), 0);
-        let mut species = vec![3];
+        let species = vec![3];
         assert_eq!(pe.to_expr(&init, &params).unwrap().eval(&species), 3.0);
 
         let pe: PExpr = "max(A - 0.5, 0)".parse().unwrap();
         let mut init = HashMap::new();
-        let mut params = HashMap::new();
+        let params = HashMap::new();
         init.insert("A".to_string(), 0);
-        let mut species = vec![3];
+        let species = vec![3];
         assert_eq!(pe.to_expr(&init, &params).unwrap().eval(&species), 2.5);
 
         let pe: PExpr = "max(A - 3, 0)".parse().unwrap();
         let mut init = HashMap::new();
-        let mut params = HashMap::new();
+        let params = HashMap::new();
         init.insert("A".to_string(), 0);
-        let mut species = vec![3];
+        let species = vec![3];
         assert_eq!(pe.to_expr(&init, &params).unwrap().eval(&species), 0.0);
 
         let pe: PExpr = "max(A - 3.5, 0)".parse().unwrap();
         let mut init = HashMap::new();
-        let mut params = HashMap::new();
+        let params = HashMap::new();
         init.insert("A".to_string(), 0);
-        let mut species = vec![3];
+        let species = vec![3];
         assert_eq!(pe.to_expr(&init, &params).unwrap().eval(&species), 0.0);
     }
 }

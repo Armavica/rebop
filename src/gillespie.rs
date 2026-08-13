@@ -248,6 +248,13 @@ impl Gillespie {
         let mut rates = vec![f64::NAN; self.nb_reactions()];
         self._advance_one_reaction(&mut rates);
     }
+    /// Simulates the problem for `nb_reactions` reactions.
+    pub fn advance_n_reactions(&mut self, nb_reactions: usize) {
+        let mut rates = vec![f64::NAN; self.nb_reactions()];
+        for _ in 0..nb_reactions {
+            self._advance_one_reaction(&mut rates);
+        }
+    }
 
     #[inline]
     pub fn _advance_one_reaction(&mut self, rates: &mut [f64]) {
@@ -485,10 +492,32 @@ mod tests {
     }
 
     #[test]
+    fn n_reactions() {
+        for n in 0..15 {
+            let mut decay = Gillespie::new([10], false);
+            decay.add_reaction(Rate::lma(1.0, [1]), [-1]);
+            decay.advance_n_reactions(n);
+            if n <= 10 {
+                assert_eq!(decay.get_species(0), (10 - n) as isize);
+                assert!(decay.get_time() < f64::INFINITY);
+            } else {
+                assert_eq!(decay.get_species(0), 0);
+                assert_eq!(decay.get_time(), f64::INFINITY);
+            }
+        }
+    }
+
+    #[test]
     fn no_reactions() {
         let mut sir = Gillespie::new([10000, 0, 0], false);
         sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);
         sir.add_reaction(Rate::lma(0.01, [0, 1, 0]), [0, -1, 1]);
+        sir.advance_n_reactions(10);
+        assert_eq!(sir.get_species(0), 10000);
+        assert_eq!(sir.get_species(1), 0);
+        assert_eq!(sir.get_species(2), 0);
+        assert_eq!(sir.get_time(), f64::INFINITY);
+        sir.set_time(0.0);
         sir.advance_until(1.0);
         assert_eq!(sir.get_species(0), 10000);
         assert_eq!(sir.get_species(1), 0);

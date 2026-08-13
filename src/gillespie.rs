@@ -272,7 +272,7 @@ impl Gillespie {
     }
 
     #[inline]
-    pub fn _advance_one_reaction(&mut self, rates: &mut [f64]) {
+    pub(crate) fn _advance_one_reaction(&mut self, rates: &mut [f64]) {
         // let total_rate = make_rates(&self.reactions, &self.species, rates);
         let total_rate = make_cumrates(&self.reactions, &self.species, rates);
 

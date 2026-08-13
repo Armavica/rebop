@@ -268,7 +268,7 @@ mod parsing {
             .parse_next(s)
     }
 
-    pub(crate) fn nomexpr<'a>(s: &mut &'a str) -> Result<PExpr, ParseError<&'a str, ContextError>> {
+    pub(super) fn nomexpr<'a>(s: &mut &'a str) -> Result<PExpr, ParseError<&'a str, ContextError>> {
         expr.parse(s)
     }
 

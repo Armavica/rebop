@@ -277,6 +277,31 @@ impl Gillespie {
             self._advance_one_reaction(&mut rates);
         }
     }
+    /// Simulates the problem until the next discrete reaction or until `tmax`:
+    /// whichever happens first.
+    /// If the current time is already larger than `tmax`, does nothing.
+    pub fn advance_one_reaction_or_until(&mut self, tmax: f64) {
+        if tmax <= self.t {
+            return;
+        }
+        let mut rates = vec![f64::NAN; self.nb_reactions()];
+        self._advance_one_reaction_or_until(&mut rates, tmax);
+    }
+    /// Simulates the problem for `nb_reactions` or until `tmax`:
+    /// whichever happens first.
+    /// If the current time is already larger than `tmax`, does nothing.
+    pub fn advance_n_reactions_or_until(&mut self, nb_reactions: usize, tmax: f64) {
+        if tmax <= self.t {
+            return;
+        }
+        let mut rates = vec![f64::NAN; self.nb_reactions()];
+        for _ in 0..nb_reactions {
+            self._advance_one_reaction_or_until(&mut rates, tmax);
+            if tmax <= self.t {
+                return;
+            }
+        }
+    }
 
     #[inline]
     pub(crate) fn _advance_one_reaction(&mut self, rates: &mut [f64]) {
@@ -290,6 +315,35 @@ impl Gillespie {
             return;
         }
         self.t += self.rng.sample::<f64, _>(Exp1) / total_rate;
+        let chosen_rate = total_rate * self.rng.random::<f64>();
+
+        // let ireaction = choose_rate_sum(chosen_rate, rates);
+        // let ireaction = choose_rate_for(chosen_rate, rates);
+        let ireaction = choose_cumrate_sum(chosen_rate, rates);
+        // let ireaction = choose_cumrate_for(chosen_rate, rates);
+        // let ireaction = choose_cumrate_takewhile(chosen_rate, rates);
+        // here we have ireaction < self.reactions.len() because chosen_rate < total_rate
+        let reaction = unsafe { self.reactions.get_unchecked(ireaction) };
+
+        reaction.1.affect(&mut self.species);
+    }
+
+    #[inline]
+    fn _advance_one_reaction_or_until(&mut self, rates: &mut [f64], tmax: f64) {
+        // let total_rate = make_rates(&self.reactions, &self.species, rates);
+        let total_rate = make_cumrates(&self.reactions, &self.species, rates);
+
+        // we don't want to use partial_cmp, for performance
+        #[allow(clippy::neg_cmp_op_on_partial_ord)]
+        if !(0. < total_rate) {
+            self.t = tmax;
+            return;
+        }
+        self.t += self.rng.sample::<f64, _>(Exp1) / total_rate;
+        if self.t > tmax {
+            self.t = tmax;
+            return;
+        }
         let chosen_rate = total_rate * self.rng.random::<f64>();
 
         // let ireaction = choose_rate_sum(chosen_rate, rates);
@@ -530,6 +584,41 @@ mod tests {
             } else {
                 assert_eq!(decay.get_species(0), 0);
                 assert_eq!(decay.get_time(), f64::INFINITY);
+            }
+        }
+    }
+
+    #[test]
+    fn n_reactions_or_until() {
+        let mut got_both = 0;
+        let n_reactions = 5;
+        let tmax = 0.6;
+        for _ in 0..1000 {
+            let mut decay = Gillespie::new([10, 0], false);
+            decay.add_reaction(Rate::lma(1.0, [1, 0]), [-1, 1]);
+            decay.advance_n_reactions_or_until(n_reactions, tmax);
+            if decay.get_time() == tmax {
+                got_both |= 1;
+                assert!(decay.get_species(1) < n_reactions as isize);
+            } else {
+                got_both |= 2;
+                assert!(decay.get_time() < tmax);
+                assert_eq!(decay.get_species(1), n_reactions as isize);
+            }
+        }
+        assert_eq!(got_both, 3);
+    }
+
+    #[test]
+    fn n_reactions_or_until_too_much() {
+        let n_reactions = 15;
+        for tmax in [0.6, 6.0, 60.0, 600.0] {
+            for _ in 0..1000 {
+                let mut decay = Gillespie::new([10, 0], false);
+                decay.add_reaction(Rate::lma(1.0, [1, 0]), [-1, 1]);
+                decay.advance_n_reactions_or_until(n_reactions, tmax);
+                assert_eq!(decay.get_time(), tmax);
+                assert!(decay.get_species(1) < n_reactions as isize);
             }
         }
     }

@@ -4,9 +4,6 @@ use pyo3::prelude::*;
 use std::collections::HashMap;
 use std::fmt::{self, Display, Formatter};
 
-pub use rand;
-pub use rand_distr;
-
 use crate::expr::{PExpr, RateParseError};
 use crate::gillespie;
 

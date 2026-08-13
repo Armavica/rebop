@@ -62,28 +62,6 @@ impl PRate {
     }
 }
 
-impl Gillespie {
-    fn add_species_from_expr(&mut self, expr: &PExpr) {
-        match expr {
-            PExpr::Constant(_) => {}
-            PExpr::Variable(s) => self.add_species(s),
-            PExpr::Add(a, b)
-            | PExpr::Sub(a, b)
-            | PExpr::Mul(a, b)
-            | PExpr::Div(a, b)
-            | PExpr::Pow(a, b)
-            | PExpr::Min(a, b)
-            | PExpr::Max(a, b) => {
-                self.add_species_from_expr(a);
-                self.add_species_from_expr(b);
-            }
-            PExpr::Exp(a) | PExpr::Neg(a) => {
-                self.add_species_from_expr(a);
-            }
-        }
-    }
-}
-
 #[pymethods]
 impl Gillespie {
     #[new]

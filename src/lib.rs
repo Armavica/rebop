@@ -6,12 +6,12 @@
 //! networks:
 //!
 //! * a macro-based DSL implemented by [`define_system`], usually the
-//! most efficient, but that requires to compile a rust program;
+//!   most efficient, but that requires to compile a rust program;
 //! * a function-based API implemented by the module [`gillespie`], also
-//! available through Python bindings.  This one does not require a rust
-//! compilation and allows the system to be defined at run time.  It is
-//! typically 2 or 3 times slower than the macro DSL, but still faster
-//! than all other software tried.
+//!   available through Python bindings.  This one does not require a rust
+//!   compilation and allows the system to be defined at run time.  It is
+//!   typically 2 or 3 times slower than the macro DSL, but still faster
+//!   than all other software tried.
 //!
 //! # The macro DSL
 //!

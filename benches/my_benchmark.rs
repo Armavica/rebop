@@ -1,4 +1,3 @@
-#![allow(unused_variables)]
 use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use rebop::define_system;
 use rebop::gillespie::{Gillespie, Rate};

@@ -1,4 +1,5 @@
-#![allow(mixed_script_confusables, unused_variables)]
+#![allow(mixed_script_confusables)]
+#![allow(clippy::too_many_arguments)]
 
 use rebop::define_system;
 

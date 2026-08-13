@@ -140,6 +140,7 @@ impl Gillespie {
     /// values at the given time points.  One can specify a random `seed` for reproducibility.
     /// If `nb_steps` is `0`, then returns all reactions, ending with the first that happens at
     /// or after `tmax`.
+    #[allow(clippy::type_complexity)]
     #[pyo3(signature = (tmax, nb_steps, params, seed=None, sparse=None, var_names=None))]
     fn run(
         &self,

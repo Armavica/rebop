@@ -19,7 +19,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
-      - name: Build
-        run: cargo build --verbose
+      - name: Normal build
+        run: cargo build
+      - name: Build all targets
+        run: cargo build --all-targets
+      - name: Build everything
+        run: cargo build --all-targets --all-features
       - name: Run tests
-        run: cargo test --verbose
+        run: cargo test --all-features

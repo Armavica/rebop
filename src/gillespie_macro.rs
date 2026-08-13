@@ -67,6 +67,7 @@ macro_rules! define_system {
         }
         impl $name {
             /// Constructs an object representing the problem.
+            #[allow(dead_code)]
             fn new() -> Self {
                 $name {
                     $($species: 0,)*
@@ -76,13 +77,14 @@ macro_rules! define_system {
                 }
             }
             /// Seeds the random number generator.
+            #[allow(dead_code)]
             fn seed(&mut self, seed: u64) {
                 use $crate::rand::SeedableRng;
                 self.rng = $crate::rand::rngs::SmallRng::seed_from_u64(seed);
             }
             /// Constructs an object representing the problem,
             /// specifying parameter values.
-            #[allow(non_snake_case)]
+            #[allow(non_snake_case, dead_code)]
             fn with_parameters($($param: f64),*) -> Self {
                 $name {
                     $($species: 0,)*
@@ -96,7 +98,10 @@ macro_rules! define_system {
             fn advance_until(&mut self, tmax: f64) {
                 use $crate::rand::RngExt;
                 $(let $param = self.$param;)*
-                $(let $species = self.$species as f64;)*
+                $(
+                    #[allow(unused_variables)]
+                    let $species = self.$species as f64;
+                )*
                 loop {
                     $(let $rname = $rate $(* $crate::_rate_lma!($($nr)? * self.$r))? $(* $crate::_rate_lma!($($tnr)? * self.$tr) )*;)*
                     let total_rate = 0. $(+ $rname)*;
@@ -111,6 +116,7 @@ macro_rules! define_system {
                         self.t = tmax;
                         return
                     }
+                    #[allow(unused)]
                     let reaction_choice = total_rate * self.rng.random::<f64>();
                     $crate::_choice!(self reaction_choice 0.;
                         $($rname:
@@ -127,6 +133,7 @@ macro_rules! define_system {
 macro_rules! _rate_lma {
     ($($n:literal)? * $species:expr) => {
         {
+            #[allow(unused_mut)]
             let mut rate = $species;
             $(
                 for i in 1..$n {

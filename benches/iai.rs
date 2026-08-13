@@ -4,7 +4,6 @@ use std::hint::black_box;
 use rebop::define_system;
 use rebop::gillespie::{Gillespie, Rate};
 
-#[allow(unused_variables)]
 fn sir_macro(n: isize) -> isize {
     define_system! {
         r_inf r_heal;

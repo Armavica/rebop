@@ -1,0 +1,22 @@
+[package]
+name = "benchmarks"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+rebop = { path = ".." }
+
+[dev-dependencies]
+gungraun = "0.19.4"
+criterion = "0.8.2"
+
+[[bench]]
+harness = false
+name = "my_benchmark"
+path = "benches/my_benchmark.rs"
+
+[[bench]]
+harness = false
+name = "gungraun"
+path = "benches/gungraun.rs"

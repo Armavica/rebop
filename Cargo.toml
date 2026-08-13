@@ -1,3 +1,6 @@
+[workspace]
+members = ["benchmarks"]
+
 [package]
 name = "rebop"
 version = "0.9.7"
@@ -23,7 +26,7 @@ generate-import-lib = ["pyo3/generate-import-lib"]
 
 [dev-dependencies]
 criterion = "0.8.2"
-iai-callgrind = "0.16.1"
+gungraun = "0.19.4"
 
 [lib]
 path = "src/lib.rs"
@@ -32,21 +35,9 @@ bench = false
 
 [[bin]]
 name = "vilar"
-path = "benches/vilar/vilar.rs"
+path = "benchmarks/benches/vilar/vilar.rs"
 bench = false
-
-[[bench]]
-name = "my_benchmark"
-harness = false
-
-[[bench]]
-name = "iai"
-harness = false
 
 [profile.release]
 lto = true
 codegen-units = 1
-
-[profile.iai]
-inherits = "release"
-debug = true

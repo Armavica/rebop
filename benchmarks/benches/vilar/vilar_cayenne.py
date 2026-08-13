@@ -1,4 +1,5 @@
 from cayenne.simulation import Simulation
+
 # import matplotlib.pyplot as plt
 
 model_str = """
@@ -51,7 +52,7 @@ C = 0;
 """
 sim = Simulation.load_model(model_str, "ModelString")
 # Run the simulation
-sim.simulate(max_t=200, max_iter=700000, algorithm='direct')
+sim.simulate(max_t=200, max_iter=700000, algorithm="direct")
 print(sim.results)
 # sim.plot()
 # plt.show()

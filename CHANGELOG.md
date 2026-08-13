@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0](https://github.com/Armavica/rebop/compare/rebop-v0.9.7...rebop-v0.10.0) - 2026-08-13
+
+### Documentation
+
+- Document undocumented items
+
+### Fixed
+
+- Fix two more warnings in a test module
+- Fix a few clippy warnings
+- Fix the visibility of a private method
+- Mark alternative implementations as dead code
+- Remove warnings in macro code
+- Fix mutability of variables in tests
+- Fix visibility of parsing method
+- Remove two unused imports
+- Fix the visibility of the parsing module
+
+### Miscellaneous
+
+- Tentatively apply zizmor recommendations to rust CI
+- Check more stuff in the ruff CI
+- *(deps)* bump the actions group with 2 updates
+- Remove dead code (autoadd species from rate)
+- Fix list indentation
+- *(deps)* bump the actions group across 1 directory with 5 updates
+
+### Refactor
+
+- Create benchmark package and replace iai with gungraun
+
 ## [0.9.7](https://github.com/Armavica/rebop/compare/v0.9.6...v0.9.7) - 2026-02-26
 
 ### Added

@@ -8,22 +8,32 @@ use rand_distr::Exp1;
 use crate::expr::Expr;
 
 #[derive(Clone, Debug, PartialEq)]
+/// Definition of a reaction rate
 pub enum Rate {
+    /// Reaction rate governed by the Law of Mass Action
     LMA(f64, Vec<u32>),
+    /// Reaction rate governed by the Law of mass Action (sparsely represented)
     LMASparse(f64, Vec<(u32, u32)>),
+    /// Arbitrary reaction rate
     Expr(Expr),
 }
 
 impl Rate {
+    /// Build an LMA reaction rate from the coefficient and an array
+    /// of stoechiometries (one coefficient for every species).
     pub fn lma<V: AsRef<[u32]>>(rate: f64, stoechiometries: V) -> Self {
         Rate::LMA(rate, stoechiometries.as_ref().to_vec())
     }
+    /// Build a sparse LMA reaction rate from the coefficient and an array
+    /// of stoechiometries `(species_index, coefficient)`.
     pub fn lma_sparse<V: AsRef<[(u32, u32)]>>(rate: f64, stoechiometries: V) -> Self {
         Rate::LMASparse(rate, stoechiometries.as_ref().to_vec())
     }
+    /// Build an arbitrary reaction rate.
     pub fn expr(expr: Expr) -> Self {
         Rate::Expr(expr)
     }
+    /// If it is a sparse reaction rate, convert it into a dense one.
     pub fn dense(self) -> Self {
         match self {
             Rate::LMASparse(rate, stoechiometries) => {
@@ -41,6 +51,7 @@ impl Rate {
             Rate::LMA(_, _) | Rate::Expr(_) => self,
         }
     }
+    /// If it is a dense reaction rate, convert it into a sparse one.
     pub fn sparse(self) -> Self {
         match self {
             Rate::LMA(rate, stoechiometries) => {
@@ -56,6 +67,7 @@ impl Rate {
             Rate::LMASparse(_, _) | Rate::Expr(_) => self,
         }
     }
+    /// Compute the rate given the amount of species
     fn rate(&self, species: &[isize]) -> f64 {
         match self {
             Rate::LMA(rate, reactants) => species
@@ -79,18 +91,24 @@ impl Rate {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+/// Representation of the effect of a reaction.
 pub enum Jump {
+    /// Reaction jump represented as an array of differences
     Flat(Vec<isize>),
+    /// Reaction jump represented as a sparse array of differences
     Sparse(Vec<(usize, isize)>),
 }
 
 impl Jump {
+    /// Create a flat jump from an array of differences.
     pub fn new<V: AsRef<[isize]>>(differences: V) -> Self {
         Jump::Flat(differences.as_ref().to_vec())
     }
+    /// Create a sparse jump from an array of `(species_index, difference)`.
     pub fn new_sparse<V: AsRef<[(usize, isize)]>>(sparse: V) -> Self {
         Jump::Sparse(sparse.as_ref().to_vec())
     }
+    /// If it is a sparse jump, convert it into a flat one.
     pub fn dense(self) -> Self {
         match self {
             Jump::Sparse(sparse) => {
@@ -104,6 +122,7 @@ impl Jump {
             Jump::Flat(_) => self,
         }
     }
+    /// If it is a flat jump, convert it into a sparse one.
     pub fn sparse(self) -> Self {
         match self {
             Jump::Flat(differences) => {
@@ -119,6 +138,7 @@ impl Jump {
             Jump::Sparse(_) => self,
         }
     }
+    /// Perform the jump given the amount of species
     fn affect(&self, species: &mut [isize]) {
         match self {
             Jump::Flat(differences) => species
@@ -154,6 +174,8 @@ impl Gillespie {
             sparse,
         }
     }
+    /// Creates a new problem instance, with `N` different species of
+    /// specified initial conditions, and a fixed random seed `seed`.
     pub fn new_with_seed<V: AsRef<[isize]>>(species: V, sparse: bool, seed: u64) -> Self {
         Gillespie {
             species: species.as_ref().to_vec(),

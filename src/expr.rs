@@ -450,9 +450,11 @@ mod parsing {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "pyo3")]
     use crate::expr::Expr;
     #[cfg(feature = "pyo3")]
     use crate::expr::PExpr;
+    #[cfg(feature = "pyo3")]
     use std::collections::HashMap;
 
     #[cfg(feature = "pyo3")]

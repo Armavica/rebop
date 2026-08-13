@@ -1,5 +1,8 @@
+#[cfg(feature = "pyo3")]
 use std::collections::HashMap;
+#[cfg(feature = "pyo3")]
 use std::fmt::{self, Display, Formatter};
+#[cfg(feature = "pyo3")]
 use std::str::FromStr;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -35,6 +38,7 @@ impl Expr {
     }
 }
 
+#[cfg(feature = "pyo3")]
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum PExpr {
     Constant(f64),
@@ -50,6 +54,7 @@ pub(crate) enum PExpr {
     Exp(Box<PExpr>),
 }
 
+#[cfg(feature = "pyo3")]
 impl PExpr {
     pub fn to_expr(
         &self,
@@ -103,6 +108,7 @@ impl PExpr {
     }
 }
 
+#[cfg(feature = "pyo3")]
 impl Display for PExpr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
@@ -121,9 +127,11 @@ impl Display for PExpr {
     }
 }
 
+#[cfg(feature = "pyo3")]
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct RateParseError;
 
+#[cfg(feature = "pyo3")]
 impl FromStr for PExpr {
     type Err = RateParseError;
 
@@ -132,6 +140,7 @@ impl FromStr for PExpr {
     }
 }
 
+#[cfg(feature = "pyo3")]
 mod parsing {
     use crate::expr::PExpr;
     use winnow::Result;
@@ -441,9 +450,12 @@ mod parsing {
 
 #[cfg(test)]
 mod tests {
-    use crate::expr::{Expr, PExpr};
+    use crate::expr::Expr;
+    #[cfg(feature = "pyo3")]
+    use crate::expr::PExpr;
     use std::collections::HashMap;
 
+    #[cfg(feature = "pyo3")]
     #[test]
     fn test_conversion() {
         let pe: PExpr = "1.21 * C + B - A / D ^ E * (F + exp(D))".parse().unwrap();
@@ -482,6 +494,7 @@ mod tests {
         assert_eq!(pe.to_expr(&init, &params), Ok(e));
     }
 
+    #[cfg(feature = "pyo3")]
     #[test]
     fn test_eval() {
         let pe: PExpr = "1.21 * C + B - A / D ^ E * (F + exp(D))".parse().unwrap();
@@ -500,6 +513,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "pyo3")]
     #[test]
     fn test_eval_max() {
         let pe: PExpr = "max(A, 0)".parse().unwrap();

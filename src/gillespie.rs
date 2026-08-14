@@ -270,6 +270,38 @@ impl Gillespie {
         let mut rates = vec![f64::NAN; self.nb_reactions()];
         self._advance_one_reaction(&mut rates);
     }
+    /// Simulates the problem for `nb_reactions` reactions.
+    pub fn advance_n_reactions(&mut self, nb_reactions: usize) {
+        let mut rates = vec![f64::NAN; self.nb_reactions()];
+        for _ in 0..nb_reactions {
+            self._advance_one_reaction(&mut rates);
+        }
+    }
+    /// Simulates the problem until the next discrete reaction or until `tmax`:
+    /// whichever happens first.
+    /// If the current time is already larger than `tmax`, does nothing.
+    pub fn advance_one_reaction_or_until(&mut self, tmax: f64) {
+        if tmax <= self.t {
+            return;
+        }
+        let mut rates = vec![f64::NAN; self.nb_reactions()];
+        self._advance_one_reaction_or_until(&mut rates, tmax);
+    }
+    /// Simulates the problem for `nb_reactions` or until `tmax`:
+    /// whichever happens first.
+    /// If the current time is already larger than `tmax`, does nothing.
+    pub fn advance_n_reactions_or_until(&mut self, nb_reactions: usize, tmax: f64) {
+        if tmax <= self.t {
+            return;
+        }
+        let mut rates = vec![f64::NAN; self.nb_reactions()];
+        for _ in 0..nb_reactions {
+            self._advance_one_reaction_or_until(&mut rates, tmax);
+            if tmax <= self.t {
+                return;
+            }
+        }
+    }
 
     #[inline]
     pub(crate) fn _advance_one_reaction(&mut self, rates: &mut [f64]) {
@@ -295,7 +327,38 @@ impl Gillespie {
 
         reaction.1.affect(&mut self.species);
     }
+
+    #[inline]
+    fn _advance_one_reaction_or_until(&mut self, rates: &mut [f64], tmax: f64) {
+        // let total_rate = make_rates(&self.reactions, &self.species, rates);
+        let total_rate = make_cumrates(&self.reactions, &self.species, rates);
+
+        // we don't want to use partial_cmp, for performance
+        #[allow(clippy::neg_cmp_op_on_partial_ord)]
+        if !(0. < total_rate) {
+            self.t = tmax;
+            return;
+        }
+        self.t += self.rng.sample::<f64, _>(Exp1) / total_rate;
+        if self.t > tmax {
+            self.t = tmax;
+            return;
+        }
+        let chosen_rate = total_rate * self.rng.random::<f64>();
+
+        // let ireaction = choose_rate_sum(chosen_rate, rates);
+        // let ireaction = choose_rate_for(chosen_rate, rates);
+        let ireaction = choose_cumrate_sum(chosen_rate, rates);
+        // let ireaction = choose_cumrate_for(chosen_rate, rates);
+        // let ireaction = choose_cumrate_takewhile(chosen_rate, rates);
+        // here we have ireaction < self.reactions.len() because chosen_rate < total_rate
+        let reaction = unsafe { self.reactions.get_unchecked(ireaction) };
+
+        reaction.1.affect(&mut self.species);
+    }
     /// Simulates the problem until `tmax`.
+    ///
+    /// If `tmax` is less than the current `t`, does nothing.
     ///
     /// ```
     /// use rebop::gillespie::{Gillespie, Rate};
@@ -314,6 +377,9 @@ impl Gillespie {
     /// ```
     pub fn advance_until(&mut self, tmax: f64) {
         let mut rates = vec![f64::NAN; self.reactions.len()];
+        if tmax < self.t {
+            return;
+        }
         loop {
             //let total_rate = make_rates(&self.reactions, &self.species, &mut rates);
             let total_rate = make_cumrates(&self.reactions, &self.species, &mut rates);
@@ -491,6 +557,93 @@ mod tests {
         let mut species = vec![10; 4];
         sjump.affect(&mut species);
         assert_eq!(species, vec![9, 10, 13, 8]);
+    }
+
+    #[test]
+    fn advance_until() {
+        let mut sir = Gillespie::new([9999, 1, 0], false);
+        sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);
+        sir.add_reaction(Rate::lma(0.01, [0, 1, 0]), [0, -1, 1]);
+        sir.advance_until(1.0);
+        assert_eq!(sir.get_time(), 1.0);
+        sir.advance_until(2.0);
+        assert_eq!(sir.get_time(), 2.0);
+        sir.advance_until(1.5);
+        assert_eq!(sir.get_time(), 2.0);
+    }
+
+    #[test]
+    fn n_reactions() {
+        for n in 0..15 {
+            let mut decay = Gillespie::new([10], false);
+            decay.add_reaction(Rate::lma(1.0, [1]), [-1]);
+            decay.advance_n_reactions(n);
+            if n <= 10 {
+                assert_eq!(decay.get_species(0), (10 - n) as isize);
+                assert!(decay.get_time() < f64::INFINITY);
+            } else {
+                assert_eq!(decay.get_species(0), 0);
+                assert_eq!(decay.get_time(), f64::INFINITY);
+            }
+        }
+    }
+
+    #[test]
+    fn n_reactions_or_until() {
+        let mut got_both = 0;
+        let n_reactions = 5;
+        let tmax = 0.6;
+        for _ in 0..1000 {
+            let mut decay = Gillespie::new([10, 0], false);
+            decay.add_reaction(Rate::lma(1.0, [1, 0]), [-1, 1]);
+            decay.advance_n_reactions_or_until(n_reactions, tmax);
+            if decay.get_time() == tmax {
+                got_both |= 1;
+                assert!(decay.get_species(1) < n_reactions as isize);
+            } else {
+                got_both |= 2;
+                assert!(decay.get_time() < tmax);
+                assert_eq!(decay.get_species(1), n_reactions as isize);
+            }
+        }
+        assert_eq!(got_both, 3);
+    }
+
+    #[test]
+    fn n_reactions_or_until_too_much() {
+        let n_reactions = 15;
+        for tmax in [0.6, 6.0, 60.0, 600.0] {
+            for _ in 0..1000 {
+                let mut decay = Gillespie::new([10, 0], false);
+                decay.add_reaction(Rate::lma(1.0, [1, 0]), [-1, 1]);
+                decay.advance_n_reactions_or_until(n_reactions, tmax);
+                assert_eq!(decay.get_time(), tmax);
+                assert!(decay.get_species(1) < n_reactions as isize);
+            }
+        }
+    }
+
+    #[test]
+    fn no_reactions() {
+        let mut sir = Gillespie::new([10000, 0, 0], false);
+        sir.add_reaction(Rate::lma(0.1 / 10000., [1, 1, 0]), [-1, 1, 0]);
+        sir.add_reaction(Rate::lma(0.01, [0, 1, 0]), [0, -1, 1]);
+        sir.advance_n_reactions(10);
+        assert_eq!(sir.get_species(0), 10000);
+        assert_eq!(sir.get_species(1), 0);
+        assert_eq!(sir.get_species(2), 0);
+        assert_eq!(sir.get_time(), f64::INFINITY);
+        sir.set_time(0.0);
+        sir.advance_until(1.0);
+        assert_eq!(sir.get_species(0), 10000);
+        assert_eq!(sir.get_species(1), 0);
+        assert_eq!(sir.get_species(2), 0);
+        assert_eq!(sir.get_time(), 1.0);
+        sir.advance_one_reaction();
+        assert_eq!(sir.get_species(0), 10000);
+        assert_eq!(sir.get_species(1), 0);
+        assert_eq!(sir.get_species(2), 0);
+        assert_eq!(sir.get_time(), f64::INFINITY);
     }
 
     #[test]

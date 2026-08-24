@@ -3,7 +3,7 @@ members = ["benchmarks"]
 
 [package]
 name = "rebop"
-version = "0.10.0"
+version = "0.10.1"
 authors = ["Virgile Andreani <armavica@ulminfo.fr>"]
 edition = "2024"
 license = "MIT"

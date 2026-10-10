@@ -56,6 +56,7 @@ docstring-code-format = true
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
+  "CPY001",  # Licence headers
   "COM812",  # Incompatible with ruff-format
   "ISC001",  # Incompatible with ruff-format
   "RET504",  # Unnecessary asignment before return

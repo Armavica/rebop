@@ -19,12 +19,12 @@ repos:
     hooks:
       - id: validate-cff
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.6.2"
+    rev: "v3.9.9"
     hooks:
       - id: prettier
         types_or: [markdown, toml, yaml]
   - repo: https://github.com/crate-ci/typos
-    rev: v1.38.1
+    rev: v1.51.1
     hooks:
       - id: typos
   - repo: https://github.com/doublify/pre-commit-rust
@@ -34,13 +34,13 @@ repos:
       - id: cargo-check
         args: [--all-targets]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.0
+    rev: v0.17.0
     hooks:
       - id: ruff-format
       - id: ruff-check
         args: [--fix, --show-fixes]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.18.2
+    rev: v2.4.0
     hooks:
       - id: mypy
 
